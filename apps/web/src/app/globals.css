@@ -1,0 +1,7 @@
+/*
+ * The full Tailwind v4 setup + shadcn theme (tokens, dark mode, base layer,
+ * and @source scanning of the UI package) lives in @repo/ui/globals.css.
+ * This app entry pulls it in; Tailwind auto-scans this app's own sources.
+ */
+@import "@repo/ui/globals.css";
+

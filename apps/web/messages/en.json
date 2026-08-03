@@ -1,0 +1,69 @@
+{
+  "app": {
+    "name": "Shoe Orders",
+    "tagline": "Order management"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "customers": "Customers",
+    "catalog": "Catalog",
+    "reports": "Reports",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Sign in to manage your orders",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "invalidCredentials": "Incorrect email or password",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome",
+    "owedTitle": "Who owes money",
+    "owedEmpty": "No outstanding balances",
+    "recentOrders": "Recent orders",
+    "recentEmpty": "No orders yet",
+    "totalOutstanding": "Total outstanding",
+    "statOutstanding": "Outstanding balance",
+    "statOpenOrders": "Open orders",
+    "statTotalOrders": "Total orders",
+    "statCustomers": "Customers",
+    "colOrder": "Order",
+    "colCustomer": "Customer",
+    "colStatus": "Status",
+    "colTotal": "Total"
+  },
+  "status": {
+    "not_done": "Not done",
+    "done": "Done"
+  },
+  "payment": {
+    "unpaid": "Unpaid",
+    "partial": "Partial",
+    "paid": "Paid"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "search": "Search",
+    "actions": "Actions",
+    "none": "None"
+  }
+}

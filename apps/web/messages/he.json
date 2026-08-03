@@ -1,0 +1,69 @@
+{
+  "app": {
+    "name": "הזמנות נעליים",
+    "tagline": "ניהול הזמנות"
+  },
+  "nav": {
+    "dashboard": "לוח בקרה",
+    "orders": "הזמנות",
+    "customers": "לקוחות",
+    "catalog": "קטלוג",
+    "reports": "דוחות",
+    "signOut": "התנתקות",
+    "language": "שפה"
+  },
+  "theme": {
+    "toggle": "החלפת ערכת נושא",
+    "light": "בהיר",
+    "dark": "כהה",
+    "system": "מערכת"
+  },
+  "auth": {
+    "loginTitle": "התחברות",
+    "loginSubtitle": "התחברו כדי לנהל את ההזמנות",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "signIn": "התחברות",
+    "signingIn": "מתחבר…",
+    "invalidCredentials": "אימייל או סיסמה שגויים",
+    "genericError": "משהו השתבש. נסו שוב."
+  },
+  "dashboard": {
+    "title": "לוח בקרה",
+    "welcome": "ברוך הבא",
+    "owedTitle": "מי חייב כסף",
+    "owedEmpty": "אין יתרות פתוחות",
+    "recentOrders": "הזמנות אחרונות",
+    "recentEmpty": "אין עדיין הזמנות",
+    "totalOutstanding": "סך יתרה לגבייה",
+    "statOutstanding": "יתרה לגבייה",
+    "statOpenOrders": "הזמנות פתוחות",
+    "statTotalOrders": "סך הזמנות",
+    "statCustomers": "לקוחות",
+    "colOrder": "הזמנה",
+    "colCustomer": "לקוח",
+    "colStatus": "סטטוס",
+    "colTotal": "סה״כ"
+  },
+  "status": {
+    "not_done": "לא הושלם",
+    "done": "הושלם"
+  },
+  "payment": {
+    "unpaid": "לא שולם",
+    "partial": "שולם חלקית",
+    "paid": "שולם"
+  },
+  "common": {
+    "loading": "טוען…",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "delete": "מחיקה",
+    "edit": "עריכה",
+    "add": "הוספה",
+    "back": "חזרה",
+    "search": "חיפוש",
+    "actions": "פעולות",
+    "none": "ללא"
+  }
+}
