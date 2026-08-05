@@ -38,3 +38,16 @@ export function isValidWhatsAppPhone(
 ): boolean {
   return normalizePhoneForWhatsApp(raw) !== null;
 }
+
+/**
+ * Build a wa.me deep link with a prefilled message, or null when the phone
+ * can't be normalized to an international number.
+ */
+export function buildWhatsAppUrl(
+  rawPhone: string | null | undefined,
+  text: string,
+): string | null {
+  const phone = normalizePhoneForWhatsApp(rawPhone);
+  if (!phone) return null;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}

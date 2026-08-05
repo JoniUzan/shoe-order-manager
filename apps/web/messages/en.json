@@ -85,6 +85,17 @@
   "validation": {
     "required": "This field is required"
   },
+  "share": {
+    "whatsapp": "Send on WhatsApp",
+    "print": "Print / PDF",
+    "openInvoice": "Share / Print",
+    "back": "Back to order",
+    "messageHeader": "Order summary",
+    "noPhone": "No phone number for this customer",
+    "generating": "Preparing PDF…",
+    "pdfFallback": "PDF downloaded — attach it in the WhatsApp chat that opened.",
+    "shareError": "Couldn't prepare the PDF. Please try Print instead."
+  },
   "payments": {
     "title": "Payments",
     "summary": "Payment",

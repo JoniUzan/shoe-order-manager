@@ -85,6 +85,17 @@
   "validation": {
     "required": "שדה חובה"
   },
+  "share": {
+    "whatsapp": "שליחה בוואטסאפ",
+    "print": "הדפסה / PDF",
+    "openInvoice": "שיתוף / הדפסה",
+    "back": "חזרה להזמנה",
+    "messageHeader": "סיכום הזמנה",
+    "noPhone": "אין מספר טלפון ללקוח זה",
+    "generating": "מכין PDF…",
+    "pdfFallback": "ה-PDF הורד — צרפו אותו לצ׳אט הוואטסאפ שנפתח.",
+    "shareError": "לא ניתן היה להכין את ה-PDF. נסו להדפיס במקום."
+  },
   "payments": {
     "title": "תשלומים",
     "summary": "תשלום",

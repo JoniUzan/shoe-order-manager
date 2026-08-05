@@ -17,7 +17,7 @@ import {
 } from "@repo/ui/components/table";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil, Share2 } from "lucide-react";
 
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
@@ -52,6 +52,8 @@ export default async function OrderDetailPage({
   });
   if (!order) notFound();
 
+  const ts = await getTranslations({ locale, namespace: "share" });
+
   const dateFmt = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-US", {
     dateStyle: "long",
   });
@@ -64,6 +66,12 @@ export default async function OrderDetailPage({
         action={
           <div className="flex flex-wrap gap-2">
             <OrderStatusToggle id={order.id} statusCode={order.statusCode} />
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/print/orders/${order.id}`}>
+                <Share2 className="size-4" />
+                {ts("openInvoice")}
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link href={`/orders/${order.id}/edit`}>
                 <Pencil className="size-4" />
