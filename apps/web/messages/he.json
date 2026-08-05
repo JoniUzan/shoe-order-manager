@@ -54,6 +54,37 @@
     "partial": "שולם חלקית",
     "paid": "שולם"
   },
+  "customers": {
+    "title": "לקוחות",
+    "subtitle": "החנויות שאתה מוכר להן",
+    "add": "הוספת לקוח",
+    "new": "לקוח חדש",
+    "edit": "עריכת לקוח",
+    "name": "שם",
+    "namePlaceholder": "שם החנות",
+    "contactName": "איש קשר",
+    "phone": "טלפון",
+    "address": "כתובת",
+    "notes": "הערות",
+    "ordersCount": "הזמנות",
+    "outstanding": "יתרה",
+    "empty": "אין עדיין לקוחות",
+    "emptyHint": "הוסיפו לקוח ראשון כדי להתחיל.",
+    "searchPlaceholder": "חיפוש לקוחות…",
+    "details": "פרטים",
+    "orderHistory": "היסטוריית הזמנות",
+    "noOrders": "אין עדיין הזמנות",
+    "deleteTitle": "למחוק את הלקוח?",
+    "deleteDescription": "פעולה זו תמחק לצמיתות את ״{name}״. לא ניתן לבטל.",
+    "created": "הלקוח נוסף",
+    "updated": "הלקוח נשמר",
+    "deleted": "הלקוח נמחק",
+    "errorHasOrders": "לא ניתן למחוק לקוח שיש לו הזמנות",
+    "errorGeneric": "משהו השתבש. נסו שוב."
+  },
+  "validation": {
+    "required": "שדה חובה"
+  },
   "common": {
     "loading": "טוען…",
     "save": "שמירה",

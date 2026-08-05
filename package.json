@@ -18,6 +18,7 @@
     "db:studio": "pnpm --filter @repo/db studio"
   },
   "devDependencies": {
+    "playwright-core": "^1.62.1",
     "prettier": "^3.4.2",
     "turbo": "^2.5.0",
     "typescript": "^5.7.3"

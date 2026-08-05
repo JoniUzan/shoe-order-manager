@@ -1,3 +1,4 @@
+import { prisma } from "@repo/db";
 import {
   Card,
   CardContent,
@@ -18,10 +19,17 @@ export default async function LoginPage({
 }) {
   const { locale } = await params;
 
-  // Already signed in → go to the dashboard.
+  // Already signed in with a still-valid user → go to the dashboard.
+  // (Verify the row exists so a stale JWT shows the form instead of looping.)
   const session = await auth();
   if (session?.user?.id) {
-    redirect(`/${locale}`);
+    const exists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
+    });
+    if (exists) {
+      redirect(`/${locale}`);
+    }
   }
 
   const t = await getTranslations({ locale, namespace: "auth" });

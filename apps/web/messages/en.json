@@ -54,6 +54,37 @@
     "partial": "Partial",
     "paid": "Paid"
   },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "The stores you sell to",
+    "add": "Add customer",
+    "new": "New customer",
+    "edit": "Edit customer",
+    "name": "Name",
+    "namePlaceholder": "Store name",
+    "contactName": "Contact person",
+    "phone": "Phone",
+    "address": "Address",
+    "notes": "Notes",
+    "ordersCount": "Orders",
+    "outstanding": "Outstanding",
+    "empty": "No customers yet",
+    "emptyHint": "Add your first customer to get started.",
+    "searchPlaceholder": "Search customers…",
+    "details": "Details",
+    "orderHistory": "Order history",
+    "noOrders": "No orders yet",
+    "deleteTitle": "Delete customer?",
+    "deleteDescription": "This permanently removes “{name}”. This cannot be undone.",
+    "created": "Customer added",
+    "updated": "Customer saved",
+    "deleted": "Customer deleted",
+    "errorHasOrders": "Can't delete a customer that has orders",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
+  "validation": {
+    "required": "This field is required"
+  },
   "common": {
     "loading": "Loading…",
     "save": "Save",
