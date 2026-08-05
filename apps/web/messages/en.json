@@ -85,6 +85,27 @@
   "validation": {
     "required": "This field is required"
   },
+  "payments": {
+    "title": "Payments",
+    "summary": "Payment",
+    "total": "Total",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "record": "Record payment",
+    "amount": "Amount",
+    "note": "Note (optional)",
+    "markFullyPaid": "Mark fully paid",
+    "history": "Payment history",
+    "noPayments": "No payments recorded",
+    "date": "Date",
+    "recorded": "Payment recorded",
+    "removed": "Payment removed",
+    "removeTitle": "Remove payment?",
+    "removeDescription": "This removes a payment of {amount} and recalculates the balance.",
+    "errorAmount": "Enter a valid amount",
+    "errorTooMuch": "That's more than the remaining balance",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
   "catalog": {
     "title": "Catalog",
     "subtitle": "Shoe models you sell",

@@ -85,6 +85,27 @@
   "validation": {
     "required": "שדה חובה"
   },
+  "payments": {
+    "title": "תשלומים",
+    "summary": "תשלום",
+    "total": "סה״כ",
+    "paid": "שולם",
+    "remaining": "נותר לתשלום",
+    "record": "רישום תשלום",
+    "amount": "סכום",
+    "note": "הערה (רשות)",
+    "markFullyPaid": "סימון כשולם במלואו",
+    "history": "היסטוריית תשלומים",
+    "noPayments": "לא נרשמו תשלומים",
+    "date": "תאריך",
+    "recorded": "התשלום נרשם",
+    "removed": "התשלום הוסר",
+    "removeTitle": "להסיר את התשלום?",
+    "removeDescription": "פעולה זו תסיר תשלום בסך {amount} ותחשב מחדש את היתרה.",
+    "errorAmount": "הזינו סכום תקין",
+    "errorTooMuch": "הסכום גבוה מהיתרה שנותרה",
+    "errorGeneric": "משהו השתבש. נסו שוב."
+  },
   "catalog": {
     "title": "קטלוג",
     "subtitle": "דגמי הנעליים שאתה מוכר",

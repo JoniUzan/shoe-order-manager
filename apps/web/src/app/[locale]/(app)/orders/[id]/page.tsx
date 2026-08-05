@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { computeBalanceAgorot, formatMoney } from "@repo/domain";
+import { formatMoney } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -22,6 +22,7 @@ import { Pencil } from "lucide-react";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
+import { PaymentControls } from "@/components/orders/payment-controls";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/session";
@@ -43,11 +44,14 @@ export default async function OrderDetailPage({
         include: { shoeModel: { select: { name: true } } },
         orderBy: { id: "asc" },
       },
+      payments: {
+        orderBy: { paidAt: "desc" },
+        select: { id: true, amountAgorot: true, paidAt: true, note: true },
+      },
     },
   });
   if (!order) notFound();
 
-  const balance = computeBalanceAgorot(order.totalAgorot, order.depositAgorot);
   const dateFmt = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-US", {
     dateStyle: "long",
   });
@@ -130,28 +134,14 @@ export default async function OrderDetailPage({
             </CardContent>
           </Card>
         )}
-        <Card className="sm:col-start-2">
-          <CardContent className="flex flex-col gap-2 pt-6 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("total")}</span>
-              <span className="tabular-nums">
-                {formatMoney(order.totalAgorot, locale)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("deposit")}</span>
-              <span className="tabular-nums">
-                {formatMoney(order.depositAgorot, locale)}
-              </span>
-            </div>
-            <div className="flex justify-between border-t pt-2 text-base font-semibold">
-              <span>{t("balance")}</span>
-              <span className="tabular-nums">
-                {formatMoney(balance, locale)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sm:col-start-2">
+          <PaymentControls
+            orderId={order.id}
+            totalAgorot={order.totalAgorot}
+            paidAgorot={order.depositAgorot}
+            payments={order.payments}
+          />
+        </div>
       </div>
     </div>
   );
