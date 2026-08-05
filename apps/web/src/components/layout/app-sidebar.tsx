@@ -35,7 +35,7 @@ export function AppSidebar({
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Footprints className="size-4" />
                 </div>
-                <div className="grid flex-1 text-start leading-tight">
+                <div className="grid min-w-0 flex-1 text-start leading-tight">
                   <span className="truncate font-semibold">{t("name")}</span>
                   <span className="truncate text-xs text-muted-foreground">
                     {t("tagline")}

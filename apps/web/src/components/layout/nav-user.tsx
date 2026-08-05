@@ -65,7 +65,7 @@ export function NavUser({
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-start text-sm leading-tight">
+              <div className="grid min-w-0 flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-medium">
                   {user.name || user.email}
                 </span>
@@ -73,7 +73,7 @@ export function NavUser({
                   {user.email}
                 </span>
               </div>
-              <ChevronsUpDown className="ms-auto size-4" />
+              <ChevronsUpDown className="ms-auto size-4 shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -89,7 +89,7 @@ export function NavUser({
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-start text-sm leading-tight">
+                <div className="grid min-w-0 flex-1 text-start text-sm leading-tight">
                   <span className="truncate font-medium">
                     {user.name || user.email}
                   </span>

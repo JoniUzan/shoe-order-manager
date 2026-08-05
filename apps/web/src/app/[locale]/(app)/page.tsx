@@ -153,7 +153,7 @@ export default async function DashboardPage({
                           href={`/orders/${o.id}`}
                           className="hover:underline"
                         >
-                          #{o.orderNumber}
+                          <bdi>#{o.orderNumber}</bdi>
                         </Link>
                       </TableCell>
                       <TableCell>{o.customer.name}</TableCell>

@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { computeBalanceAgorot, formatMoney } from "@repo/domain";
+import { formatMoney } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -130,9 +130,9 @@ export default async function CustomerDetailPage({
                           href={`/orders/${o.id}`}
                           className="hover:underline"
                         >
-                          #{o.orderNumber}
+                          <bdi>#{o.orderNumber}</bdi>
                         </Link>
-                        <span className="ms-2 text-xs text-muted-foreground">
+                        <span className="block text-xs font-normal text-muted-foreground">
                           {dateFmt.format(o.createdAt)}
                         </span>
                       </TableCell>

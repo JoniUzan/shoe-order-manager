@@ -246,7 +246,7 @@ async function CustomersReport({
                     <TableRow key={o.id}>
                       <TableCell className="font-medium">
                         <Link href={`/orders/${o.id}`} className="hover:underline">
-                          #{o.orderNumber}
+                          <bdi>#{o.orderNumber}</bdi>
                         </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground">

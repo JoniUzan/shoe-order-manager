@@ -3,8 +3,8 @@
 What the Shoe Order Manager can do today (v1). This is the user-facing feature
 list; see `CLAUDE.md` for the technical architecture.
 
-> **Status:** M0–M5 built, verified, and committed. M6 (final polish pass) and
-> M7 (cloud deploy for multi-device access) are still to come — see
+> **Status:** M0–M6 built, verified, and committed. M7 (cloud deploy for
+> multi-device access) is the deliberate next step — see
 > [Not built yet](#not-built-yet).
 
 ## At a glance
@@ -75,7 +75,6 @@ list; see `CLAUDE.md` for the technical architecture.
 
 ## Not built yet
 
-- **M6 — Polish:** a final pass over every screen for Hebrew wording, right-to-left details, and empty/loading states.
 - **M7 — Cloud (multi-device):** the app currently runs **locally** on one computer (its data lives in a local SQLite file). Moving to the cloud (Turso database + hosting) is a deliberate later step that unlocks:
   - using it from **any device** (phone + computer) on the same account,
   - a **one-tap** "send the order as a link" over WhatsApp,

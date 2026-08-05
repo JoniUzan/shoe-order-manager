@@ -216,6 +216,15 @@
     "errorItemIncomplete": "כל שורה צריכה דגם או תיאור, מידה וכמות",
     "errorGeneric": "משהו השתבש. נסו שוב."
   },
+  "errors": {
+    "loading": "טוען…",
+    "notFoundTitle": "הדף לא נמצא",
+    "notFoundBody": "הדף שחיפשתם אינו קיים או שהוסר.",
+    "notFoundHome": "חזרה ללוח הבקרה",
+    "genericTitle": "משהו השתבש",
+    "genericBody": "אירעה שגיאה בלתי צפויה. אפשר לנסות שוב.",
+    "retry": "נסו שוב"
+  },
   "common": {
     "loading": "טוען…",
     "save": "שמירה",

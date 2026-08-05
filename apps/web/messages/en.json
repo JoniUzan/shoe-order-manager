@@ -216,6 +216,15 @@
     "errorItemIncomplete": "Each line needs a model or description, a size, and a quantity",
     "errorGeneric": "Something went wrong. Please try again."
   },
+  "errors": {
+    "loading": "Loading…",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you're looking for doesn't exist or may have been removed.",
+    "notFoundHome": "Back to dashboard",
+    "genericTitle": "Something went wrong",
+    "genericBody": "An unexpected error occurred. You can try again.",
+    "retry": "Try again"
+  },
   "common": {
     "loading": "Loading…",
     "save": "Save",
