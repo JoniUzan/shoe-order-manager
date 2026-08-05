@@ -7,7 +7,7 @@ import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Textarea } from "@repo/ui/components/textarea";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -33,26 +33,25 @@ export function CustomerForm({
   const tv = useTranslations("validation");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   const form = useForm<CustomerInput>({
     resolver: zodResolver(customerSchema),
     defaultValues: defaultValues ?? EMPTY,
   });
 
-  function onSubmit(values: CustomerInput) {
-    startTransition(async () => {
-      const res = customerId
-        ? await updateCustomer(customerId, values)
-        : await createCustomer(values);
-      if (res.ok) {
-        toast.success(customerId ? t("updated") : t("created"));
-        router.push(`/customers/${res.id}`);
-        router.refresh();
-      } else {
-        toast.error(t("errorGeneric"));
-      }
-    });
+  async function onSubmit(values: CustomerInput) {
+    setPending(true);
+    const res = customerId
+      ? await updateCustomer(customerId, values)
+      : await createCustomer(values);
+    if (res.ok) {
+      toast.success(customerId ? t("updated") : t("created"));
+      router.push(`/customers/${res.id}`);
+    } else {
+      toast.error(t("errorGeneric"));
+      setPending(false);
+    }
   }
 
   return (

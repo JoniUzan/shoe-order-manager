@@ -18,6 +18,7 @@ const rubik = Rubik({
 export const metadata: Metadata = {
   title: "Shoe Orders",
   description: "Order management for a wholesale shoe business",
+  icons: { icon: "/favicon.ico" },
 };
 
 export function generateStaticParams() {

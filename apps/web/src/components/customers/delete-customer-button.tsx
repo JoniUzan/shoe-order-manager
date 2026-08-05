@@ -14,7 +14,7 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
-import { useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { useRouter } from "@/i18n/navigation";
@@ -30,21 +30,21 @@ export function DeleteCustomerButton({
   const t = useTranslations("customers");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
-  function onConfirm() {
-    startTransition(async () => {
-      const res = await deleteCustomer(id);
-      if (res.ok) {
-        toast.success(t("deleted"));
-        router.push("/customers");
-        router.refresh();
-      } else if (res.error === "has_orders") {
-        toast.error(t("errorHasOrders"));
-      } else {
-        toast.error(t("errorGeneric"));
-      }
-    });
+  async function onConfirm() {
+    setPending(true);
+    const res = await deleteCustomer(id);
+    if (res.ok) {
+      toast.success(t("deleted"));
+      router.push("/customers");
+    } else if (res.error === "has_orders") {
+      toast.error(t("errorHasOrders"));
+      setPending(false);
+    } else {
+      toast.error(t("errorGeneric"));
+      setPending(false);
+    }
   }
 
   return (
