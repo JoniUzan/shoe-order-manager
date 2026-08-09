@@ -15,7 +15,8 @@
     "db:generate": "pnpm --filter @repo/db generate",
     "db:migrate": "pnpm --filter @repo/db migrate",
     "db:seed": "pnpm --filter @repo/db seed",
-    "db:studio": "pnpm --filter @repo/db studio"
+    "db:studio": "pnpm --filter @repo/db studio",
+    "db:seed:demo": "pnpm --filter @repo/db seed:demo"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1",

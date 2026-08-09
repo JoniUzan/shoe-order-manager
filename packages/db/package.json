@@ -14,7 +14,8 @@
     "migrate:deploy": "prisma migrate deploy",
     "seed": "prisma db seed",
     "studio": "prisma studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed:demo": "tsx prisma/seed-demo.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
