@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מנהל הזמנות — לוח בקרה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   מנהל הזמנות · Apple-leaning monochrome
+   Black & white only. Gloss = specular top edge + real blur.
+   Radii continuous-ish, motion critically damped (no bounce
+   unless a gesture carried momentum).
+   ============================================================ */
+:root{
+  --bg:#000000;
+  --bg-2:#0A0A0B;
+  --raise:rgba(255,255,255,.055);
+  --raise-2:rgba(255,255,255,.085);
+  --sheen:rgba(255,255,255,.10);
+  --edge:rgba(255,255,255,.13);
+  --hair:rgba(255,255,255,.09);
+  --fg:#F5F5F7;
+  --fg-2:#A1A1A6;
+  --fg-3:#6E6E73;
+  --solid:#FFFFFF;
+  --on-solid:#000000;
+  --shadow:0 1px 2px rgba(0,0,0,.6),0 12px 34px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.35);
+  --r-card:24px;
+  --r-ctl:13px;
+  --gutter:clamp(18px,2.6vw,34px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+:root[data-theme="light"]{
+  --bg:#EFEFF2;
+  --bg-2:#E7E7EC;
+  --raise:rgba(255,255,255,.74);
+  --raise-2:rgba(255,255,255,.92);
+  --sheen:rgba(255,255,255,.9);
+  --edge:rgba(255,255,255,.95);
+  --hair:rgba(0,0,0,.075);
+  --fg:#131315;
+  --fg-2:#65656B;
+  --fg-3:#8E8E93;
+  --solid:#131315;
+  --on-solid:#FFFFFF;
+  --shadow:0 1px 2px rgba(0,0,0,.09),0 12px 30px rgba(0,0,0,.10);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Heebo,system-ui,sans-serif;
+  background:var(--bg);color:var(--fg);
+  font-size:15px;line-height:1.47;letter-spacing:0;
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+  transition:background .5s var(--ease),color .5s var(--ease);
+}
+/* ambient light so the glass has something to refract */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(58% 42% at 76% -6%,rgba(255,255,255,.11),transparent 62%),
+    radial-gradient(46% 40% at 8% 104%,rgba(255,255,255,.055),transparent 60%);
+}
+:root[data-theme="light"] body::before{
+  background:
+    radial-gradient(58% 42% at 76% -6%,rgba(255,255,255,.95),transparent 62%),
+    radial-gradient(50% 40% at 6% 104%,rgba(0,0,0,.05),transparent 60%);
+}
+.n{font-variant-numeric:tabular-nums lining-nums;direction:ltr;unicode-bidi:isolate}
+
+/* ---------- shell ---------- */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+/* ---------- sidebar: the heavier structural material ---------- */
+aside{
+  position:sticky;top:0;height:100vh;padding:22px 14px 18px;
+  background:rgba(255,255,255,.028);
+  backdrop-filter:blur(34px) saturate(180%);
+  -webkit-backdrop-filter:blur(34px) saturate(180%);
+  border-inline-start:1px solid var(--hair);
+  display:flex;flex-direction:column;gap:22px;
+}
+:root[data-theme="light"] aside{background:rgba(255,255,255,.5)}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 10px 0}
+.brand .glyph{
+  width:32px;height:32px;border-radius:9px;flex:none;
+  background:linear-gradient(180deg,var(--solid),color-mix(in srgb,var(--solid) 78%,var(--bg)));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),var(--shadow-sm);
+  display:grid;place-items:center;color:var(--on-solid);
+}
+.brand b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.brand span{display:block;font-size:12px;color:var(--fg-3);font-weight:400;letter-spacing:0}
+
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{
+  display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:11px;
+  color:var(--fg-2);text-decoration:none;font-size:14.5px;font-weight:500;
+  transition:background .18s var(--ease),color .18s var(--ease),transform .12s ease-out;
+}
+nav a:hover{background:var(--raise);color:var(--fg)}
+nav a:active{transform:scale(.975)}
+nav a[aria-current]{
+  color:var(--fg);
+  background:var(--raise-2);
+  box-shadow:inset 0 1px 0 var(--sheen),0 1px 2px rgba(0,0,0,.25);
+}
+:root[data-theme="light"] nav a[aria-current]{box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.08)}
+nav svg{flex:none;opacity:.9}
+.me{
+  margin-top:auto;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:13px;
+  background:var(--raise);box-shadow:inset 0 1px 0 var(--sheen);
+}
+.me .av{
+  width:29px;height:29px;border-radius:50%;flex:none;
+  background:linear-gradient(180deg,var(--raise-2),transparent);
+  border:1px solid var(--hair);display:grid;place-items:center;font-size:12.5px;font-weight:600;color:var(--fg-2);
+}
+.me small{display:block;font-size:12px;color:var(--fg-3)}
+.me b{font-size:13.5px;font-weight:500}
+
+/* ---------- toolbar: floating, content scrolls under ---------- */
+main{min-width:0;padding-bottom:64px}
+.toolbar{
+  position:sticky;top:0;z-index:5;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:15px var(--gutter);
+  background:color-mix(in srgb,var(--bg) 62%,transparent);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent);
+  mask-image:linear-gradient(to bottom,#000 72%,transparent);
+  padding-bottom:24px;
+}
+h1{font-size:23px;font-weight:600;letter-spacing:-.021em;margin-inline-end:auto}
+h1 small{display:block;font-size:13px;font-weight:400;color:var(--fg-3);letter-spacing:0;margin-top:1px}
+
+/* segmented control */
+.seg{
+  position:relative;display:flex;padding:2px;border-radius:11px;
+  background:var(--raise);box-shadow:inset 0 1px 2px rgba(0,0,0,.28);
+}
+:root[data-theme="light"] .seg{box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.seg button{
+  position:relative;z-index:1;border:0;background:none;font:inherit;cursor:pointer;
+  padding:6px 15px;font-size:13.5px;font-weight:500;color:var(--fg-2);border-radius:9px;
+  transition:color .2s var(--ease);
+}
+.seg button[aria-selected="true"]{color:var(--fg)}
+.seg .thumb{
+  position:absolute;z-index:0;top:2px;bottom:2px;left:0;border-radius:9px;
+  background:var(--raise-2);
+  box-shadow:inset 0 1px 0 var(--sheen),0 1px 3px rgba(0,0,0,.35);
+  transition:transform .38s var(--ease),width .38s var(--ease);
+}
+:root[data-theme="light"] .seg .thumb{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04)}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;border:0;cursor:pointer;font:inherit;
+  padding:8px 15px 9px;border-radius:var(--r-ctl);font-size:14px;font-weight:600;letter-spacing:-.006em;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--solid) 100%,transparent),color-mix(in srgb,var(--solid) 86%,var(--bg)));
+  color:var(--on-solid);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),var(--shadow-sm);
+  transition:transform .12s ease-out,filter .2s var(--ease);
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:scale(.97)}
+.icon-btn{
+  width:34px;height:34px;border-radius:11px;border:0;cursor:pointer;display:grid;place-items:center;
+  background:var(--raise);color:var(--fg-2);box-shadow:inset 0 1px 0 var(--sheen);
+  transition:transform .12s ease-out,color .2s var(--ease),background .2s var(--ease);
+}
+.icon-btn:hover{color:var(--fg);background:var(--raise-2)}
+.icon-btn:active{transform:scale(.94)}
+
+/* ---------- content ---------- */
+.wrap{padding:0 var(--gutter);max-width:1240px;display:grid;gap:18px}
+
+.card{
+  position:relative;border-radius:var(--r-card);
+  background:var(--raise);
+  backdrop-filter:blur(30px) saturate(170%);
+  -webkit-backdrop-filter:blur(30px) saturate(170%);
+  box-shadow:inset 0 1px 0 var(--sheen),0 0 0 .5px var(--hair),var(--shadow);
+  overflow:hidden;
+}
+/* the gloss: one specular sweep across the top of the glass */
+.card::before{
+  content:"";position:absolute;inset:0 0 auto 0;height:58%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,0));
+}
+:root[data-theme="light"] .card::before{background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,0))}
+/* the sheen is material, never a veil over content */
+.card > *{position:relative;z-index:1}
+
+/* hero */
+.hero{padding:clamp(24px,3vw,36px)}
+.heroGrid{display:grid;grid-template-columns:1fr auto;gap:clamp(24px,4vw,56px);align-items:start}
+.hero .lbl{font-size:13.5px;font-weight:500;color:var(--fg-2);letter-spacing:.005em}
+.hero .big{
+  font-size:clamp(46px,6.6vw,76px);font-weight:600;line-height:1.02;letter-spacing:-.035em;
+  margin-top:8px;direction:ltr;font-variant-numeric:tabular-nums;
+}
+.hero .sub{margin-top:12px;font-size:14.5px;color:var(--fg-2);max-width:40ch}
+.hero .sub b{color:var(--fg);font-weight:600}
+
+/* monochrome share bar — weight, not hue, carries rank */
+.share{display:flex;gap:3px;margin-top:22px;height:9px}
+.share i{border-radius:3px;background:var(--fg);display:block;transition:opacity .25s var(--ease)}
+.share i:nth-child(1){opacity:1}
+.share i:nth-child(2){opacity:.62}
+.share i:nth-child(3){opacity:.42}
+.share i:nth-child(4){opacity:.27}
+.share i:nth-child(5){opacity:.16}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:12.5px;color:var(--fg-3)}
+
+.figs{
+  display:flex;flex-direction:column;gap:14px;min-width:168px;
+  border-inline-start:1px solid var(--hair);padding-inline-start:clamp(20px,2.6vw,34px);
+}
+.figs div{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.figs b{font-size:26px;font-weight:600;letter-spacing:-.02em;direction:ltr;font-variant-numeric:tabular-nums;line-height:1.1}
+.figs span{font-size:13px;color:var(--fg-3)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card h2{
+  font-size:16px;font-weight:600;letter-spacing:-.012em;
+  padding:19px 22px 13px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+}
+.card h2 a{font-size:13.5px;font-weight:400;color:var(--fg-2);text-decoration:none}
+.card h2 a:hover{color:var(--fg)}
+
+/* inset-separator list, iOS grouped style */
+.list{padding:0 8px 8px}
+.row{
+  display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;
+  padding:12px 14px;border-radius:15px;position:relative;cursor:pointer;
+  transition:background .16s var(--ease),transform .12s ease-out;
+}
+.row+.row::after{
+  content:"";position:absolute;top:0;inset-inline:14px;height:1px;background:var(--hair);
+}
+.row:hover{background:var(--raise)}
+.row:hover::after,.row:hover+.row::after{opacity:0}
+.row:active{transform:scale(.99)}
+.row .who{font-size:15px;font-weight:500;letter-spacing:-.005em}
+.row .meta{font-size:12.5px;color:var(--fg-3);margin-top:2px}
+.row .amt{font-size:16px;font-weight:600;direction:ltr;font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.row .chev{color:var(--fg-3);opacity:.65}
+
+.tag{
+  font-size:11.5px;font-weight:600;padding:3px 9px 4px;border-radius:999px;white-space:nowrap;letter-spacing:.005em;
+}
+.tag.due{background:var(--solid);color:var(--on-solid);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.tag.part{background:var(--raise-2);color:var(--fg);box-shadow:inset 0 1px 0 var(--sheen)}
+.tag.paid{color:var(--fg-3)}
+
+.foot{padding:0 var(--gutter);margin-top:8px;font-size:12px;color:var(--fg-3)}
+
+/* one authored entrance: rise + settle, critically damped, staggered */
+.rise{animation:rise .62s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:1fr}
+  aside{position:static;height:auto;flex-direction:row;align-items:center;gap:14px;padding:12px var(--gutter);
+    border:0;border-bottom:1px solid var(--hair);overflow-x:auto}
+  .brand{padding:0;flex:none}
+  .brand span{display:none}
+  nav{flex-direction:row;gap:4px}
+  nav a span{display:none}
+  nav a{padding:9px}
+  .me{margin-inline-start:auto;flex:none}
+  .me .txt{display:none}
+  .two{grid-template-columns:1fr}
+  .heroGrid{grid-template-columns:1fr;gap:24px}
+  .figs{
+    flex-direction:row;flex-wrap:wrap;border:0;padding:16px 0 0;
+    border-top:1px solid var(--hair);gap:0;
+  }
+  .figs div{flex:1;flex-direction:column;align-items:flex-start;gap:2px;
+    padding-inline-end:20px;margin-inline-end:20px;border-inline-end:1px solid var(--hair)}
+  .figs div:last-child{border:0;margin:0;padding:0}
+}
+@media (max-width:560px){
+  .toolbar{padding-bottom:18px;gap:12px}
+  h1{font-size:21px;width:100%;margin:0}
+  .seg{flex:1;order:3}
+  .seg button{flex:1;padding:6px 8px;font-size:13px;white-space:nowrap}
+  .me{display:none}
+  .figs div{gap:1px}
+  .figs span{font-size:11.5px;line-height:1.3}
+  .figs b{font-size:23px}
+  .btn{order:2;margin-inline-start:auto}
+  .icon-btn{order:1}
+  .row{grid-template-columns:1fr auto}
+  .row .chev{display:none}
+  .legend{gap:4px 14px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.14s!important}
+  .rise{animation:none;opacity:1;transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .card,aside,.toolbar{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg-2)}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">
+      <div class="glyph">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 17c0-1 .6-1.6 1.6-2.2L9 12.7V6.5A1.5 1.5 0 0 1 10.5 5h1A1.5 1.5 0 0 1 13 6.5c0 1.4 1 2.3 2.3 2.8l3.1 1.2c1 .4 1.6 1.2 1.6 2.3V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>
+        </svg>
+      </div>
+      <div>
+        <b>מנהל הזמנות</b>
+        <span>סיטונאות נעליים</span>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#" aria-current="page">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.2"/></svg>
+        <span>לוח בקרה</span>
+      </a>
+      <a href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/></svg>
+        <span>הזמנות</span>
+      </a>
+      <a href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.8 19c.4-2.8 2.6-4.5 5.2-4.5s4.8 1.7 5.2 4.5"/><path d="M16.2 6.2a3 3 0 0 1 0 5.6M17.6 14.9c2 .5 3.4 2 3.7 4.1"/></svg>
+        <span>לקוחות</span>
+      </a>
+      <a href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.2 12 4l8.5 4.2v7.6L12 20l-8.5-4.2z"/><path d="M3.5 8.2 12 12.4l8.5-4.2M12 12.4V20"/></svg>
+        <span>קטלוג</span>
+      </a>
+      <a href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V13M9.3 19.5V7.5M14.7 19.5v-8M20 19.5V4.5"/></svg>
+        <span>דוחות</span>
+      </a>
+    </nav>
+
+    <div class="me">
+      <div class="av">י</div>
+      <div class="txt">
+        <b>יוני</b>
+        <small>מחובר</small>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <h1>לוח בקרה<small>שבת, 8 באוגוסט</small></h1>
+
+      <div class="seg" id="seg">
+        <span class="thumb" id="thumb"></span>
+        <button aria-selected="true">הכול</button>
+        <button aria-selected="false">פתוחות</button>
+        <button aria-selected="false">לא שולמו</button>
+      </div>
+
+      <button class="icon-btn" id="theme" aria-label="החלפת מצב תצוגה">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.4A8.2 8.2 0 0 1 10.6 4a8.4 8.4 0 1 0 9.4 9.4Z"/></svg>
+      </button>
+
+      <button class="btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></svg>
+        הזמנה חדשה
+      </button>
+    </div>
+
+    <div class="wrap">
+      <section class="card hero rise" style="animation-delay:.02s">
+        <div class="heroGrid">
+          <div>
+            <div class="lbl">פתוח לגבייה</div>
+            <div class="big">₪23,170</div>
+            <p class="sub">מחמישה לקוחות. <b>סטודיו פאשן</b> מחזיקה יותר ממחצית הסכום, כבר 34 יום.</p>
+          </div>
+          <div class="figs">
+            <div><span>הזמנות פתוחות</span><b>9</b></div>
+            <div><span>הזמנות השנה</span><b>148</b></div>
+            <div><span>חנויות פעילות</span><b>26</b></div>
+          </div>
+        </div>
+
+        <div class="share">
+          <i style="flex:12400"></i><i style="flex:4820"></i><i style="flex:3150"></i><i style="flex:1940"></i><i style="flex:860"></i>
+        </div>
+        <div class="legend">
+          <span>סטודיו פאשן ₪12,400</span>
+          <span>נעלי בן־ארי ₪4,820</span>
+          <span>בוטיק שגב ₪3,150</span>
+          <span>שוז אנד מור ₪1,940</span>
+          <span>נעלי אלמוג ₪860</span>
+        </div>
+      </section>
+
+      <div class="two">
+        <section class="card rise" style="animation-delay:.1s">
+          <h2>מי חייב כסף <a href="#">הצג הכול</a></h2>
+          <div class="list">
+            <div class="row">
+              <div><div class="who">סטודיו פאשן, תל אביב</div><div class="meta">הזמנה #148 · 34 יום</div></div>
+              <div class="amt">₪12,400</div>
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+            </div>
+            <div class="row">
+              <div><div class="who">נעלי בן־ארי, רמלה</div><div class="meta">שולם ₪2,000 מתוך ₪6,820</div></div>
+              <div class="amt">₪4,820</div>
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+            </div>
+            <div class="row">
+              <div><div class="who">בוטיק שגב, כפר סבא</div><div class="meta">הזמנה #146 · 9 יום</div></div>
+              <div class="amt">₪3,150</div>
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+            </div>
+            <div class="row">
+              <div><div class="who">שוז אנד מור, חיפה</div><div class="meta">שתי הזמנות פתוחות</div></div>
+              <div class="amt">₪1,940</div>
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+            </div>
+            <div class="row">
+              <div><div class="who">נעלי אלמוג, באר שבע</div><div class="meta">שולם ₪1,140 מתוך ₪2,000</div></div>
+              <div class="amt">₪860</div>
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="card rise" style="animation-delay:.16s">
+          <h2>הזמנות אחרונות <a href="#">הצג הכול</a></h2>
+          <div class="list">
+            <div class="row">
+              <div><div class="who">סטודיו פאשן</div><div class="meta">#148 · 6 באוג׳ · 24 זוגות</div></div>
+              <div class="amt">₪12,400</div>
+              <span class="tag due">לא שולם</span>
+            </div>
+            <div class="row">
+              <div><div class="who">נעלי בן־ארי</div><div class="meta">#147 · 4 באוג׳ · 14 זוגות</div></div>
+              <div class="amt">₪6,820</div>
+              <span class="tag part">חלקי</span>
+            </div>
+            <div class="row">
+              <div><div class="who">בוטיק שגב</div><div class="meta">#146 · 3 באוג׳ · 8 זוגות</div></div>
+              <div class="amt">₪3,150</div>
+              <span class="tag due">לא שולם</span>
+            </div>
+            <div class="row">
+              <div><div class="who">שוז אנד מור</div><div class="meta">#145 · 1 באוג׳ · 16 זוגות</div></div>
+              <div class="amt">₪6,300</div>
+              <span class="tag paid">שולם</span>
+            </div>
+            <div class="row">
+              <div><div class="who">נעלי אלמוג</div><div class="meta">#144 · 29 ביולי · 5 זוגות</div></div>
+              <div class="amt">₪2,000</div>
+              <span class="tag part">חלקי</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <p class="foot">כל השמות והסכומים בעמוד זה הם נתוני הדגמה.</p>
+  </main>
+</div>
+
+<script>
+// segmented control — thumb tracks the selection
+(function(){
+  var seg = document.getElementById('seg'), thumb = document.getElementById('thumb');
+  var btns = seg.querySelectorAll('button');
+  function move(b){
+    thumb.style.width = b.offsetWidth + 'px';
+    thumb.style.transform = 'translateX(' + b.offsetLeft + 'px)';
+  }
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.setAttribute('aria-selected','false'); });
+      b.setAttribute('aria-selected','true');
+      move(b);
+    });
+  });
+  requestAnimationFrame(function(){ move(seg.querySelector('[aria-selected="true"]')); });
+  window.addEventListener('resize', function(){ move(seg.querySelector('[aria-selected="true"]')); });
+})();
+
+// light / dark
+document.getElementById('theme').addEventListener('click', function(){
+  var r = document.documentElement;
+  r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+</script>
+</body>
+</html>

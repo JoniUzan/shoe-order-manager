@@ -7,88 +7,109 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------------------
+   Monochrome glass. Black and white only: rank and severity are carried by
+   weight and material, never by hue. The one exception is --destructive,
+   which stays red because an irreversible action must not rely on weight
+   alone. Light and dark are peers, not a theme and its dimmed copy.
+   --------------------------------------------------------------------------- */
+
 :root {
-  --radius: 0.625rem;
+  --radius: 0.8125rem;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --success: oklch(0.62 0.17 149);
-  --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.77 0.16 70);
-  --warning-foreground: oklch(0.205 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: oklch(0.955 0.002 264);
+  --foreground: oklch(0.18 0.002 264);
+  /* cards are a translucent material; pair with .surface-glass for the blur */
+  --card: oklch(1 0 0 / 74%);
+  --card-foreground: oklch(0.18 0.002 264);
+  --popover: oklch(1 0 0 / 88%);
+  --popover-foreground: oklch(0.18 0.002 264);
+  --primary: oklch(0.18 0.002 264);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0 0 0 / 5%);
+  --secondary-foreground: oklch(0.18 0.002 264);
+  --muted: oklch(0 0 0 / 4%);
+  --muted-foreground: oklch(0.47 0.002 264);
+  --accent: oklch(0 0 0 / 6%);
+  --accent-foreground: oklch(0.18 0.002 264);
+  --destructive: oklch(0.58 0.223 27.2);
+  --destructive-foreground: oklch(1 0 0);
+  /* payment states read as weight, not colour */
+  --success: oklch(0.18 0.002 264);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.47 0.002 264);
+  --warning-foreground: oklch(1 0 0);
+  --border: oklch(0 0 0 / 7.5%);
+  --input: oklch(0 0 0 / 11%);
+  --ring: oklch(0.18 0.002 264 / 45%);
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* material: the gloss is a specular edge + sheen, never a coloured glow */
+  --sheen: rgba(255, 255, 255, 0.9);
+  --hairline: oklch(0 0 0 / 7%);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.09), 0 12px 30px rgba(0, 0, 0, 0.1);
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --blur-card: 30px;
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.18 0 0);
+  --chart-2: oklch(0.38 0 0);
+  --chart-3: oklch(0.55 0 0);
+  --chart-4: oklch(0.7 0 0);
+  --chart-5: oklch(0.82 0 0);
+
+  --sidebar: oklch(1 0 0 / 50%);
+  --sidebar-foreground: oklch(0.18 0.002 264);
+  --sidebar-primary: oklch(0.18 0.002 264);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0 0 0 / 5%);
+  --sidebar-accent-foreground: oklch(0.18 0.002 264);
+  --sidebar-border: oklch(0 0 0 / 7%);
+  --sidebar-ring: oklch(0.18 0.002 264 / 45%);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --success: oklch(0.7 0.15 149);
-  --success-foreground: oklch(0.145 0 0);
-  --warning: oklch(0.82 0.15 80);
-  --warning-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.965 0 0);
+  --card: oklch(1 0 0 / 5.5%);
+  --card-foreground: oklch(0.965 0 0);
+  --popover: oklch(0.16 0 0 / 92%);
+  --popover-foreground: oklch(0.965 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(1 0 0 / 8.5%);
+  --secondary-foreground: oklch(0.965 0 0);
+  --muted: oklch(1 0 0 / 6%);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(1 0 0 / 10%);
+  --accent-foreground: oklch(0.965 0 0);
+  --destructive: oklch(0.68 0.2 25);
+  --destructive-foreground: oklch(0 0 0);
+  --success: oklch(0.965 0 0);
+  --success-foreground: oklch(0 0 0);
+  --warning: oklch(0.72 0 0);
+  --warning-foreground: oklch(0 0 0);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(1 0 0 / 40%);
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --sheen: rgba(255, 255, 255, 0.1);
+  --hairline: oklch(1 0 0 / 9%);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.6), 0 12px 34px rgba(0, 0, 0, 0.5);
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
 
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.965 0 0);
+  --chart-2: oklch(0.8 0 0);
+  --chart-3: oklch(0.65 0 0);
+  --chart-4: oklch(0.5 0 0);
+  --chart-5: oklch(0.36 0 0);
+
+  --sidebar: oklch(1 0 0 / 2.8%);
+  --sidebar-foreground: oklch(0.965 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(1 0 0 / 8.5%);
+  --sidebar-accent-foreground: oklch(0.965 0 0);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(1 0 0 / 40%);
 }
 
 @theme inline {
@@ -96,6 +117,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* the card corner: generous and continuous, the shape of the whole system */
+  --radius-card: 1.5rem;
+  --radius-row: 0.9375rem;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -145,6 +169,75 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    /* SF on the devices this is actually used on (Mac, iPhone); Rubik carries
+       Hebrew everywhere else. The platform face already ships optical sizing
+       and tracking tables no webfont here would match. */
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans),
+      system-ui, sans-serif;
+  }
+  /* ambient light, so the glass has something to refract */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.95), transparent 62%),
+      radial-gradient(50% 40% at 6% 104%, rgba(0, 0, 0, 0.05), transparent 60%);
+  }
+  .dark body::before {
+    background:
+      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.11), transparent 62%),
+      radial-gradient(46% 40% at 8% 104%, rgba(255, 255, 255, 0.055), transparent 60%);
+  }
+  /* tabular figures everywhere money is shown: columns of ₪ must align */
+  [data-slot="money"],
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+
+@layer components {
+  /* The material. A translucent layer with a bright top edge where light
+     catches it, and one specular sheen falling off over the top half. */
+  .surface-glass {
+    position: relative;
+    backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
+    -webkit-backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 var(--sheen),
+      0 0 0 0.5px var(--hairline),
+      var(--shadow-card);
+  }
+  .surface-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 58%;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  }
+  .dark .surface-glass::before {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
+  }
+  /* the sheen is material, never a veil: content always sits above it */
+  .surface-glass > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .surface-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--background);
+  }
+  .surface-glass::before {
+    display: none;
   }
 }

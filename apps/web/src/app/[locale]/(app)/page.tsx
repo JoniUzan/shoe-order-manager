@@ -7,17 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/ui/components/table";
 import { getTranslations } from "next-intl/server";
 
-import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
+import {
+  OrdersTable,
+  type OrderRow,
+} from "@/components/dashboard/orders-table";
+import {
+  SalesChart,
+  type SalesPoint,
+} from "@/components/dashboard/sales-chart";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/session";
 
@@ -30,26 +29,102 @@ export default async function DashboardPage({
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "dashboard" });
 
-  const [openOrders, recentOrders, totalOrders, customerCount] =
-    await Promise.all([
-      prisma.order.findMany({
-        where: { ownerId: user.id, paymentStatus: { not: "paid" } },
-        select: {
-          totalAgorot: true,
-          depositAgorot: true,
-          customerId: true,
-          customer: { select: { name: true } },
-        },
-      }),
-      prisma.order.findMany({
-        where: { ownerId: user.id },
-        include: { customer: true },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-      prisma.order.count({ where: { ownerId: user.id } }),
-      prisma.customer.count({ where: { ownerId: user.id } }),
-    ]);
+  // 90-day window for the sales chart. Bucketing happens in JS, not SQL —
+  // the schema stays portable (no date functions) for the Turso swap.
+  const windowStart = new Date();
+  windowStart.setHours(0, 0, 0, 0);
+  windowStart.setDate(windowStart.getDate() - 89);
+
+  const [
+    openOrders,
+    tableOrders,
+    totalOrders,
+    customerCount,
+    windowOrders,
+    windowPayments,
+  ] = await Promise.all([
+    prisma.order.findMany({
+      where: { ownerId: user.id, paymentStatus: { not: "paid" } },
+      select: {
+        totalAgorot: true,
+        depositAgorot: true,
+        customerId: true,
+        customer: { select: { name: true } },
+      },
+    }),
+    prisma.order.findMany({
+      where: { ownerId: user.id },
+      select: {
+        id: true,
+        orderNumber: true,
+        customerId: true,
+        createdAt: true,
+        statusCode: true,
+        paymentStatus: true,
+        totalAgorot: true,
+        depositAgorot: true,
+        customer: { select: { name: true } },
+        _count: { select: { items: true } },
+      },
+      orderBy: { orderNumber: "desc" },
+      take: 200,
+    }),
+    prisma.order.count({ where: { ownerId: user.id } }),
+    prisma.customer.count({ where: { ownerId: user.id } }),
+    prisma.order.findMany({
+      where: { ownerId: user.id, createdAt: { gte: windowStart } },
+      select: { createdAt: true, totalAgorot: true },
+    }),
+    prisma.payment.findMany({
+      where: { ownerId: user.id, paidAt: { gte: windowStart } },
+      select: { paidAt: true, amountAgorot: true },
+    }),
+  ]);
+
+  const dayKey = (d: Date) => {
+    const local = new Date(d);
+    local.setHours(0, 0, 0, 0);
+    return local.toISOString().slice(0, 10);
+  };
+
+  const orderedByDay = new Map<string, number>();
+  for (const o of windowOrders) {
+    const k = dayKey(o.createdAt);
+    orderedByDay.set(k, (orderedByDay.get(k) ?? 0) + o.totalAgorot);
+  }
+  const collectedByDay = new Map<string, number>();
+  for (const p of windowPayments) {
+    const k = dayKey(p.paidAt);
+    collectedByDay.set(k, (collectedByDay.get(k) ?? 0) + p.amountAgorot);
+  }
+
+  // Every day in the window, zeros included — gaps would misdraw the area.
+  const series: SalesPoint[] = Array.from({ length: 90 }, (_, i) => {
+    const d = new Date(windowStart);
+    d.setDate(d.getDate() + i);
+    const k = dayKey(d);
+    return {
+      date: k,
+      ordered: orderedByDay.get(k) ?? 0,
+      collected: collectedByDay.get(k) ?? 0,
+    };
+  });
+
+  const orderRows: OrderRow[] = tableOrders.map((o) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    customerId: o.customerId,
+    customerName: o.customer.name,
+    createdAt: o.createdAt.toISOString(),
+    statusCode: o.statusCode,
+    paymentStatus: o.paymentStatus,
+    totalAgorot: o.totalAgorot,
+    balanceAgorot: Math.max(
+      0,
+      computeBalanceAgorot(o.totalAgorot, o.depositAgorot),
+    ),
+    itemCount: o._count.items,
+  }));
 
   // Aggregate outstanding balance per customer.
   const owedMap = new Map<string, { name: string; owed: number }>();
@@ -92,6 +167,11 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
+        {/* Sales over time */}
+        <div className="@container/card lg:col-span-2">
+          <SalesChart data={series} />
+        </div>
+
         {/* Who owes money */}
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -125,55 +205,19 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        {/* Recent orders */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{t("recentOrders")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentOrders.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                {t("recentEmpty")}
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("colOrder")}</TableHead>
-                    <TableHead>{t("colCustomer")}</TableHead>
-                    <TableHead>{t("colStatus")}</TableHead>
-                    <TableHead className="text-end">{t("colTotal")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentOrders.map((o) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/orders/${o.id}`}
-                          className="hover:underline"
-                        >
-                          <bdi>#{o.orderNumber}</bdi>
-                        </Link>
-                      </TableCell>
-                      <TableCell>{o.customer.name}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1.5">
-                          <OrderStatusBadge code={o.statusCode} />
-                          <PaymentBadge status={o.paymentStatus} />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-end tabular-nums">
-                        {formatMoney(o.totalAgorot, locale)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* All orders */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold">{t("recentOrders")}</h2>
+        {orderRows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t("recentEmpty")}
+          </p>
+        ) : (
+          <OrdersTable rows={orderRows} />
+        )}
+      </section>
     </div>
   );
 }

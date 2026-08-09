@@ -35,3 +35,11 @@ coverage/
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# impeccable live-mode runtime state (config.json is checked in)
+**/.impeccable/live/sessions/
+**/.impeccable/live/roots.json
+**/.impeccable/live/inject-journal.json
+
+# design concept screenshots (regenerable)
+design-concepts/_shots/
