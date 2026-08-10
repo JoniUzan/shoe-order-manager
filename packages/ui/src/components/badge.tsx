@@ -22,6 +22,18 @@ const badgeVariants = cva(
           "bg-success text-success-foreground [a&]:hover:bg-success/90",
         warning:
           "bg-warning text-warning-foreground [a&]:hover:bg-warning/90",
+        // Tinted status readouts, not controls: no border, no hover. The fill
+        // is translucent so it layers on the glass; the ink carries contrast.
+        // The inset highlight is a hard 1px edge, not a gradient — across a
+        // 20px pill a soft ramp on a 12% tint reads as banding, an edge reads
+        // as light catching the material. On a fully-rounded pill it follows
+        // the top arc and wraps the corners.
+        positive:
+          "bg-tint-positive text-tint-positive-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
+        caution:
+          "bg-tint-caution text-tint-caution-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
+        critical:
+          "bg-tint-critical text-tint-critical-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
       },
     },
     defaultVariants: {
