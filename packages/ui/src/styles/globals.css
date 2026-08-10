@@ -8,20 +8,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------------------------------------------------------------
-   Monochrome glass. Black and white: rank and severity are carried by weight
-   and material, never by hue. Light and dark are peers, not a theme and its
-   dimmed copy.
-
-   Two scoped exceptions, both because weight alone would be read too slowly:
-
-   1. --destructive stays red, because an irreversible action must not rely on
-      weight alone. Reserved for actions; never used as a status colour.
-   2. --tint-* carries payment state (unpaid / partial / paid). Scanning ten
-      rows for who still owes money was five labels differing only in ink
-      density. These are low-alpha *fills* with coloured ink, never solid, and
-      never the destructive red — money owed is not a destructive action, and
-      the two must not be confusable. Confined to the payment axis: fulfilment
-      status, the shell, the tables and the charts all stay monochrome.
+   Monochrome glass. Black and white only: rank and severity are carried by
+   weight and material, never by hue. The one exception is --destructive,
+   which stays red because an irreversible action must not rely on weight
+   alone. Light and dark are peers, not a theme and its dimmed copy.
    --------------------------------------------------------------------------- */
 
 :root {
@@ -44,30 +34,17 @@
   --accent-foreground: oklch(0.18 0.002 264);
   --destructive: oklch(0.58 0.223 27.2);
   --destructive-foreground: oklch(1 0 0);
-  /* generic emphasis, still monochrome — these are not the payment tints */
+  /* payment states read as weight, not colour */
   --success: oklch(0.18 0.002 264);
   --success-foreground: oklch(1 0 0);
   --warning: oklch(0.47 0.002 264);
   --warning-foreground: oklch(1 0 0);
-  /* payment tints: translucent fill so it layers on the glass instead of
-     punching an opaque hole in it; the -foreground is the ink and carries
-     the contrast. See the exceptions note at the top of this file. */
-  --tint-positive: oklch(0.62 0.14 152 / 14%);
-  --tint-positive-foreground: oklch(0.43 0.11 152);
-  --tint-caution: oklch(0.72 0.15 72 / 16%);
-  --tint-caution-foreground: oklch(0.47 0.11 62);
-  --tint-critical: oklch(0.62 0.18 22 / 12%);
-  --tint-critical-foreground: oklch(0.48 0.17 24);
   --border: oklch(0 0 0 / 7.5%);
   --input: oklch(0 0 0 / 11%);
   --ring: oklch(0.18 0.002 264 / 45%);
 
   /* material: the gloss is a specular edge + sheen, never a coloured glow */
   --sheen: rgba(255, 255, 255, 0.9);
-  /* The chip sheen is its own token, not a reuse of --sheen: that value is
-     tuned for a large glass card, and a 20px pill needs light and dark
-     balanced independently rather than inheriting a card's ratio. */
-  --sheen-chip: rgba(255, 255, 255, 0.9);
   --hairline: oklch(0 0 0 / 7%);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.09), 0 12px 30px rgba(0, 0, 0, 0.1);
   --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.06);
@@ -110,20 +87,11 @@
   --success-foreground: oklch(0 0 0);
   --warning: oklch(0.72 0 0);
   --warning-foreground: oklch(0 0 0);
-  /* on black the fill needs more alpha to register at all, and the ink
-     inverts to the light end of each hue */
-  --tint-positive: oklch(0.68 0.15 152 / 18%);
-  --tint-positive-foreground: oklch(0.82 0.14 155);
-  --tint-caution: oklch(0.75 0.15 72 / 18%);
-  --tint-caution-foreground: oklch(0.85 0.13 78);
-  --tint-critical: oklch(0.65 0.19 22 / 18%);
-  --tint-critical-foreground: oklch(0.79 0.15 20);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(1 0 0 / 40%);
 
   --sheen: rgba(255, 255, 255, 0.1);
-  --sheen-chip: rgba(255, 255, 255, 0.1);
   --hairline: oklch(1 0 0 / 9%);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.6), 0 12px 34px rgba(0, 0, 0, 0.5);
   --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
@@ -173,12 +141,6 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-  --color-tint-positive: var(--tint-positive);
-  --color-tint-positive-foreground: var(--tint-positive-foreground);
-  --color-tint-caution: var(--tint-caution);
-  --color-tint-caution-foreground: var(--tint-caution-foreground);
-  --color-tint-critical: var(--tint-critical);
-  --color-tint-critical-foreground: var(--tint-critical-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -269,32 +231,6 @@
   }
 }
 
-/* A 12% fill is the first thing to disappear when someone asks for more
-   contrast. Thicken it, and give the chip an outline so the shape survives
-   even if the tint doesn't. */
-@media (prefers-contrast: more) {
-  :root {
-    --tint-positive: oklch(0.62 0.14 152 / 26%);
-    --tint-caution: oklch(0.72 0.15 72 / 28%);
-    --tint-critical: oklch(0.62 0.18 22 / 24%);
-  }
-  .dark {
-    --tint-positive: oklch(0.68 0.15 152 / 30%);
-    --tint-caution: oklch(0.75 0.15 72 / 30%);
-    --tint-critical: oklch(0.65 0.19 22 / 30%);
-  }
-  /* the specular edge is decoration; at this setting the outline does the work */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
-  }
-  [data-slot="badge"][data-variant="positive"],
-  [data-slot="badge"][data-variant="caution"],
-  [data-slot="badge"][data-variant="critical"] {
-    border-color: currentColor;
-  }
-}
-
 @media (prefers-reduced-transparency: reduce) {
   .surface-glass {
     backdrop-filter: none;
@@ -303,10 +239,5 @@
   }
   .surface-glass::before {
     display: none;
-  }
-  /* a specular highlight is a glass affordance; it goes when the glass does */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
   }
 }
