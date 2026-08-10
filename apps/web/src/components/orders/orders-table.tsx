@@ -70,7 +70,15 @@ import {
   X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
 
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
@@ -190,6 +198,10 @@ export function OrdersTable({
   );
 
   /* ------------------------------------------------------------------ search */
+
+  // Reverts on its own if the navigation never lands, so the pill can never be
+  // left marking a filter the list is not actually showing.
+  const [filterView, setFilterView] = useOptimistic(params.filter);
 
   const [search, setSearch] = useState(params.q);
   const debounced = useDebouncedValue(search, 300);
@@ -488,12 +500,24 @@ export function OrdersTable({
   const selectionCount = selected.size;
 
   return (
-    <div className="flex flex-col gap-4">
+    // Spacing is per-child rather than a container `gap`: the bulk bar below
+    // collapses to zero height, and a gap would still reserve a row for it,
+    // leaving a hole under the toolbar whenever nothing is selected.
+    <div className="flex flex-col">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
+        {/* The filter is URL state, so a plain controlled value would leave the
+            pill sitting still until the server answered — measured at 183ms of
+            dead time before it even started to move. The optimistic value lets
+            it leave on the click and reconcile when the rows arrive. */}
         <Tabs
-          value={params.filter}
-          onValueChange={(v) => setParams({ filter: v as OrderFilter })}
+          value={filterView}
+          onValueChange={(v) =>
+            startTransition(() => {
+              setFilterView(v as OrderFilter);
+              setParams({ filter: v as OrderFilter });
+            })
+          }
         >
           <TabsList>
             <TabsTrigger value="all" className={HIT_TALLER}>
@@ -553,9 +577,39 @@ export function OrdersTable({
         </DropdownMenu>
       </div>
 
-      {/* Bulk bar — a separate strip, so the toolbar above never jumps */}
-      {selectionCount > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-card border bg-muted/40 px-3 py-2">
+      {/* Bulk bar — a separate strip, so the toolbar above never jumps.
+          Always mounted and collapsed with grid-template-rows 0fr → 1fr: the
+          one height animation the browser interpolates without us measuring
+          the bar, which matters because it wraps to two rows on a narrow
+          viewport. Its own top margin lives inside the collapsing region, so
+          the spacing disappears with it. `inert` keeps the shut bar out of the
+          tab order — a zero-height strip is still focusable otherwise. */}
+      <div
+        data-open={selectionCount > 0}
+        inert={selectionCount === 0}
+        className={cn(
+          "group grid grid-rows-[0fr] transition-[grid-template-rows]",
+          "data-[open=true]:grid-rows-[1fr]",
+          // Exit is quicker than entry: by then the user has moved on.
+          "duration-150 ease-out-quint data-[open=true]:duration-200",
+          "motion-reduce:transition-none",
+        )}
+      >
+        <div className="overflow-hidden">
+        <div
+          className={cn(
+            "mt-4 flex flex-wrap items-center gap-2 rounded-card border bg-muted/40 px-3 py-2",
+            // The content fades and rises a hair rather than being squeezed
+            // out by the closing row.
+            "-translate-y-1 opacity-0 transition-[opacity,transform] duration-100 ease-out",
+            "group-data-[open=true]:translate-y-0 group-data-[open=true]:opacity-100",
+            // Entering, the fade trails the expansion; leaving, it leads, so
+            // the bar is gone before the row finishes closing.
+            "group-data-[open=true]:delay-75 group-data-[open=true]:duration-150",
+            // Reduced motion keeps the fade and drops the movement.
+            "motion-reduce:translate-y-0",
+          )}
+        >
           <span className="text-sm font-medium tabular-nums">
             {t("nSelected", { count: selectionCount })}
           </span>
@@ -599,12 +653,13 @@ export function OrdersTable({
             </Button>
           </div>
         </div>
-      )}
+        </div>
+      </div>
 
       <div
         ref={tableWrap}
         className={cn(
-          "relative overflow-hidden rounded-card border transition-opacity duration-150",
+          "relative mt-4 overflow-hidden rounded-card border transition-opacity duration-150",
           isPending && "opacity-60",
         )}
       >
@@ -706,7 +761,7 @@ export function OrdersTable({
       </div>
 
       {/* Footer — a pager over an empty result is chrome that only says no */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           {t("rowCount", { count: total })}
         </p>
