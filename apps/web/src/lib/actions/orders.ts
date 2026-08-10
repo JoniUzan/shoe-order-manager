@@ -174,3 +174,57 @@ export async function setOrderStatus(
   revalidateOrderViews(id);
   return { ok: true, id };
 }
+
+/* -------------------------------------------------------------------------
+   Bulk actions (orders list). The id list comes from the browser and is
+   therefore untrusted — `ownerId` in the where clause is what makes a forged
+   list harmless: it can only ever match rows this owner already owns.
+   ------------------------------------------------------------------------- */
+
+/** Selection is per-page, so a legitimate list stays small. */
+const BULK_LIMIT = 200;
+
+export type BulkOrderResult =
+  | { ok: true; count: number }
+  | { ok: false; error: "invalid" };
+
+function validIds(ids: unknown): ids is string[] {
+  return (
+    Array.isArray(ids) &&
+    ids.length > 0 &&
+    ids.length <= BULK_LIMIT &&
+    ids.every((id) => typeof id === "string" && id.length > 0)
+  );
+}
+
+export async function setOrdersStatus(
+  ids: string[],
+  statusCode: string,
+): Promise<BulkOrderResult> {
+  const ownerId = await requireOwnerId();
+  if (!validIds(ids)) return { ok: false, error: "invalid" };
+
+  // Status codes live in the OrderStatus table so stages can be added without
+  // a code change — validate against it rather than a hard-coded list.
+  const known = await prisma.orderStatus.count({ where: { code: statusCode } });
+  if (known === 0) return { ok: false, error: "invalid" };
+
+  const result = await prisma.order.updateMany({
+    where: { id: { in: ids }, ownerId },
+    data: { statusCode },
+  });
+  revalidateOrderViews();
+  return { ok: true, count: result.count };
+}
+
+export async function deleteOrders(ids: string[]): Promise<BulkOrderResult> {
+  const ownerId = await requireOwnerId();
+  if (!validIds(ids)) return { ok: false, error: "invalid" };
+
+  // Items and payments cascade from Order in the schema, so this is complete.
+  const result = await prisma.order.deleteMany({
+    where: { id: { in: ids }, ownerId },
+  });
+  revalidateOrderViews();
+  return { ok: true, count: result.count };
+}

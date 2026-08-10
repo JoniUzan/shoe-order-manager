@@ -10,24 +10,25 @@ import {
 import { getTranslations } from "next-intl/server";
 
 import {
-  OrdersTable,
-  type OrderRow,
-} from "@/components/dashboard/orders-table";
-import {
   SalesChart,
   type SalesPoint,
 } from "@/components/dashboard/sales-chart";
+import { OrdersTable } from "@/components/orders/orders-table";
 import { Link } from "@/i18n/navigation";
+import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
 
 export default async function DashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "dashboard" });
+  const listParams = parseOrderListParams(await searchParams);
 
   // 90-day window for the sales chart. Bucketing happens in JS, not SQL —
   // the schema stays portable (no date functions) for the Turso swap.
@@ -37,7 +38,7 @@ export default async function DashboardPage({
 
   const [
     openOrders,
-    tableOrders,
+    orderList,
     totalOrders,
     customerCount,
     windowOrders,
@@ -52,23 +53,7 @@ export default async function DashboardPage({
         customer: { select: { name: true } },
       },
     }),
-    prisma.order.findMany({
-      where: { ownerId: user.id },
-      select: {
-        id: true,
-        orderNumber: true,
-        customerId: true,
-        createdAt: true,
-        statusCode: true,
-        paymentStatus: true,
-        totalAgorot: true,
-        depositAgorot: true,
-        customer: { select: { name: true } },
-        _count: { select: { items: true } },
-      },
-      orderBy: { orderNumber: "desc" },
-      take: 200,
-    }),
+    listOrders(user.id, listParams),
     prisma.order.count({ where: { ownerId: user.id } }),
     prisma.customer.count({ where: { ownerId: user.id } }),
     prisma.order.findMany({
@@ -109,22 +94,6 @@ export default async function DashboardPage({
       collected: collectedByDay.get(k) ?? 0,
     };
   });
-
-  const orderRows: OrderRow[] = tableOrders.map((o) => ({
-    id: o.id,
-    orderNumber: o.orderNumber,
-    customerId: o.customerId,
-    customerName: o.customer.name,
-    createdAt: o.createdAt.toISOString(),
-    statusCode: o.statusCode,
-    paymentStatus: o.paymentStatus,
-    totalAgorot: o.totalAgorot,
-    balanceAgorot: Math.max(
-      0,
-      computeBalanceAgorot(o.totalAgorot, o.depositAgorot),
-    ),
-    itemCount: o._count.items,
-  }));
 
   // Aggregate outstanding balance per customer.
   const owedMap = new Map<string, { name: string; owed: number }>();
@@ -210,13 +179,12 @@ export default async function DashboardPage({
       {/* All orders */}
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">{t("recentOrders")}</h2>
-        {orderRows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t("recentEmpty")}
-          </p>
-        ) : (
-          <OrdersTable rows={orderRows} />
-        )}
+        <OrdersTable
+          rows={orderList.rows}
+          total={orderList.total}
+          pageCount={orderList.pageCount}
+          params={orderList.params}
+        />
       </section>
     </div>
   );

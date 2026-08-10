@@ -62,7 +62,22 @@
     "prevPage": "העמוד הקודם",
     "nextPage": "העמוד הבא",
     "openOrder": "פתיחת ההזמנה",
-    "close": "סגירה"
+    "close": "סגירה",
+    "print": "הדפסה",
+    "searchPlaceholder": "חיפוש לקוח או מספר הזמנה",
+    "clearSearch": "ניקוי החיפוש",
+    "clearFilters": "ניקוי הסינון",
+    "noMatch": "לא נמצאו הזמנות מתאימות",
+    "firstPage": "העמוד הראשון",
+    "lastPage": "העמוד האחרון",
+    "selectAll": "בחירת כל השורות בעמוד",
+    "selectRow": "בחירת הזמנה #{number}",
+    "nSelected": "{count, plural, one {נבחרה הזמנה אחת} two {נבחרו שתי הזמנות} other {נבחרו # הזמנות}}",
+    "clearSelection": "ביטול הבחירה",
+    "bulkUpdated": "{count, plural, one {הזמנה אחת עודכנה} two {שתי הזמנות עודכנו} other {# הזמנות עודכנו}}",
+    "bulkDeleted": "{count, plural, one {הזמנה אחת נמחקה} two {שתי הזמנות נמחקו} other {# הזמנות נמחקו}}",
+    "bulkDeleteTitle": "למחוק את ההזמנות שנבחרו?",
+    "bulkDeleteDescription": "{count, plural, one {הפעולה תמחק לצמיתות הזמנה אחת ואת התשלומים שלה.} two {הפעולה תמחק לצמיתות שתי הזמנות ואת התשלומים שלהן.} other {הפעולה תמחק לצמיתות # הזמנות ואת התשלומים שלהן.}}"
   },
   "status": {
     "not_done": "לא הושלם",

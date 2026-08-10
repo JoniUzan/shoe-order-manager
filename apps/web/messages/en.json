@@ -62,7 +62,22 @@
     "prevPage": "Previous page",
     "nextPage": "Next page",
     "openOrder": "Open order",
-    "close": "Close"
+    "close": "Close",
+    "print": "Print",
+    "searchPlaceholder": "Search customer or order #",
+    "clearSearch": "Clear search",
+    "clearFilters": "Clear filters",
+    "noMatch": "No orders match your search",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "selectAll": "Select all rows on this page",
+    "selectRow": "Select order #{number}",
+    "nSelected": "{count} selected",
+    "clearSelection": "Clear selection",
+    "bulkUpdated": "{count, plural, one {# order updated} other {# orders updated}}",
+    "bulkDeleted": "{count, plural, one {# order deleted} other {# orders deleted}}",
+    "bulkDeleteTitle": "Delete selected orders?",
+    "bulkDeleteDescription": "{count, plural, one {This permanently removes # order and its payments.} other {This permanently removes # orders and their payments.}}"
   },
   "status": {
     "not_done": "Not done",
