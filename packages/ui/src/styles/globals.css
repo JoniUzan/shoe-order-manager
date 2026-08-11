@@ -29,6 +29,15 @@
 
   --background: oklch(0.955 0.002 264);
   --foreground: oklch(0.18 0.002 264);
+  /* The shell → sheet → card ladder, in ascending order of elevation. Each rung
+     is painted exactly once: the shell frames the app (behind the sidebar and in
+     the gutter), the sheet is the raised content panel, the card floats on it.
+     Light has no headroom below white, so the shell darkens rather than the
+     sheet brightening; dark leaves the shell alone because --background is
+     already black. All three are translucent, so the ambient body::before light
+     reaches every layer. */
+  --shell: oklch(0 0 0 / 4%);
+  --surface: oklch(1 0 0 / 45%);
   /* cards are a translucent material; pair with .surface-glass for the blur */
   --card: oklch(1 0 0 / 74%);
   --card-foreground: oklch(0.18 0.002 264);
@@ -92,6 +101,9 @@
 .dark {
   --background: oklch(0 0 0);
   --foreground: oklch(0.965 0 0);
+  /* no shell tint: black is already the floor, so the ladder climbs from it */
+  --shell: transparent;
+  --surface: oklch(1 0 0 / 3.5%);
   --card: oklch(1 0 0 / 5.5%);
   --card-foreground: oklch(0.965 0 0);
   --popover: oklch(0.16 0 0 / 92%);
@@ -154,6 +166,8 @@
   --radius-row: 0.9375rem;
 
   --color-background: var(--background);
+  --color-shell: var(--shell);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -299,13 +313,32 @@
   [data-slot="badge"][data-variant="critical"] {
     border-color: currentColor;
   }
+  /* the sheet is separated from the shell by ~10 levels of grey; at this
+     setting that is not enough, so the edge is drawn rather than implied */
+  [data-slot="sidebar-inset"] {
+    border: 1px solid currentColor;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  /* Opaque stand-ins for the shell → sheet → card ladder. They have to be
+     restated as a set: dropping the alpha from each one independently would
+     land the card on --background and invert the ladder, so the content panel
+     would read as a hole again — the exact bug this ladder replaced. */
+  :root {
+    --shell: oklch(0.915 0.002 264);
+    --surface: oklch(0.965 0.002 264);
+    --card: oklch(1 0 0);
+  }
+  .dark {
+    --shell: oklch(0 0 0);
+    --surface: oklch(0.16 0 0);
+    --card: oklch(0.22 0 0);
+  }
   .surface-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: var(--background);
+    background: var(--card);
   }
   .surface-glass::before {
     display: none;

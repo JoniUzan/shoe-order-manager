@@ -139,7 +139,12 @@ function SidebarProvider({
             } as React.CSSProperties
           }
           className={cn(
-            "group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
+            // Local change (a future `shadcn add sidebar` would revert it):
+            // upstream paints this with bg-sidebar, which assumes --sidebar is
+            // opaque. Here it is a translucent material, so painting it on the
+            // wrapper *and* on sidebar-inner compounded to 75% white and made
+            // the sidebar a third tone. --shell is the frame's own colour.
+            "group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-shell",
             className
           )}
           {...props}
@@ -244,7 +249,14 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm"
+          className={cn(
+            "flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm",
+            // Local change: under `inset` the panel sits directly on the shell
+            // with no fill of its own, so the shell reads as one tone and the
+            // content sheet is the only thing that floats. The other variants
+            // keep --sidebar as their material.
+            variant === "inset" && "bg-transparent"
+          )}
         >
           {children}
         </div>
@@ -310,7 +322,13 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
       data-slot="sidebar-inset"
       className={cn(
         "relative flex w-full flex-1 flex-col bg-background",
-        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        // Local change: `ms-`/`me-` instead of upstream's physical `ml-`, so the
+        // gutter lands between the sidebar and the panel in RTL too — with `ml-`
+        // the Hebrew layout put the panel flush against the window edge.
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ms-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ms-2",
+        // The raised sheet: one rung above --shell, one below --card. The step
+        // is deliberately small, so the hairline carries the edge.
+        "md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-raised)]",
         className
       )}
       {...props}
