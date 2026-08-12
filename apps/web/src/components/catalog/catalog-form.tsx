@@ -1,24 +1,39 @@
 "use client";
 
-import { shekelsToAgorot, type ShoeModelInput } from "@repo/domain";
+import {
+  shekelsToAgorot,
+  SIZE_FORMATS,
+  type ShoeModelInput,
+  type SizeFormat,
+} from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Checkbox } from "@repo/ui/components/checkbox";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
 import { Textarea } from "@repo/ui/components/textarea";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { SizeListInput } from "@/components/catalog/size-list-input";
 import { useRouter } from "@/i18n/navigation";
 import { createShoeModel, updateShoeModel } from "@/lib/actions/catalog";
 
-interface FormValues {
+export interface FormValues {
   name: string;
   sku: string;
   description: string;
   price: string; // shekels, as typed
+  sizes: string[];
+  sizeFormat: SizeFormat;
   isActive: boolean;
 }
 
@@ -27,6 +42,8 @@ const EMPTY: FormValues = {
   sku: "",
   description: "",
   price: "",
+  sizes: [],
+  sizeFormat: "eu",
   isActive: true,
 };
 
@@ -54,6 +71,8 @@ export function CatalogForm({
       sku: values.sku,
       description: values.description,
       defaultPriceAgorot: priceText ? shekelsToAgorot(Number(priceText)) : null,
+      sizes: values.sizes,
+      sizeFormat: values.sizeFormat,
       isActive: values.isActive,
     };
     setPending(true);
@@ -70,10 +89,19 @@ export function CatalogForm({
   }
 
   const isActive = form.watch("isActive");
+  const sizes = form.watch("sizes");
+  const sizeFormat = form.watch("sizeFormat");
 
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
+      // Native constraint validation is off because it silently vetoes submit.
+      // The size range's from/to boxes are `type=number` scratch fields that are
+      // never submitted, but a `badInput` residue in one of them — typing "-"
+      // or "e" — made the whole form fail checkValidity(), so Save did nothing
+      // at all: no toast, no message, and the browser's tooltip pointing at a
+      // throwaway field. Validation is react-hook-form's job here.
+      noValidate
       className="flex max-w-xl flex-col gap-5"
     >
       <div className="flex flex-col gap-1.5">
@@ -106,6 +134,43 @@ export function CatalogForm({
             {...form.register("price")}
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="sizes">{t("sizes")}</Label>
+        <p className="text-xs text-muted-foreground">{t("sizesHelp")}</p>
+
+        <div className="flex max-w-56 flex-col gap-1">
+          <label
+            htmlFor="sizeFormat"
+            className="text-xs text-muted-foreground"
+          >
+            {t("sizeFormat")}
+          </label>
+          <Select
+            value={sizeFormat}
+            onValueChange={(v) =>
+              form.setValue("sizeFormat", v as SizeFormat, { shouldDirty: true })
+            }
+          >
+            <SelectTrigger id="sizeFormat" className="h-11 md:h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SIZE_FORMATS.map((f) => (
+                <SelectItem key={f} value={f}>
+                  {t(`sizeFormat_${f}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <SizeListInput
+          id="sizes"
+          value={sizes}
+          onChange={(next) => form.setValue("sizes", next, { shouldDirty: true })}
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">

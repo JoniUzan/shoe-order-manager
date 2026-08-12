@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { buildWhatsAppUrl, formatMoney } from "@repo/domain";
+import { buildWhatsAppUrl, formatMoney, formatSize } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -28,7 +28,7 @@ export default async function PrintOrderPage({
     include: {
       customer: true,
       items: {
-        include: { shoeModel: { select: { name: true } } },
+        include: { shoeModel: { select: { name: true, sizeFormat: true } } },
         orderBy: { id: "asc" },
       },
     },
@@ -48,7 +48,7 @@ export default async function PrintOrderPage({
     ...order.items.map((it) => {
       const name = it.shoeModel?.name ?? it.customDescription ?? "";
       const color = it.color ? ` ${it.color}` : "";
-      return `• ${name} — ${t("size")} ${it.size}${color} × ${it.quantity} — ${formatMoney(
+      return `• ${name} — ${t("size")} ${formatSize(it.size, it.shoeModel?.sizeFormat)}${color} × ${it.quantity} — ${formatMoney(
         it.unitPriceAgorot * it.quantity,
         locale,
       )}`;
@@ -137,7 +137,9 @@ export default async function PrintOrderPage({
                   <td className="py-2">
                     {it.shoeModel?.name ?? it.customDescription}
                   </td>
-                  <td className="py-2">{it.size}</td>
+                  <td className="py-2">
+                    {formatSize(it.size, it.shoeModel?.sizeFormat)}
+                  </td>
                   <td className="py-2">{it.color ?? "—"}</td>
                   <td className="py-2 text-center tabular-nums">
                     {it.quantity}

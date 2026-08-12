@@ -1,4 +1,5 @@
 import { prisma } from "@repo/db";
+import { parseSizes } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Card } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
@@ -28,7 +29,7 @@ export default async function NewOrderPage({
     prisma.shoeModel.findMany({
       where: { ownerId: user.id, isActive: true },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, defaultPriceAgorot: true },
+      select: { id: true, name: true, defaultPriceAgorot: true, sizes: true, isActive: true },
     }),
   ]);
 
@@ -49,7 +50,10 @@ export default async function NewOrderPage({
           </Button>
         </Card>
       ) : (
-        <OrderForm customers={customers} models={models} />
+        <OrderForm
+          customers={customers}
+          models={models.map((m) => ({ ...m, sizes: parseSizes(m.sizes) }))}
+        />
       )}
     </div>
   );

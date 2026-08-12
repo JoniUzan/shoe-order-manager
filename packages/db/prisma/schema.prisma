@@ -110,6 +110,14 @@ model ShoeModel {
   sku               String?
   description       String?
   defaultPriceAgorot Int?
+  // The size run this model is ordered in, as a comma-separated list ordered
+  // ascending ("36,37,38"). A String, not Json or an array: SQLite has neither,
+  // and a scalar column keeps the libSQL swap open.
+  sizes             String?
+  // Which sizing system those numbers belong to: "eu" | "us" | "uk". A label
+  // only — every supported system is numeric, so it never changes what is a
+  // valid size. Kept as a String rather than an enum to stay portable.
+  sizeFormat        String   @default("eu")
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
