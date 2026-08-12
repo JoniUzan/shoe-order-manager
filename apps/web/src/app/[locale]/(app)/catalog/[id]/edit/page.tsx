@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { agorotToShekels } from "@repo/domain";
+import { agorotToShekels, parseSizes } from "@repo/domain";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -34,6 +34,7 @@ export default async function EditModelPage({
             model.defaultPriceAgorot != null
               ? String(agorotToShekels(model.defaultPriceAgorot))
               : "",
+          sizes: parseSizes(model.sizes),
           isActive: model.isActive,
         }}
       />

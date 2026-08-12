@@ -11,14 +11,16 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { SizeListInput } from "@/components/catalog/size-list-input";
 import { useRouter } from "@/i18n/navigation";
 import { createShoeModel, updateShoeModel } from "@/lib/actions/catalog";
 
-interface FormValues {
+export interface FormValues {
   name: string;
   sku: string;
   description: string;
   price: string; // shekels, as typed
+  sizes: string[];
   isActive: boolean;
 }
 
@@ -27,6 +29,7 @@ const EMPTY: FormValues = {
   sku: "",
   description: "",
   price: "",
+  sizes: [],
   isActive: true,
 };
 
@@ -54,6 +57,7 @@ export function CatalogForm({
       sku: values.sku,
       description: values.description,
       defaultPriceAgorot: priceText ? shekelsToAgorot(Number(priceText)) : null,
+      sizes: values.sizes,
       isActive: values.isActive,
     };
     setPending(true);
@@ -70,6 +74,7 @@ export function CatalogForm({
   }
 
   const isActive = form.watch("isActive");
+  const sizes = form.watch("sizes");
 
   return (
     <form
@@ -106,6 +111,16 @@ export function CatalogForm({
             {...form.register("price")}
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="sizes">{t("sizes")}</Label>
+        <SizeListInput
+          id="sizes"
+          value={sizes}
+          onChange={(next) => form.setValue("sizes", next, { shouldDirty: true })}
+        />
+        <p className="text-xs text-muted-foreground">{t("sizesHelp")}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">

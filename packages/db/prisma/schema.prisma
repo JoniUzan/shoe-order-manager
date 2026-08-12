@@ -110,6 +110,11 @@ model ShoeModel {
   sku               String?
   description       String?
   defaultPriceAgorot Int?
+  // The size run this model is ordered in, as a comma-separated list in the
+  // owner's own order ("39,40,41" / "US 8,US 9"). A String, not Json or an
+  // array: SQLite has neither, and a scalar column keeps the libSQL swap open.
+  // Sizes are free text here and on OrderItem.size — never parse them as numbers.
+  sizes             String?
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

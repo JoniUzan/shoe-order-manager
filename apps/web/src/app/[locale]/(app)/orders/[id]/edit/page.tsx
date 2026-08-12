@@ -1,10 +1,11 @@
 import { prisma } from "@repo/db";
-import { agorotToShekels } from "@repo/domain";
+import { parseSizes } from "@repo/domain";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { OrderForm } from "@/components/orders/order-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { groupItemsIntoBlocks } from "@/lib/order-blocks";
 import { requireUser } from "@/lib/session";
 
 export default async function EditOrderPage({
@@ -26,13 +27,18 @@ export default async function EditOrderPage({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
+    // A model the order uses may since have been deactivated; it still has to
+    // appear here or editing the order would silently drop that block.
     prisma.shoeModel.findMany({
-      where: { ownerId: user.id, isActive: true },
+      where: { ownerId: user.id },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, defaultPriceAgorot: true },
+      select: { id: true, name: true, defaultPriceAgorot: true, sizes: true },
     }),
   ]);
   if (!order) notFound();
+
+  const modelOptions = models.map((m) => ({ ...m, sizes: parseSizes(m.sizes) }));
+  const sizesByModelId = new Map(modelOptions.map((m) => [m.id, m.sizes]));
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,21 +46,12 @@ export default async function EditOrderPage({
       <OrderForm
         orderId={order.id}
         customers={customers}
-        models={models}
+        models={modelOptions}
         defaultValues={{
           customerId: order.customerId,
           notes: order.notes ?? "",
           statusCode: order.statusCode,
-          depositAgorot: order.depositAgorot,
-          items: order.items.map((it) => ({
-            mode: it.shoeModelId ? "catalog" : "custom",
-            shoeModelId: it.shoeModelId ?? "",
-            customDescription: it.customDescription ?? "",
-            size: it.size,
-            color: it.color ?? "",
-            quantity: String(it.quantity),
-            unitPrice: String(agorotToShekels(it.unitPriceAgorot)),
-          })),
+          blocks: groupItemsIntoBlocks(order.items, sizesByModelId),
         }}
       />
     </div>
