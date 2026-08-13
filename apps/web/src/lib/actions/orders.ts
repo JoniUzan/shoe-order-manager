@@ -75,7 +75,9 @@ export async function createOrder(
   if (!(await modelsAreValid(ownerId, data)))
     return { ok: false, error: "invalid" };
 
-  const totals = recalculateOrderTotals(data.items, data.depositAgorot);
+  // A new order has no Payment rows yet, so nothing is paid. depositAgorot is
+  // left at its schema default and only ever set by the payment actions.
+  const totals = recalculateOrderTotals(data.items, 0);
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
   const order = await prisma.$transaction(async (tx) => {
@@ -93,7 +95,6 @@ export async function createOrder(
         statusCode: data.statusCode,
         notes: nullify(data.notes),
         totalAgorot: totals.totalAgorot,
-        depositAgorot: data.depositAgorot,
         paymentStatus: totals.paymentStatus,
         isCustomOrder,
         items: { create: itemCreateData(data) },
@@ -129,10 +130,24 @@ export async function updateOrder(
   if (!(await modelsAreValid(ownerId, data)))
     return { ok: false, error: "invalid" };
 
-  const totals = recalculateOrderTotals(data.items, data.depositAgorot);
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
-  await prisma.$transaction(async (tx) => {
+  const applied = await prisma.$transaction(async (tx) => {
+    // Editing items changes the total, which changes the payment status — so
+    // the deposit has to be re-read here rather than round-tripped through the
+    // form, where it could be minutes stale. Read inside the transaction so a
+    // payment landing mid-save can't be lost.
+    // findUnique, not findUniqueOrThrow: this file returns { ok } for expected
+    // failures rather than throwing, and the order can be deleted between the
+    // ownership check above and this transaction. A rejection here would leave
+    // the form's `pending` flag stuck with Save disabled and no toast.
+    const existingOrder = await tx.order.findUnique({
+      where: { id },
+      select: { depositAgorot: true },
+    });
+    if (!existingOrder) return false;
+    const totals = recalculateOrderTotals(data.items, existingOrder.depositAgorot);
+
     await tx.orderItem.deleteMany({ where: { orderId: id } });
     await tx.order.update({
       where: { id },
@@ -141,13 +156,14 @@ export async function updateOrder(
         statusCode: data.statusCode,
         notes: nullify(data.notes),
         totalAgorot: totals.totalAgorot,
-        depositAgorot: data.depositAgorot,
         paymentStatus: totals.paymentStatus,
         isCustomOrder,
         items: { create: itemCreateData(data) },
       },
     });
+    return true;
   });
+  if (!applied) return { ok: false, error: "not_found" };
 
   revalidateOrderViews(id);
   return { ok: true, id };

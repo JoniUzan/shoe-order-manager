@@ -1,7 +1,11 @@
 "use server";
 
 import { prisma } from "@repo/db";
-import { shoeModelSchema, type ShoeModelInput } from "@repo/domain";
+import {
+  serializeSizes,
+  shoeModelSchema,
+  type ShoeModelInput,
+} from "@repo/domain";
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
@@ -36,6 +40,8 @@ export async function createShoeModel(
       sku: nullify(data.sku),
       description: nullify(data.description),
       defaultPriceAgorot: data.defaultPriceAgorot ?? null,
+      sizes: serializeSizes(data.sizes),
+      sizeFormat: data.sizeFormat,
       isActive: data.isActive,
     },
     select: { id: true },
@@ -61,6 +67,8 @@ export async function updateShoeModel(
       sku: nullify(data.sku),
       description: nullify(data.description),
       defaultPriceAgorot: data.defaultPriceAgorot ?? null,
+      sizes: serializeSizes(data.sizes),
+      sizeFormat: data.sizeFormat,
       isActive: data.isActive,
     },
   });

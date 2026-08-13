@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { formatMoney } from "@repo/domain";
+import { formatMoney, formatSize } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -41,7 +41,7 @@ export default async function OrderDetailPage({
     include: {
       customer: true,
       items: {
-        include: { shoeModel: { select: { name: true } } },
+        include: { shoeModel: { select: { name: true, sizeFormat: true } } },
         orderBy: { id: "asc" },
       },
       payments: {
@@ -112,7 +112,9 @@ export default async function OrderDetailPage({
                 <TableCell className="font-medium">
                   {item.shoeModel?.name ?? item.customDescription}
                 </TableCell>
-                <TableCell>{item.size}</TableCell>
+                <TableCell>
+                  {formatSize(item.size, item.shoeModel?.sizeFormat)}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {item.color ?? "—"}
                 </TableCell>

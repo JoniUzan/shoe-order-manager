@@ -1,3 +1,4 @@
+import { DirectionProvider } from "@repo/ui/components/direction-provider";
 import { Toaster } from "@repo/ui/components/sonner";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { Rubik } from "next/font/google";
@@ -47,15 +48,24 @@ export default async function LocaleLayout({
     >
       <body className="min-h-dvh bg-background text-foreground">
         <NextIntlClientProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster position={dir === "rtl" ? "bottom-left" : "bottom-right"} />
-          </ThemeProvider>
+          {/* Radix reads direction from its own context and defaults to ltr —
+              it does not inherit <html dir>. Without this, primitives rendered
+              in a portal (popovers, command lists, selects) lay out LTR inside
+              an RTL page: the scrollbar lands on the wrong edge and arrow keys
+              run backwards. */}
+          <DirectionProvider dir={dir}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster
+                position={dir === "rtl" ? "bottom-left" : "bottom-right"}
+              />
+            </ThemeProvider>
+          </DirectionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

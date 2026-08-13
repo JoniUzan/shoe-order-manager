@@ -29,7 +29,10 @@ export const orderSchema = z.object({
   customerId: z.string().min(1, { message: "customer_required" }),
   statusCode: z.string().min(1).default("not_done"),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
-  depositAgorot: z.number().int().min(0).default(0),
+  // No depositAgorot here on purpose. It is a denormalised cache of
+  // SUM(Payment.amountAgorot), owned solely by recomputeOrderPayment in
+  // actions/payments.ts. Accepting it from the order form let a stale value
+  // overwrite a payment recorded while the edit page was open.
   items: z.array(orderItemSchema).min(1, { message: "items_required" }),
 });
 
