@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -38,7 +38,29 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          prompt: |
+            /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+
+            OUTPUT OVERRIDE — the following replaces step 8 of that command entirely:
+            - Write like a colleague reviewing a teammate's PR: talk about ONE thing, in your own
+              words, 1-4 sentences. Never a numbered list of everything you found, never a
+              "Found N issues" summary, no headings, no emoji, no boilerplate footer.
+            - After the confidence filter (score >= 80), pick the SINGLE most important issue. If
+              two are close, prefer the one that breaks correctness over style or convention.
+            - Prefer an inline comment: call mcp__github_inline_comment__create_inline_comment with
+              path = the file, line (plus startLine for a range) = lines that exist in this PR's
+              diff (use `gh pr diff` for new-file line numbers), side = "RIGHT", confirmed = true.
+            - If the issue isn't tied to specific changed lines (a design concern, something
+              spanning several files, something missing), that's fine — post it as one short
+              top-level comment with `gh pr comment` instead, still about that one thing only, and
+              name the file(s) you mean in the text. One comment total, either way.
+            - Say what's wrong and what to do instead. Cite the CLAUDE.md rule verbatim when that's
+              the reason.
+            - Before reviewing, skip entirely if claude[bot] already commented on this PR's current
+              head commit.
+            - If nothing scores >= 80, post nothing at all and finish silently.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Task,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api:*),Bash(gh search:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*)"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
