@@ -39,13 +39,26 @@ export const CATALOG_LIST_DEFAULTS: CatalogListParams = {
   per: 10,
 };
 
-/** A row as the table renders it. */
+/**
+ * A row as the table renders it.
+ *
+ * Carries more than the visible columns: the quick look reads from the same
+ * row, and a model has no detail page to fall back on, so `description`,
+ * `sizes` and `sizeFormat` would otherwise be reachable only by opening the
+ * edit form. They are small scalar columns on a page-sized result — cheaper
+ * than the second round trip a drawer would need without them.
+ */
 export type CatalogRow = {
   id: string;
   name: string;
   sku: string | null;
+  description: string | null;
   defaultPriceAgorot: number | null;
+  /** The stored size run, comma-separated — parse with `parseSizes`. */
+  sizes: string | null;
+  sizeFormat: string;
   isActive: boolean;
+  createdAt: string;
   /**
    * How many order lines reference this model. Line items, not distinct orders:
    * that is what the delete action counts when it refuses, so it is the number
@@ -124,8 +137,12 @@ const ROW_SELECT = {
   id: true,
   name: true,
   sku: true,
+  description: true,
   defaultPriceAgorot: true,
+  sizes: true,
+  sizeFormat: true,
   isActive: true,
+  createdAt: true,
   _count: { select: { items: true } },
 } satisfies Prisma.ShoeModelSelect;
 
@@ -136,8 +153,12 @@ function toRow(m: RawRow): CatalogRow {
     id: m.id,
     name: m.name,
     sku: m.sku,
+    description: m.description,
     defaultPriceAgorot: m.defaultPriceAgorot,
+    sizes: m.sizes,
+    sizeFormat: m.sizeFormat,
     isActive: m.isActive,
+    createdAt: m.createdAt.toISOString(),
     orderLines: m._count.items,
   };
 }
