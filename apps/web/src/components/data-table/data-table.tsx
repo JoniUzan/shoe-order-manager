@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  useCallback,
   useEffect,
   useOptimistic,
   useRef,
@@ -146,26 +147,38 @@ export function DataTable<TRow, F extends string, S extends string>({
   const tableWrap = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
 
+  const measureEdges = useCallback(() => {
+    const el = tableWrap.current?.querySelector<HTMLElement>(
+      '[data-slot="table-container"]',
+    );
+    if (!el) return;
+    // Chrome reports a negative scrollLeft in RTL; distance is what matters.
+    const x = Math.abs(el.scrollLeft);
+    const max = el.scrollWidth - el.clientWidth;
+    setEdges({ start: x > 1, end: max - x > 1 });
+  }, []);
+
+  // The listener and observer outlive the rows: `rows` is a new array on every
+  // navigation, so watching it here would tear the pair down and rebuild them
+  // on every page, sort and keystroke. The effect below re-measures instead.
   useEffect(() => {
     const el = tableWrap.current?.querySelector<HTMLElement>(
       '[data-slot="table-container"]',
     );
     if (!el) return;
-    const update = () => {
-      // Chrome reports a negative scrollLeft in RTL; distance is what matters.
-      const x = Math.abs(el.scrollLeft);
-      const max = el.scrollWidth - el.clientWidth;
-      setEdges({ start: x > 1, end: max - x > 1 });
-    };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
+    measureEdges();
+    el.addEventListener("scroll", measureEdges, { passive: true });
+    const ro = new ResizeObserver(measureEdges);
     ro.observe(el);
     return () => {
-      el.removeEventListener("scroll", update);
+      el.removeEventListener("scroll", measureEdges);
       ro.disconnect();
     };
-  }, [rows, visibility]);
+  }, [measureEdges]);
+
+  // New rows or a hidden column can change the overflow without resizing the
+  // container — a wider name on this page, one column fewer on the next.
+  useEffect(measureEdges, [rows, visibility, measureEdges]);
 
   // Reverts on its own if the navigation never lands, so the pill can never be
   // left marking a filter the list is not actually showing.
