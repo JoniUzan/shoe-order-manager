@@ -78,6 +78,7 @@ export function CustomersTable({
       {
         accessorKey: "name",
         enableHiding: false,
+        meta: { sortKey: "name" },
         header: () => (
           <SortHeader
             label={t("name")}
@@ -124,6 +125,7 @@ export function CustomersTable({
       },
       {
         accessorKey: "ordersCount",
+        meta: { sortKey: "ordersCount" },
         header: () => (
           <SortHeader
             label={t("ordersCount")}

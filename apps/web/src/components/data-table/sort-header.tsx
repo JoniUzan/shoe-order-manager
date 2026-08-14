@@ -7,6 +7,10 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 /**
  * A sortable column heading. Sorting is URL state resolved on the server, so
  * this only reports which key is active and asks for the next one.
+ *
+ * The `aria-sort` state lives on the header cell, not here — declare the
+ * column's `meta.sortKey` and `<DataTable>` puts it where a screen reader
+ * looks for it.
  */
 export function SortHeader<S extends string>({
   label,
@@ -32,7 +36,6 @@ export function SortHeader<S extends string>({
       variant="ghost"
       size="sm"
       onClick={() => onSort(sortKey)}
-      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
       // The negative margin cancels the header cell's padding *plus* the
       // button's own, so the label lands on the same edge as the values below
       // it — a numeric column whose heading floats off its figures reads as

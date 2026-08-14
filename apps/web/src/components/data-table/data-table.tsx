@@ -70,6 +70,12 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     /** Applied to this column's header cell and every body cell alike. */
     cellClassName?: string;
+    /**
+     * The list sort this column maps to. `aria-sort` belongs on the header
+     * cell, not on the button inside it, so the shell needs to know which
+     * column the current sort refers to.
+     */
+    sortKey?: string;
   }
 }
 
@@ -321,19 +327,33 @@ export function DataTable<TRow, F extends string, S extends string>({
           <TableHeader className="bg-muted/40">
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
-                {hg.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={header.column.columnDef.meta?.cellClassName}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
+                {hg.headers.map((header) => {
+                  const sortKey = header.column.columnDef.meta?.sortKey;
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={header.column.columnDef.meta?.cellClassName}
+                      // On the cell, not on the button inside it: `aria-sort`
+                      // is only meaningful on a columnheader.
+                      aria-sort={
+                        !sortKey
+                          ? undefined
+                          : params.sort !== sortKey
+                            ? "none"
+                            : params.dir === "asc"
+                              ? "ascending"
+                              : "descending"
+                      }
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>

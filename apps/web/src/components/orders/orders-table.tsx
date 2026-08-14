@@ -187,6 +187,7 @@ export function OrdersTable({
       },
       {
         accessorKey: "orderNumber",
+        meta: { sortKey: "orderNumber" },
         header: () => (
           <SortHeader
             label={t("colOrder")}
@@ -208,6 +209,7 @@ export function OrdersTable({
       },
       {
         accessorKey: "customerName",
+        meta: { sortKey: "customerName" },
         header: () => (
           <SortHeader
             label={t("colCustomer")}
@@ -230,7 +232,7 @@ export function OrdersTable({
         accessorKey: "createdAt",
         // Dropped first on narrow screens: the phone scenes are "who owes me"
         // and "did this get paid", and the order number already implies recency.
-        meta: { cellClassName: "hidden md:table-cell" },
+        meta: { cellClassName: "hidden md:table-cell", sortKey: "createdAt" },
         header: () => (
           <SortHeader
             label={tOrders("date")}
@@ -272,6 +274,7 @@ export function OrdersTable({
       },
       {
         accessorKey: "totalAgorot",
+        meta: { sortKey: "totalAgorot" },
         header: () => (
           <SortHeader
             label={t("colTotal")}
