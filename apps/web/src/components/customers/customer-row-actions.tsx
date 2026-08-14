@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
@@ -23,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/data-table/confirm-delete-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteCustomer } from "@/lib/actions/customers";
 
@@ -58,7 +49,12 @@ export function CustomerRowActions({ id, name }: { id: string; name: string }) {
 
   return (
     <>
-      <DropdownMenu>
+      {/* Not modal: a modal menu locks the page while it is open and hands the
+          lock back when it closes. Selecting Delete closes it and opens the
+          dialog in the same tick, and the two undo each other's cleanup —
+          leaving the page inert (body pointer-events: none) after the dialog
+          goes away. A row menu has nothing to gain from modality anyway. */}
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -97,32 +93,14 @@ export function CustomerRowActions({ id, name }: { id: string; name: string }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteDescription", { name })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>
-              {tc("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Keep the dialog up until the action resolves.
-                e.preventDefault();
-                confirmDelete();
-              }}
-              disabled={pending}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              {tc("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { name })}
+        pending={pending}
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }
