@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import {
   DropdownMenu,
@@ -31,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/data-table/confirm-delete-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteOrder, setOrderStatus } from "@/lib/actions/orders";
 
@@ -85,7 +76,9 @@ export function OrderRowActions({
 
   return (
     <>
-      <DropdownMenu>
+      {/* Not modal — see the note in customer-row-actions.tsx: a modal menu
+          closing into a dialog leaves the page inert once the dialog closes. */}
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -134,32 +127,14 @@ export function OrderRowActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteDescription", { number: orderNumber })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>
-              {tc("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Keep the dialog up until the action resolves.
-                e.preventDefault();
-                confirmDelete();
-              }}
-              disabled={pending}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              {tc("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { number: orderNumber })}
+        pending={pending}
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

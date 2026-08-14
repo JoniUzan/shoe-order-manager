@@ -1,5 +1,12 @@
 import { prisma, type Prisma } from "@repo/db";
-import { computeBalanceAgorot } from "@repo/domain";
+import { computeOwedAgorot } from "@repo/domain";
+
+import {
+  LIST_PAGE_SIZES,
+  makeListParams,
+  type ListParams,
+  type RawSearchParams,
+} from "@/lib/list-params";
 
 /**
  * The one definition of "a page of orders".
@@ -28,16 +35,9 @@ export const ORDER_SORTS = [
 ] as const;
 export type OrderSort = (typeof ORDER_SORTS)[number];
 
-export const ORDER_PAGE_SIZES = [10, 20, 50] as const;
+export const ORDER_PAGE_SIZES = LIST_PAGE_SIZES;
 
-export type OrderListParams = {
-  q: string;
-  filter: OrderFilter;
-  sort: OrderSort;
-  dir: "asc" | "desc";
-  page: number;
-  per: number;
-};
+export type OrderListParams = ListParams<OrderFilter, OrderSort>;
 
 export const ORDER_LIST_DEFAULTS: OrderListParams = {
   q: "",
@@ -70,44 +70,19 @@ export type OrderListResult = {
   params: OrderListParams;
 };
 
-type RawSearchParams = Record<string, string | string[] | undefined>;
-
-const first = (v: string | string[] | undefined) =>
-  Array.isArray(v) ? v[0] : v;
+const orderParams = makeListParams({
+  filters: ORDER_FILTERS,
+  sorts: ORDER_SORTS,
+  defaults: ORDER_LIST_DEFAULTS,
+});
 
 export function parseOrderListParams(sp: RawSearchParams): OrderListParams {
-  const filter = first(sp.filter);
-  const sort = first(sp.sort);
-  const dir = first(sp.dir);
-  const per = Number(first(sp.per));
-  const page = Number(first(sp.page));
-
-  return {
-    q: (first(sp.q) ?? "").trim().slice(0, 100),
-    filter: ORDER_FILTERS.includes(filter as OrderFilter)
-      ? (filter as OrderFilter)
-      : ORDER_LIST_DEFAULTS.filter,
-    sort: ORDER_SORTS.includes(sort as OrderSort)
-      ? (sort as OrderSort)
-      : ORDER_LIST_DEFAULTS.sort,
-    dir: dir === "asc" ? "asc" : "desc",
-    per: (ORDER_PAGE_SIZES as readonly number[]).includes(per)
-      ? per
-      : ORDER_LIST_DEFAULTS.per,
-    page: Number.isInteger(page) && page > 0 ? page : 1,
-  };
+  return orderParams.parse(sp);
 }
 
 /** Serialize back to a query string, omitting anything still at its default. */
 export function orderListToQuery(p: OrderListParams): string {
-  const qs = new URLSearchParams();
-  if (p.q) qs.set("q", p.q);
-  if (p.filter !== ORDER_LIST_DEFAULTS.filter) qs.set("filter", p.filter);
-  if (p.sort !== ORDER_LIST_DEFAULTS.sort) qs.set("sort", p.sort);
-  if (p.dir !== ORDER_LIST_DEFAULTS.dir) qs.set("dir", p.dir);
-  if (p.per !== ORDER_LIST_DEFAULTS.per) qs.set("per", String(p.per));
-  if (p.page !== 1) qs.set("page", String(p.page));
-  return qs.toString();
+  return orderParams.toQuery(p);
 }
 
 function buildWhere(ownerId: string, p: OrderListParams): Prisma.OrderWhereInput {
@@ -174,10 +149,7 @@ function toRow(o: RawRow): OrderRow {
     statusCode: o.statusCode,
     paymentStatus: o.paymentStatus,
     totalAgorot: o.totalAgorot,
-    balanceAgorot: Math.max(
-      0,
-      computeBalanceAgorot(o.totalAgorot, o.depositAgorot),
-    ),
+    balanceAgorot: computeOwedAgorot(o.totalAgorot, o.depositAgorot),
     itemCount: o._count.items,
   };
 }
@@ -189,7 +161,9 @@ export async function listOrders(
   const where = buildWhere(ownerId, params);
   const orderBy = buildOrderBy(params);
 
-  const page = async (n: number) =>
+  // Returns the PrismaPromise rather than awaiting, so the same definition
+  // serves both the transaction below and the clamped re-fetch further down.
+  const page = (n: number) =>
     prisma.order.findMany({
       where,
       select: ROW_SELECT,
@@ -199,13 +173,7 @@ export async function listOrders(
     });
 
   const [records, total] = await prisma.$transaction([
-    prisma.order.findMany({
-      where,
-      select: ROW_SELECT,
-      orderBy,
-      skip: (params.page - 1) * params.per,
-      take: params.per,
-    }),
+    page(params.page),
     prisma.order.count({ where }),
   ]);
 
