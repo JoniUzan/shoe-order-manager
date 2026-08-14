@@ -21,12 +21,25 @@ export function useListParams<P extends { q: string; page: number }>(
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
+  const [search, setSearch] = useState(params.q);
+  const debounced = useDebouncedValue(search, 300);
+  // What we last handed to the URL, so the two effects below can't chase
+  // each other: one pushes typing up, the other pulls external changes down.
+  const lastPushed = useRef(params.q);
+
   const setParams = useCallback(
     (patch: Partial<P>) => {
       const next = { ...params, ...patch } as P;
       // Anything that changes *which* rows match sends you back to page 1 —
       // otherwise a narrowing search strands you on an empty page 8.
       if (patch.page === undefined) next.page = 1;
+      // A caller that sets `q` directly (clearing the filters, say) has already
+      // said what the search is. Without this the debounce would notice the
+      // discrepancy 300ms later and navigate a second time to the same value.
+      if (patch.q !== undefined) {
+        lastPushed.current = patch.q;
+        setSearch(patch.q);
+      }
       const qs = toQuery(next);
       startTransition(() => {
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -35,17 +48,16 @@ export function useListParams<P extends { q: string; page: number }>(
     [params, pathname, router, toQuery],
   );
 
-  const [search, setSearch] = useState(params.q);
-  const debounced = useDebouncedValue(search, 300);
-  // What we last handed to the URL, so the two effects below can't chase
-  // each other: one pushes typing up, the other pulls external changes down.
-  const lastPushed = useRef(params.q);
-
   useEffect(() => {
+    // `debounced` trails `search` by 300ms, so on its own it can't tell "the
+    // user stopped typing" from "the value was just replaced under it". Only
+    // the first is ours to push; without this guard, clearing the search would
+    // navigate once immediately and then a second time back to the old text.
+    if (debounced !== search) return;
     if (debounced === lastPushed.current) return;
     lastPushed.current = debounced;
     setParams({ q: debounced } as Partial<P>);
-  }, [debounced, setParams]);
+  }, [debounced, search, setParams]);
 
   useEffect(() => {
     if (params.q !== lastPushed.current) {

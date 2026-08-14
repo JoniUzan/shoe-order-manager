@@ -213,8 +213,9 @@ export function DataTable<TRow, F extends string, S extends string>({
   const isNarrowed = params.q !== "" || params.filter !== defaultFilter;
 
   function clearFilters() {
-    setSearch("");
-    setParams({ q: "", filter: defaultFilter } as Partial<ListParams<F, S>>);
+    // `setParams` resets the search box itself — it is the one that knows the
+    // debounce has been overtaken.
+    setParams({ q: "", filter: defaultFilter });
   }
 
   return (
@@ -234,7 +235,7 @@ export function DataTable<TRow, F extends string, S extends string>({
             onValueChange={(v) =>
               startTransition(() => {
                 setFilterView(v as F);
-                setParams({ filter: v as F } as Partial<ListParams<F, S>>);
+                setParams({ filter: v as F });
               })
             }
           >
@@ -430,7 +431,7 @@ export function DataTable<TRow, F extends string, S extends string>({
             <Select
               value={String(params.per)}
               onValueChange={(v) =>
-                setParams({ per: Number(v) } as Partial<ListParams<F, S>>)
+                setParams({ per: Number(v) })
               }
             >
               <SelectTrigger size="sm" className="w-[4.5rem]">
@@ -453,7 +454,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               variant="outline"
               size="icon"
               className={cn("hidden sm:inline-flex", HIT_TALLER)}
-              onClick={() => setParams({ page: 1 } as Partial<ListParams<F, S>>)}
+              onClick={() => setParams({ page: 1 })}
               disabled={params.page <= 1}
               aria-label={t("firstPage")}
             >
@@ -464,7 +465,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               size="icon"
               className={HIT_TALLER}
               onClick={() =>
-                setParams({ page: params.page - 1 } as Partial<ListParams<F, S>>)
+                setParams({ page: params.page - 1 })
               }
               disabled={params.page <= 1}
               aria-label={t("prevPage")}
@@ -476,7 +477,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               size="icon"
               className={HIT_TALLER}
               onClick={() =>
-                setParams({ page: params.page + 1 } as Partial<ListParams<F, S>>)
+                setParams({ page: params.page + 1 })
               }
               disabled={params.page >= pageCount}
               aria-label={t("nextPage")}
@@ -488,7 +489,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               size="icon"
               className={cn("hidden sm:inline-flex", HIT_TALLER)}
               onClick={() =>
-                setParams({ page: pageCount } as Partial<ListParams<F, S>>)
+                setParams({ page: pageCount })
               }
               disabled={params.page >= pageCount}
               aria-label={t("lastPage")}
