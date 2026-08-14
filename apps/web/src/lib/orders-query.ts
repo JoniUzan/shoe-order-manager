@@ -161,7 +161,9 @@ export async function listOrders(
   const where = buildWhere(ownerId, params);
   const orderBy = buildOrderBy(params);
 
-  const page = async (n: number) =>
+  // Returns the PrismaPromise rather than awaiting, so the same definition
+  // serves both the transaction below and the clamped re-fetch further down.
+  const page = (n: number) =>
     prisma.order.findMany({
       where,
       select: ROW_SELECT,
@@ -171,13 +173,7 @@ export async function listOrders(
     });
 
   const [records, total] = await prisma.$transaction([
-    prisma.order.findMany({
-      where,
-      select: ROW_SELECT,
-      orderBy,
-      skip: (params.page - 1) * params.per,
-      take: params.per,
-    }),
+    page(params.page),
     prisma.order.count({ where }),
   ]);
 
