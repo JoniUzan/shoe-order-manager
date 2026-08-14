@@ -62,6 +62,20 @@ export function computeBalanceAgorot(
   return totalAgorot - depositAgorot;
 }
 
+/**
+ * What an order still owes, never less than zero.
+ *
+ * Use this wherever balances are summed or shown as debt: an overpaid order
+ * is settled, not a credit, and a raw negative balance would quietly cancel
+ * out what another order still owes.
+ */
+export function computeOwedAgorot(
+  totalAgorot: number,
+  depositAgorot: number,
+): number {
+  return Math.max(0, computeBalanceAgorot(totalAgorot, depositAgorot));
+}
+
 export function computePaymentStatus(
   totalAgorot: number,
   depositAgorot: number,

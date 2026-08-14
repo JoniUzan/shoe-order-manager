@@ -1,5 +1,5 @@
 import { prisma, type Prisma } from "@repo/db";
-import { computeBalanceAgorot } from "@repo/domain";
+import { computeOwedAgorot } from "@repo/domain";
 
 import {
   LIST_PAGE_SIZES,
@@ -149,10 +149,7 @@ function toRow(o: RawRow): OrderRow {
     statusCode: o.statusCode,
     paymentStatus: o.paymentStatus,
     totalAgorot: o.totalAgorot,
-    balanceAgorot: Math.max(
-      0,
-      computeBalanceAgorot(o.totalAgorot, o.depositAgorot),
-    ),
+    balanceAgorot: computeOwedAgorot(o.totalAgorot, o.depositAgorot),
     itemCount: o._count.items,
   };
 }

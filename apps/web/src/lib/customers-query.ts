@@ -1,5 +1,5 @@
 import { prisma, type Prisma } from "@repo/db";
-import { computeBalanceAgorot } from "@repo/domain";
+import { computeOwedAgorot } from "@repo/domain";
 
 import {
   LIST_PAGE_SIZES,
@@ -144,11 +144,8 @@ function toRow(c: RawRow): CustomerRow {
     address: c.address,
     createdAt: c.createdAt.toISOString(),
     ordersCount: c._count.orders,
-    // Clamped per order, like the orders list: an overpaid order is a zero
-    // balance, not a credit that quietly cancels what another one owes.
     outstandingAgorot: c.orders.reduce(
-      (sum, o) =>
-        sum + Math.max(0, computeBalanceAgorot(o.totalAgorot, o.depositAgorot)),
+      (sum, o) => sum + computeOwedAgorot(o.totalAgorot, o.depositAgorot),
       0,
     ),
   };
