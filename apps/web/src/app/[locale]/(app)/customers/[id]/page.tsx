@@ -114,7 +114,11 @@ export default async function CustomerDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        {/* `min-w-0`: a grid item will not shrink below its content's
+            min-content, and a table's min-content is the sum of its columns —
+            so without this the card widened the whole column past the phone and
+            the page scrolled sideways instead of the table. */}
+        <Card className="min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle>{t("orderHistory")}</CardTitle>
           </CardHeader>
