@@ -54,7 +54,7 @@ export function ConfirmDeleteDialog({
               onConfirm();
             }}
             disabled={pending}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            variant="destructive"
           >
             {tc("delete")}
           </AlertDialogAction>
