@@ -24,6 +24,9 @@ import { requireUser } from "@/lib/session";
 type Tab = "owed" | "customers" | "sales";
 type Period = "month" | "week";
 
+/** How many orders the by-customer report lists before deferring to /orders. */
+const REPORT_ROWS = 10;
+
 export default async function ReportsPage({
   params,
   searchParams,
@@ -208,6 +211,11 @@ async function CustomersReport({
       })
     : null;
 
+  // The tiles below answer the report's actual question and need every order,
+  // so the full set stays — only the table is capped, and the summary is what
+  // carries the total for anyone whose history runs past it.
+  const shown = customer?.orders.slice(0, REPORT_ROWS) ?? [];
+
   const ordered = customer?.orders.reduce((s, o) => s + o.totalAgorot, 0) ?? 0;
   const owed =
     customer?.orders.reduce(
@@ -246,7 +254,7 @@ async function CustomersReport({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customer.orders.map((o) => {
+                {shown.map((o) => {
                   const balance = computeBalanceAgorot(o.totalAgorot, o.depositAgorot);
                   return (
                     <TableRow key={o.id}>
@@ -276,6 +284,13 @@ async function CustomersReport({
               </TableBody>
             </Table>
           </TableFrame>
+          {customer.orders.length > shown.length && (
+            <Button asChild variant="ghost" size="sm" className="w-full">
+              <Link href={`/orders?q=${encodeURIComponent(customer.name)}`}>
+                {t("seeAllOrders", { count: customer.orders.length })}
+              </Link>
+            </Button>
+          )}
         </>
       )}
     </div>

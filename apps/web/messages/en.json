@@ -147,6 +147,7 @@
     "summaryOrders": "Orders",
     "summaryOrdered": "Total ordered",
     "summaryOwed": "Owed",
+    "seeAllOrders": "See all {count} orders",
     "colOrder": "Order",
     "period": "Period",
     "monthly": "Monthly",
