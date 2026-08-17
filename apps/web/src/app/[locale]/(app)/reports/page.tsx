@@ -6,6 +6,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,6 +14,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { TableFrame } from "@/components/data-table/table-frame";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { PageHeader } from "@/components/layout/page-header";
 import { ReportCustomerSelect } from "@/components/reports/report-customer-select";
@@ -138,9 +140,9 @@ async function OwedReport({
   }
 
   return (
-    <Card className="py-0">
+    <TableFrame>
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           <TableRow>
             <TableHead>{t("colCustomer")}</TableHead>
             <TableHead className="text-center">{t("colOpenOrders")}</TableHead>
@@ -161,16 +163,20 @@ async function OwedReport({
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="border-t-2">
-            <TableCell className="font-semibold">{t("owedTotal")}</TableCell>
+        </TableBody>
+        {/* A summary of the table, not a row in it — so `tfoot`, which also
+            means a screen reader announces it as the summary it is. */}
+        <TableFooter>
+          <TableRow>
+            <TableHead scope="row">{t("owedTotal")}</TableHead>
             <TableCell />
             <TableCell className="text-end font-bold tabular-nums">
               {formatMoney(total, locale)}
             </TableCell>
           </TableRow>
-        </TableBody>
+        </TableFooter>
       </Table>
-    </Card>
+    </TableFrame>
   );
 }
 
@@ -228,9 +234,9 @@ async function CustomersReport({
             <SummaryTile label={t("summaryOrdered")} value={formatMoney(ordered, locale)} />
             <SummaryTile label={t("summaryOwed")} value={formatMoney(owed, locale)} />
           </div>
-          <Card className="py-0">
+          <TableFrame>
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-muted/40">
                 <TableRow>
                   <TableHead>{t("colOrder")}</TableHead>
                   <TableHead>{to("date")}</TableHead>
@@ -269,7 +275,7 @@ async function CustomersReport({
                 })}
               </TableBody>
             </Table>
-          </Card>
+          </TableFrame>
         </>
       )}
     </div>
@@ -349,9 +355,9 @@ async function SalesReport({
       {rows.length === 0 ? (
         <EmptyCard>{t("salesEmpty")}</EmptyCard>
       ) : (
-        <Card className="py-0">
+        <TableFrame>
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-muted/40">
               <TableRow>
                 <TableHead>{t("colPeriod")}</TableHead>
                 <TableHead className="text-center">{t("colOrders")}</TableHead>
@@ -384,7 +390,7 @@ async function SalesReport({
               ))}
             </TableBody>
           </Table>
-        </Card>
+        </TableFrame>
       )}
     </div>
   );
