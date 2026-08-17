@@ -44,15 +44,13 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  useCallback,
-  useEffect,
   useOptimistic,
-  useRef,
   useState,
   type ReactNode,
   type TransitionStartFunction,
 } from "react";
 
+import { TableFrame } from "@/components/data-table/table-frame";
 import { LIST_PAGE_SIZES, type ListParams } from "@/lib/list-params";
 
 /**
@@ -144,47 +142,6 @@ export function DataTable<TRow, F extends string, S extends string>({
   const isRtl = locale === "he";
 
   const [visibility, setVisibility] = useState<VisibilityState>({});
-
-  /* ---------------------------------------------------------- scroll edges */
-
-  // A table wider than the phone silently hides the money columns behind a
-  // clipped edge — it looks finished when it isn't. These flags drive a fade
-  // at whichever edge still has content behind it.
-  const tableWrap = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ start: false, end: false });
-
-  const measureEdges = useCallback(() => {
-    const el = tableWrap.current?.querySelector<HTMLElement>(
-      '[data-slot="table-container"]',
-    );
-    if (!el) return;
-    // Chrome reports a negative scrollLeft in RTL; distance is what matters.
-    const x = Math.abs(el.scrollLeft);
-    const max = el.scrollWidth - el.clientWidth;
-    setEdges({ start: x > 1, end: max - x > 1 });
-  }, []);
-
-  // The listener and observer outlive the rows: `rows` is a new array on every
-  // navigation, so watching it here would tear the pair down and rebuild them
-  // on every page, sort and keystroke. The effect below re-measures instead.
-  useEffect(() => {
-    const el = tableWrap.current?.querySelector<HTMLElement>(
-      '[data-slot="table-container"]',
-    );
-    if (!el) return;
-    measureEdges();
-    el.addEventListener("scroll", measureEdges, { passive: true });
-    const ro = new ResizeObserver(measureEdges);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", measureEdges);
-      ro.disconnect();
-    };
-  }, [measureEdges]);
-
-  // New rows or a hidden column can change the overflow without resizing the
-  // container — a wider name on this page, one column fewer on the next.
-  useEffect(measureEdges, [rows, visibility, measureEdges]);
 
   // Reverts on its own if the navigation never lands, so the pill can never be
   // left marking a filter the list is not actually showing.
@@ -300,30 +257,11 @@ export function DataTable<TRow, F extends string, S extends string>({
 
       {aboveTable}
 
-      <div
-        ref={tableWrap}
-        className={cn(
-          "relative mt-4 overflow-hidden rounded-card border transition-opacity duration-150",
-          isPending && "opacity-60",
-        )}
+      <TableFrame
+        className="mt-4"
+        isPending={isPending}
+        watch={[rows, visibility]}
       >
-        {(["start", "end"] as const).map((side) =>
-          edges[side] ? (
-            <div
-              key={side}
-              aria-hidden
-              className={cn(
-                "pointer-events-none absolute inset-y-0 z-10 w-12",
-                side === "start" ? "start-0" : "end-0",
-              )}
-              style={{
-                background: `linear-gradient(to ${
-                  (side === "end") === isRtl ? "right" : "left"
-                }, var(--background), transparent)`,
-              }}
-            />
-          ) : null,
-        )}
         <Table>
           <TableHeader className="bg-muted/40">
             {table.getHeaderGroups().map((hg) => (
@@ -416,7 +354,7 @@ export function DataTable<TRow, F extends string, S extends string>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableFrame>
 
       {/* Footer — a pager over an empty result is chrome that only says no */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
