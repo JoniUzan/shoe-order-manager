@@ -19,6 +19,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil, Share2 } from "lucide-react";
 
+import { TableFrame } from "@/components/data-table/table-frame";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
@@ -94,9 +95,9 @@ export default async function OrderDetailPage({
         <PaymentBadge status={order.paymentStatus} />
       </div>
 
-      <Card className="py-0">
+      <TableFrame>
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/40">
             <TableRow>
               <TableHead>{t("items")}</TableHead>
               <TableHead>{t("size")}</TableHead>
@@ -131,7 +132,7 @@ export default async function OrderDetailPage({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </TableFrame>
 
       <div className="grid gap-6 sm:grid-cols-2">
         {order.notes && (
