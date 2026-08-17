@@ -60,7 +60,7 @@ jobs:
               head commit.
             - If nothing scores >= 80, post nothing at all and finish silently.
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Task,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api:*),Bash(gh search:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*)"
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Task,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api:*),Bash(gh search:*),Bash(gh issue view:*),Bash(git log:*),Bash(git blame:*),Bash(git show:*)"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
