@@ -532,8 +532,8 @@ export function OrderForm({
           from md up it sits inline where the page ends. */}
       <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-20 border-t bg-background/85 p-3 backdrop-blur-md",
-          "md:static md:mt-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
+          "fixed inset-x-0 bottom-0 z-20 border-t bg-background p-3 shadow-[var(--shadow-card)]",
+          "md:static md:mt-0 md:border-0 md:bg-transparent md:p-0 md:shadow-none",
         )}
       >
         <div className="mx-auto flex max-w-4xl flex-col gap-3">
