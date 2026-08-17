@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ChevronsUpDown, Languages, LogOut } from "lucide-react";
 import { useTransition } from "react";
 
+import { orbSrc } from "@/components/ui/orb";
 import { routing } from "@/i18n/routing";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/actions/auth-actions";
@@ -43,6 +44,7 @@ export function NavUser({
 
   const initials =
     (user.name || user.email).trim().charAt(0).toUpperCase() || "?";
+  const orb = orbSrc(user.email || user.name);
 
   function switchLocale(next: string) {
     if (next === locale) return;
@@ -60,8 +62,9 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">
+              <Avatar className="h-8 w-8 rounded-full">
+                <AvatarImage src={orb} alt="" />
+                <AvatarFallback className="rounded-full">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -84,8 +87,9 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">
+                <Avatar className="h-8 w-8 rounded-full">
+                  <AvatarImage src={orb} alt="" />
+                  <AvatarFallback className="rounded-full">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
