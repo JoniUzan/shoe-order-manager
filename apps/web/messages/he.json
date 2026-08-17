@@ -140,6 +140,9 @@
     "colOpenOrders": "הזמנות פתוחות",
     "colOwed": "חוב",
     "owedEmpty": "אין יתרות פתוחות",
+    "owedNoMatch": "אין לקוחות שתואמים את החיפוש",
+    "owedSearchPlaceholder": "חיפוש לקוח",
+    "owedRowCount": "{count, plural, one {לקוח אחד} two {שני לקוחות} other {# לקוחות}}",
     "owedTotal": "סך חוב פתוח",
     "chooseCustomer": "בחרו לקוח",
     "pickCustomerHint": "בחרו לקוח כדי לראות את ההזמנות שלו.",
@@ -147,9 +150,6 @@
     "summaryOrders": "הזמנות",
     "summaryOrdered": "סך הוזמן",
     "summaryOwed": "חוב",
-    "seeAllOrders": "לכל {count} ההזמנות",
-    "colOrder": "הזמנה",
-    "period": "תקופה",
     "monthly": "חודשי",
     "weekly": "שבועי",
     "weekOf": "שבוע של {date}",
@@ -158,7 +158,9 @@
     "colGross": "מכירות ברוטו",
     "colCollected": "נגבה",
     "colOutstanding": "יתרה",
-    "salesEmpty": "אין עדיין מכירות"
+    "salesEmpty": "אין עדיין מכירות",
+    "salesSearchPlaceholder": "חיפוש תקופה",
+    "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}"
   },
   "share": {
     "whatsapp": "שליחה בוואטסאפ",

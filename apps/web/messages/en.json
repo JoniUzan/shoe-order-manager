@@ -140,6 +140,9 @@
     "colOpenOrders": "Open orders",
     "colOwed": "Owed",
     "owedEmpty": "No outstanding balances",
+    "owedNoMatch": "No customers match your search",
+    "owedSearchPlaceholder": "Search customer",
+    "owedRowCount": "{count, plural, one {# customer} other {# customers}}",
     "owedTotal": "Total outstanding",
     "chooseCustomer": "Choose a customer",
     "pickCustomerHint": "Pick a customer to see their orders.",
@@ -147,9 +150,6 @@
     "summaryOrders": "Orders",
     "summaryOrdered": "Total ordered",
     "summaryOwed": "Owed",
-    "seeAllOrders": "See all {count} orders",
-    "colOrder": "Order",
-    "period": "Period",
     "monthly": "Monthly",
     "weekly": "Weekly",
     "weekOf": "Week of {date}",
@@ -158,7 +158,9 @@
     "colGross": "Gross sales",
     "colCollected": "Collected",
     "colOutstanding": "Outstanding",
-    "salesEmpty": "No sales yet"
+    "salesEmpty": "No sales yet",
+    "salesSearchPlaceholder": "Search period",
+    "salesRowCount": "{count, plural, one {# period} other {# periods}}"
   },
   "share": {
     "whatsapp": "Send on WhatsApp",
