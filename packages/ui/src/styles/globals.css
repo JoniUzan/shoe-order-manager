@@ -40,7 +40,10 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --radius: 0.8125rem;
+  /* Comet chooses a radius per part rather than stepping one scale: 16 on a
+     bar or a field, 24 on a card. The card was already 24; the base moves to
+     16 so buttons, inputs and rows land on the other one. */
+  --radius: 1rem;
 
   --background: oklch(0.984 0.008 98.9);
   --foreground: oklch(0.192 0.02 195.6);
@@ -185,7 +188,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   /* the card corner: generous and continuous, the shape of the whole system */
   --radius-card: 1.5rem;
-  --radius-row: 0.9375rem;
+  --radius-row: 1rem;
 
   --color-background: var(--background);
   --color-shell: var(--shell);
