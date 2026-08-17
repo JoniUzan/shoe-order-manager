@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
+import { OrbField } from "@/components/ui/orb";
 import { auth } from "@/lib/auth";
 
 export default async function LoginPage({
@@ -35,8 +36,9 @@ export default async function LoginPage({
   const t = await getTranslations({ locale, namespace: "auth" });
 
   return (
-    <main className="flex min-h-dvh items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden p-4">
+      <OrbField variant="page" />
+      <Card className="relative w-full max-w-sm">
         <CardHeader>
           <CardTitle>{t("loginTitle")}</CardTitle>
           <CardDescription>{t("loginSubtitle")}</CardDescription>

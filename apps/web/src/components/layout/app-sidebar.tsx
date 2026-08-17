@@ -32,7 +32,7 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="h-auto py-2">
               <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-card text-foreground shadow-[var(--shadow-raised)]">
                   <Footprints className="size-4" />
                 </div>
                 <div className="grid min-w-0 flex-1 text-start leading-tight">

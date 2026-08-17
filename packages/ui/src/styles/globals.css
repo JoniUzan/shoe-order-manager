@@ -8,27 +8,45 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------------------------------------------------------------
-   Monochrome glass. Black and white: rank and severity are carried by weight
-   and material, never by hue. Light and dark are peers, not a theme and its
-   dimmed copy.
+   Warm paper. A near-white ground with a green-black ink on it, and one teal
+   spent once per screen. Rank is still carried by weight and position — this is
+   not a colourful system — but the surface is a material now rather than glass:
+   opaque, lit from above, separated by shadow instead of by translucency.
+   Light and dark are peers, not a theme and its dimmed copy.
 
-   Two scoped exceptions, both because weight alone would be read too slowly:
+   Values are measured off perplexity.ai/comet, not matched by eye. The one
+   value not reproduced is the teal itself: theirs reads 3.13:1 against its own
+   button label at the light end of the gradient, which is defensible for the
+   single saturated element on a marketing page and not for the primary action
+   on a screen people work in. Same hue, range shifted down, 4.61:1 worst case.
 
-   1. --destructive stays red, because an irreversible action must not rely on
+   Hue is rationed, and every use is named here:
+
+   1. --primary is the teal. One action per screen — the thing you came to do.
+      Nav, links, tabs and charts stay ink; spending it twice makes it mean
+      nothing.
+   2. --destructive stays red, because an irreversible action must not rely on
       weight alone. Reserved for actions; never used as a status colour.
-   2. --tint-* carries payment state (unpaid / partial / paid). Scanning ten
+   3. --tint-* carries payment state (unpaid / partial / paid). Scanning ten
       rows for who still owes money was five labels differing only in ink
       density. These are low-alpha *fills* with coloured ink, never solid, and
       never the destructive red — money owed is not a destructive action, and
       the two must not be confusable. Confined to the payment axis: fulfilment
       status, the shell, the tables and the charts all stay monochrome.
+   4. The orbs, which are pictures rather than colour: they never encode state.
+
+   Ink below 64% is a border, a rule or an icon stroke. It is 2.57:1 as text and
+   must not be used as one.
    --------------------------------------------------------------------------- */
 
 :root {
-  --radius: 0.8125rem;
+  /* Comet chooses a radius per part rather than stepping one scale: 16 on a
+     bar or a field, 24 on a card. The card was already 24; the base moves to
+     16 so buttons, inputs and rows land on the other one. */
+  --radius: 1rem;
 
-  --background: oklch(0.955 0.002 264);
-  --foreground: oklch(0.18 0.002 264);
+  --background: oklch(0.984 0.008 98.9);
+  --foreground: oklch(0.192 0.02 195.6);
   /* The shell → sheet → card ladder, in ascending order of elevation. Each rung
      is painted exactly once: the shell frames the app (behind the sidebar and in
      the gutter), the sheet is the raised content panel, the card floats on it.
@@ -36,124 +54,134 @@
      sheet brightening; dark leaves the shell alone because --background is
      already black. All three are translucent, so the ambient body::before light
      reaches every layer. */
-  --shell: oklch(0 0 0 / 4%);
-  --surface: oklch(1 0 0 / 45%);
-  /* cards are a translucent material; pair with .surface-glass for the blur */
-  --card: oklch(1 0 0 / 74%);
-  --card-foreground: oklch(0.18 0.002 264);
-  --popover: oklch(1 0 0 / 88%);
-  --popover-foreground: oklch(0.18 0.002 264);
-  --primary: oklch(0.18 0.002 264);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0 0 0 / 5%);
-  --secondary-foreground: oklch(0.18 0.002 264);
-  --muted: oklch(0 0 0 / 4%);
-  --muted-foreground: oklch(0.47 0.002 264);
-  --accent: oklch(0 0 0 / 6%);
-  --accent-foreground: oklch(0.18 0.002 264);
+  --shell: oklch(0.942 0.016 95.2);
+  --surface: oklch(0.969 0.009 100);
+  /* opaque now: the ladder is separated by shadow, not by translucency */
+  --card: oklch(0.984 0.008 98.9);
+  --card-foreground: oklch(0.192 0.02 195.6);
+  --popover: oklch(0.984 0.008 98.9);
+  --popover-foreground: oklch(0.192 0.02 195.6);
+  /* the one teal, and the only saturated element on a screen */
+  --primary: oklch(0.461 0.072 209.4);
+  --primary-foreground: oklch(0.984 0.008 98.9);
+  --secondary: oklch(0.969 0.009 100);
+  --secondary-foreground: oklch(0.192 0.02 195.6);
+  --muted: oklch(0.969 0.009 100);
+  --muted-foreground: oklch(0.513 0.01 179.3);
+  --accent: oklch(0.942 0.016 95.2);
+  --accent-foreground: oklch(0.192 0.02 195.6);
   --destructive: oklch(0.58 0.223 27.2);
   --destructive-foreground: oklch(1 0 0);
   /* generic emphasis, still monochrome — these are not the payment tints */
-  --success: oklch(0.18 0.002 264);
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.47 0.002 264);
-  --warning-foreground: oklch(1 0 0);
+  --success: oklch(0.192 0.02 195.6);
+  --success-foreground: oklch(0.984 0.008 98.9);
+  --warning: oklch(0.513 0.01 179.3);
+  --warning-foreground: oklch(0.984 0.008 98.9);
   /* payment tints: translucent fill so it layers on the glass instead of
      punching an opaque hole in it; the -foreground is the ink and carries
      the contrast. See the exceptions note at the top of this file. */
-  --tint-positive: oklch(0.62 0.14 152 / 14%);
-  --tint-positive-foreground: oklch(0.43 0.11 152);
-  --tint-caution: oklch(0.72 0.15 72 / 16%);
-  --tint-caution-foreground: oklch(0.47 0.11 62);
+  --tint-positive: oklch(0.62 0.14 152 / 13%);
+  --tint-positive-foreground: oklch(0.476 0.077 163.3);
+  --tint-caution: oklch(0.72 0.15 72 / 15%);
+  --tint-caution-foreground: oklch(0.478 0.093 77.1);
   --tint-critical: oklch(0.62 0.18 22 / 12%);
-  --tint-critical-foreground: oklch(0.48 0.17 24);
-  --border: oklch(0 0 0 / 7.5%);
-  --input: oklch(0 0 0 / 11%);
-  --ring: oklch(0.18 0.002 264 / 45%);
+  --tint-critical-foreground: oklch(0.492 0.142 30.8);
+  --border: oklch(0.192 0.02 195.6 / 10%);
+  --input: oklch(0.913 0.02 103.7);
+  --ring: oklch(0.461 0.072 209.4);
 
-  /* material: the gloss is a specular edge + sheen, never a coloured glow */
-  --sheen: rgba(255, 255, 255, 0.9);
-  /* The chip sheen is its own token, not a reuse of --sheen: that value is
-     tuned for a large glass card, and a 20px pill needs light and dark
-     balanced independently rather than inheriting a card's ratio. */
-  --sheen-chip: rgba(255, 255, 255, 0.9);
-  --hairline: oklch(0 0 0 / 7%);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.09), 0 12px 30px rgba(0, 0, 0, 0.1);
-  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.06);
-  --blur-card: 30px;
+  /* Material. The card is one flat shadow; small controls get the raised puck —
+     six shadows under a paper-coloured top-light, so they read as lifted off
+     the page rather than dropped onto it. */
+  --hairline: oklch(0.192 0.02 195.6 / 10%);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-raised:
+    rgb(251 250 244 / 0.56) 0 -2px 4px, rgba(0, 0, 0, 0.02) 0 24px 40px,
+    rgba(0, 0, 0, 0.02) 0 4px 18px, rgba(0, 0, 0, 0.01) 0 27px 11px,
+    rgba(0, 0, 0, 0.01) 0 15px 9px, rgba(0, 0, 0, 0.03) 0 7px 7px,
+    rgba(0, 0, 0, 0.04) 0 1px 4px;
+  --blur-card: 0px;
 
-  --chart-1: oklch(0.18 0 0);
-  --chart-2: oklch(0.38 0 0);
-  --chart-3: oklch(0.55 0 0);
-  --chart-4: oklch(0.7 0 0);
-  --chart-5: oklch(0.82 0 0);
+  /* The charts are ink at descending density, never the accent: teal means
+     "the action on this screen", and a second job makes it ambiguous. Chroma
+     tapers as the ramp lightens so the pale steps don't read as tinted. */
+  --chart-1: oklch(0.192 0.02 195.6);
+  --chart-2: oklch(0.38 0.018 195.6);
+  --chart-3: oklch(0.55 0.015 195.6);
+  --chart-4: oklch(0.7 0.012 195.6);
+  --chart-5: oklch(0.82 0.01 195.6);
 
-  --sidebar: oklch(1 0 0 / 50%);
-  --sidebar-foreground: oklch(0.18 0.002 264);
-  --sidebar-primary: oklch(0.18 0.002 264);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0 0 0 / 5%);
-  --sidebar-accent-foreground: oklch(0.18 0.002 264);
-  --sidebar-border: oklch(0 0 0 / 7%);
-  --sidebar-ring: oklch(0.18 0.002 264 / 45%);
+  /* the sidebar sits on the shell, not on a sheet of its own */
+  --sidebar: transparent;
+  --sidebar-foreground: oklch(0.192 0.02 195.6);
+  --sidebar-primary: oklch(0.984 0.008 98.9);
+  --sidebar-primary-foreground: oklch(0.192 0.02 195.6);
+  --sidebar-accent: oklch(0.984 0.008 98.9);
+  --sidebar-accent-foreground: oklch(0.192 0.02 195.6);
+  --sidebar-border: oklch(0.192 0.02 195.6 / 10%);
+  --sidebar-ring: oklch(0.461 0.072 209.4);
 }
 
 .dark {
-  --background: oklch(0 0 0);
-  --foreground: oklch(0.965 0 0);
-  /* no shell tint: black is already the floor, so the ladder climbs from it */
-  --shell: transparent;
-  --surface: oklch(1 0 0 / 3.5%);
-  --card: oklch(1 0 0 / 5.5%);
-  --card-foreground: oklch(0.965 0 0);
-  --popover: oklch(0.16 0 0 / 92%);
-  --popover-foreground: oklch(0.965 0 0);
-  --primary: oklch(1 0 0);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(1 0 0 / 8.5%);
-  --secondary-foreground: oklch(0.965 0 0);
-  --muted: oklch(1 0 0 / 6%);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(1 0 0 / 10%);
-  --accent-foreground: oklch(0.965 0 0);
+  /* Derived, not measured: the source is a committed light system, so there is
+     no dark original to read off. The ground keeps the ink's green cast rather
+     than going neutral black, and the ladder climbs from a shell below it. */
+  --background: oklch(0.184 0.011 196.3);
+  --foreground: oklch(0.952 0.012 91.5);
+  --shell: oklch(0.157 0.01 196.2);
+  --surface: oklch(0.218 0.013 196.2);
+  --card: oklch(0.184 0.011 196.3);
+  --card-foreground: oklch(0.952 0.012 91.5);
+  --popover: oklch(0.218 0.013 196.2);
+  --popover-foreground: oklch(0.952 0.012 91.5);
+  --primary: oklch(0.623 0.095 206.9);
+  --primary-foreground: oklch(0.163 0.016 195.7);
+  --secondary: oklch(0.218 0.013 196.2);
+  --secondary-foreground: oklch(0.952 0.012 91.5);
+  --muted: oklch(0.218 0.013 196.2);
+  --muted-foreground: oklch(0.674 0.007 115.8);
+  --accent: oklch(0.218 0.013 196.2);
+  --accent-foreground: oklch(0.952 0.012 91.5);
   --destructive: oklch(0.68 0.2 25);
   --destructive-foreground: oklch(0 0 0);
-  --success: oklch(0.965 0 0);
-  --success-foreground: oklch(0 0 0);
-  --warning: oklch(0.72 0 0);
-  --warning-foreground: oklch(0 0 0);
+  --success: oklch(0.952 0.012 91.5);
+  --success-foreground: oklch(0.184 0.011 196.3);
+  --warning: oklch(0.674 0.007 115.8);
+  --warning-foreground: oklch(0.184 0.011 196.3);
   /* on black the fill needs more alpha to register at all, and the ink
      inverts to the light end of each hue */
-  --tint-positive: oklch(0.68 0.15 152 / 18%);
-  --tint-positive-foreground: oklch(0.82 0.14 155);
-  --tint-caution: oklch(0.75 0.15 72 / 18%);
-  --tint-caution-foreground: oklch(0.85 0.13 78);
-  --tint-critical: oklch(0.65 0.19 22 / 18%);
-  --tint-critical-foreground: oklch(0.79 0.15 20);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(1 0 0 / 40%);
+  --tint-positive: oklch(0.68 0.15 152 / 17%);
+  --tint-positive-foreground: oklch(0.791 0.101 160.3);
+  --tint-caution: oklch(0.75 0.15 72 / 17%);
+  --tint-caution-foreground: oklch(0.804 0.109 82);
+  --tint-critical: oklch(0.65 0.19 22 / 17%);
+  --tint-critical-foreground: oklch(0.75 0.109 29.6);
+  --border: oklch(0.952 0.012 91.5 / 10%);
+  --input: oklch(0.952 0.012 91.5 / 13%);
+  --ring: oklch(0.623 0.095 206.9);
 
-  --sheen: rgba(255, 255, 255, 0.1);
-  --sheen-chip: rgba(255, 255, 255, 0.1);
-  --hairline: oklch(1 0 0 / 9%);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.6), 0 12px 34px rgba(0, 0, 0, 0.5);
-  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --hairline: oklch(0.952 0.012 91.5 / 10%);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.48);
+  /* the puck's top-light inverts: paper on black would ring every control */
+  --shadow-raised:
+    rgb(242 239 230 / 0.07) 0 -1px 3px, rgba(0, 0, 0, 0.3) 0 24px 40px,
+    rgba(0, 0, 0, 0.2) 0 4px 18px, rgba(0, 0, 0, 0.16) 0 7px 7px,
+    rgba(0, 0, 0, 0.3) 0 1px 4px;
 
-  --chart-1: oklch(0.965 0 0);
-  --chart-2: oklch(0.8 0 0);
-  --chart-3: oklch(0.65 0 0);
-  --chart-4: oklch(0.5 0 0);
-  --chart-5: oklch(0.36 0 0);
+  --chart-1: oklch(0.952 0.012 91.5);
+  --chart-2: oklch(0.8 0.011 91.5);
+  --chart-3: oklch(0.65 0.01 91.5);
+  --chart-4: oklch(0.5 0.009 91.5);
+  --chart-5: oklch(0.36 0.008 91.5);
 
-  --sidebar: oklch(1 0 0 / 2.8%);
-  --sidebar-foreground: oklch(0.965 0 0);
-  --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(1 0 0 / 8.5%);
-  --sidebar-accent-foreground: oklch(0.965 0 0);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(1 0 0 / 40%);
+  --sidebar: transparent;
+  --sidebar-foreground: oklch(0.952 0.012 91.5);
+  --sidebar-primary: oklch(0.184 0.011 196.3);
+  --sidebar-primary-foreground: oklch(0.952 0.012 91.5);
+  --sidebar-accent: oklch(0.184 0.011 196.3);
+  --sidebar-accent-foreground: oklch(0.952 0.012 91.5);
+  --sidebar-border: oklch(0.952 0.012 91.5 / 10%);
+  --sidebar-ring: oklch(0.623 0.095 206.9);
 }
 
 @theme inline {
@@ -163,7 +191,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   /* the card corner: generous and continuous, the shape of the whole system */
   --radius-card: 1.5rem;
-  --radius-row: 0.9375rem;
+  --radius-row: 1rem;
 
   --color-background: var(--background);
   --color-shell: var(--shell);
@@ -234,22 +262,6 @@
       -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans),
       system-ui, sans-serif;
   }
-  /* ambient light, so the glass has something to refract */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.95), transparent 62%),
-      radial-gradient(50% 40% at 6% 104%, rgba(0, 0, 0, 0.05), transparent 60%);
-  }
-  .dark body::before {
-    background:
-      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.11), transparent 62%),
-      radial-gradient(46% 40% at 8% 104%, rgba(255, 255, 255, 0.055), transparent 60%);
-  }
   /* tabular figures everywhere money is shown: columns of ₪ must align */
   [data-slot="money"],
   .tabular {
@@ -258,34 +270,14 @@
 }
 
 @layer components {
-  /* The material. A translucent layer with a bright top edge where light
-     catches it, and one specular sheen falling off over the top half. */
-  .surface-glass {
+  /* The material. Opaque paper, held off the ground by one flat shadow — no
+     blur, no sheen, no veil for content to sit above. Renamed from
+     .surface-glass: there is no glass left for the old name to describe. */
+  .surface-raised {
     position: relative;
-    backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
-    -webkit-backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
     box-shadow:
-      inset 0 1px 0 var(--sheen),
       0 0 0 0.5px var(--hairline),
       var(--shadow-card);
-  }
-  .surface-glass::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 58%;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
-  }
-  .dark .surface-glass::before {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
-  }
-  /* the sheen is material, never a veil: content always sits above it */
-  .surface-glass > * {
-    position: relative;
-    z-index: 1;
   }
 }
 
@@ -303,11 +295,6 @@
     --tint-caution: oklch(0.75 0.15 72 / 30%);
     --tint-critical: oklch(0.65 0.19 22 / 30%);
   }
-  /* the specular edge is decoration; at this setting the outline does the work */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
-  }
   [data-slot="badge"][data-variant="positive"],
   [data-slot="badge"][data-variant="caution"],
   [data-slot="badge"][data-variant="critical"] {
@@ -317,35 +304,5 @@
      setting that is not enough, so the edge is drawn rather than implied */
   [data-slot="sidebar-inset"] {
     border: 1px solid currentColor;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  /* Opaque stand-ins for the shell → sheet → card ladder. They have to be
-     restated as a set: dropping the alpha from each one independently would
-     land the card on --background and invert the ladder, so the content panel
-     would read as a hole again — the exact bug this ladder replaced. */
-  :root {
-    --shell: oklch(0.915 0.002 264);
-    --surface: oklch(0.965 0.002 264);
-    --card: oklch(1 0 0);
-  }
-  .dark {
-    --shell: oklch(0 0 0);
-    --surface: oklch(0.16 0 0);
-    --card: oklch(0.22 0 0);
-  }
-  .surface-glass {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--card);
-  }
-  .surface-glass::before {
-    display: none;
-  }
-  /* a specular highlight is a glass affordance; it goes when the glass does */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
   }
 }

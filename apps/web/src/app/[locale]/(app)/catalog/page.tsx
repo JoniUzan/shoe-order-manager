@@ -5,6 +5,7 @@ import { Footprints, Plus } from "lucide-react";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
 import { PageHeader } from "@/components/layout/page-header";
+import { OrbField } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import { listShoeModels, parseCatalogListParams } from "@/lib/catalog-query";
 import { requireUser } from "@/lib/session";
@@ -44,15 +45,16 @@ export default async function CatalogPage({
       />
 
       {isFirstRun ? (
-        <Card className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-          <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+        <Card className="relative flex flex-col items-center justify-center gap-3 overflow-hidden py-16 text-center">
+          <OrbField />
+          <div className="relative flex size-12 items-center justify-center rounded-full bg-muted">
             <Footprints className="size-6 text-muted-foreground" />
           </div>
-          <div className="space-y-1">
+          <div className="relative space-y-1">
             <p className="font-medium">{t("empty")}</p>
             <p className="text-sm text-muted-foreground">{t("emptyHint")}</p>
           </div>
-          <Button asChild className="mt-2">
+          <Button asChild className="relative mt-2">
             <Link href="/catalog/new">
               <Plus className="size-4" />
               {t("add")}

@@ -192,7 +192,11 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          // Local change (a future `shadcn add sidebar` would revert it):
+          // upstream paints this bg-sidebar, but --sidebar is transparent here
+          // because the desktop sidebar sits directly on the shell. A drawer
+          // has nothing behind it, so it paints the shell colour itself.
+          className="w-(--sidebar-width) bg-shell p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
