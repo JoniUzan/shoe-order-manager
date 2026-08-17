@@ -318,7 +318,7 @@ export function OrderForm({
           return (
             <div
               key={field.id}
-              className="surface-glass overflow-hidden rounded-card bg-card"
+              className="surface-raised overflow-hidden rounded-card bg-card"
             >
               {/* Block header: what is being ordered, and for how much */}
               <div className="flex flex-wrap items-center gap-2 border-b p-3">

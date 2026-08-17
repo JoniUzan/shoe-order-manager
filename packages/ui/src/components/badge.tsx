@@ -29,11 +29,11 @@ const badgeVariants = cva(
         // as light catching the material. On a fully-rounded pill it follows
         // the top arc and wraps the corners.
         positive:
-          "bg-tint-positive text-tint-positive-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
+          "bg-tint-positive text-tint-positive-foreground",
         caution:
-          "bg-tint-caution text-tint-caution-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
+          "bg-tint-caution text-tint-caution-foreground",
         critical:
-          "bg-tint-critical text-tint-critical-foreground shadow-[inset_0_1px_0_var(--sheen-chip)]",
+          "bg-tint-critical text-tint-critical-foreground",
       },
     },
     defaultVariants: {

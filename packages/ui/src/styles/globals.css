@@ -90,8 +90,6 @@
   /* Material. The card is one flat shadow; small controls get the raised puck —
      six shadows under a paper-coloured top-light, so they read as lifted off
      the page rather than dropped onto it. */
-  --sheen: transparent;
-  --sheen-chip: transparent;
   --hairline: oklch(0.192 0.02 195.6 / 10%);
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-raised:
@@ -156,8 +154,6 @@
   --input: oklch(0.952 0.012 91.5 / 13%);
   --ring: oklch(0.623 0.095 206.9);
 
-  --sheen: transparent;
-  --sheen-chip: transparent;
   --hairline: oklch(0.952 0.012 91.5 / 10%);
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.48);
   /* the puck's top-light inverts: paper on black would ring every control */
@@ -260,22 +256,6 @@
       -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans),
       system-ui, sans-serif;
   }
-  /* ambient light, so the glass has something to refract */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.95), transparent 62%),
-      radial-gradient(50% 40% at 6% 104%, rgba(0, 0, 0, 0.05), transparent 60%);
-  }
-  .dark body::before {
-    background:
-      radial-gradient(58% 42% at 78% -6%, rgba(255, 255, 255, 0.11), transparent 62%),
-      radial-gradient(46% 40% at 8% 104%, rgba(255, 255, 255, 0.055), transparent 60%);
-  }
   /* tabular figures everywhere money is shown: columns of ₪ must align */
   [data-slot="money"],
   .tabular {
@@ -284,34 +264,14 @@
 }
 
 @layer components {
-  /* The material. A translucent layer with a bright top edge where light
-     catches it, and one specular sheen falling off over the top half. */
-  .surface-glass {
+  /* The material. Opaque paper, held off the ground by one flat shadow — no
+     blur, no sheen, no veil for content to sit above. Renamed from
+     .surface-glass: there is no glass left for the old name to describe. */
+  .surface-raised {
     position: relative;
-    backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
-    -webkit-backdrop-filter: blur(var(--blur-card, 30px)) saturate(170%);
     box-shadow:
-      inset 0 1px 0 var(--sheen),
       0 0 0 0.5px var(--hairline),
       var(--shadow-card);
-  }
-  .surface-glass::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 58%;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
-  }
-  .dark .surface-glass::before {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
-  }
-  /* the sheen is material, never a veil: content always sits above it */
-  .surface-glass > * {
-    position: relative;
-    z-index: 1;
   }
 }
 
@@ -329,11 +289,6 @@
     --tint-caution: oklch(0.75 0.15 72 / 30%);
     --tint-critical: oklch(0.65 0.19 22 / 30%);
   }
-  /* the specular edge is decoration; at this setting the outline does the work */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
-  }
   [data-slot="badge"][data-variant="positive"],
   [data-slot="badge"][data-variant="caution"],
   [data-slot="badge"][data-variant="critical"] {
@@ -343,35 +298,5 @@
      setting that is not enough, so the edge is drawn rather than implied */
   [data-slot="sidebar-inset"] {
     border: 1px solid currentColor;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  /* Opaque stand-ins for the shell → sheet → card ladder. They have to be
-     restated as a set: dropping the alpha from each one independently would
-     land the card on --background and invert the ladder, so the content panel
-     would read as a hole again — the exact bug this ladder replaced. */
-  :root {
-    --shell: oklch(0.915 0.002 264);
-    --surface: oklch(0.965 0.002 264);
-    --card: oklch(1 0 0);
-  }
-  .dark {
-    --shell: oklch(0 0 0);
-    --surface: oklch(0.16 0 0);
-    --card: oklch(0.22 0 0);
-  }
-  .surface-glass {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--card);
-  }
-  .surface-glass::before {
-    display: none;
-  }
-  /* a specular highlight is a glass affordance; it goes when the glass does */
-  :root,
-  :root.dark {
-    --sheen-chip: transparent;
   }
 }
