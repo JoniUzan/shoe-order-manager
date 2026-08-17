@@ -103,12 +103,12 @@ export function OrbField({
         className={cn(common, "-top-8 -end-10 size-[300px] rounded-full opacity-40")}
       />
       <Image
-        src="/orbs/lunar.jpg"
+        src="/orbs/bronze.jpg"
         alt=""
         width={190}
         height={190}
         style={fade}
-        className={cn(common, "-bottom-5 -start-6 size-[190px] rounded-full opacity-30")}
+        className={cn(common, "-bottom-5 -start-6 size-[190px] rounded-full opacity-40")}
       />
     </div>
   );
