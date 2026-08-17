@@ -34,7 +34,7 @@ export function LocaleSwitcher() {
           className={cn(
             "rounded px-2 py-1 text-xs font-medium transition-colors",
             l === locale
-              ? "bg-primary text-primary-foreground"
+              ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
