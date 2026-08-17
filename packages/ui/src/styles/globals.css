@@ -102,11 +102,14 @@
     rgba(0, 0, 0, 0.04) 0 1px 4px;
   --blur-card: 0px;
 
-  --chart-1: oklch(0.18 0 0);
-  --chart-2: oklch(0.38 0 0);
-  --chart-3: oklch(0.55 0 0);
-  --chart-4: oklch(0.7 0 0);
-  --chart-5: oklch(0.82 0 0);
+  /* The charts are ink at descending density, never the accent: teal means
+     "the action on this screen", and a second job makes it ambiguous. Chroma
+     tapers as the ramp lightens so the pale steps don't read as tinted. */
+  --chart-1: oklch(0.192 0.02 195.6);
+  --chart-2: oklch(0.38 0.018 195.6);
+  --chart-3: oklch(0.55 0.015 195.6);
+  --chart-4: oklch(0.7 0.012 195.6);
+  --chart-5: oklch(0.82 0.01 195.6);
 
   /* the sidebar sits on the shell, not on a sheet of its own */
   --sidebar: transparent;
@@ -165,11 +168,11 @@
     rgba(0, 0, 0, 0.2) 0 4px 18px, rgba(0, 0, 0, 0.16) 0 7px 7px,
     rgba(0, 0, 0, 0.3) 0 1px 4px;
 
-  --chart-1: oklch(0.965 0 0);
-  --chart-2: oklch(0.8 0 0);
-  --chart-3: oklch(0.65 0 0);
-  --chart-4: oklch(0.5 0 0);
-  --chart-5: oklch(0.36 0 0);
+  --chart-1: oklch(0.952 0.012 91.5);
+  --chart-2: oklch(0.8 0.011 91.5);
+  --chart-3: oklch(0.65 0.01 91.5);
+  --chart-4: oklch(0.5 0.009 91.5);
+  --chart-5: oklch(0.36 0.008 91.5);
 
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.952 0.012 91.5);
