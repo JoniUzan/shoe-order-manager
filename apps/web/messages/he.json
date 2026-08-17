@@ -118,6 +118,7 @@
     "details": "פרטים",
     "orderHistory": "היסטוריית הזמנות",
     "noOrders": "אין עדיין הזמנות",
+    "seeAllOrders": "לכל {count} ההזמנות",
     "deleteTitle": "למחוק את הלקוח?",
     "deleteDescription": "פעולה זו תמחק לצמיתות את ״{name}״. לא ניתן לבטל.",
     "created": "הלקוח נוסף",

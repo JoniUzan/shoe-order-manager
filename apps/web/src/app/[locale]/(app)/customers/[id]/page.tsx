@@ -19,11 +19,15 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
+import { TableFrame } from "@/components/data-table/table-frame";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/session";
+
+/** How much order history the detail card carries before deferring to /orders. */
+const ORDER_PREVIEW = 10;
 
 export default async function CustomerDetailPage({
   params,
@@ -40,6 +44,11 @@ export default async function CustomerDetailPage({
     include: {
       orders: {
         orderBy: { createdAt: "desc" },
+        // A card on a detail page is not a list screen: it shows the recent
+        // history and hands the rest to /orders, which is the screen built for
+        // searching and paging it. Unbounded, a long-standing customer rendered
+        // every order they had ever placed.
+        take: ORDER_PREVIEW,
         select: {
           id: true,
           orderNumber: true,
@@ -49,6 +58,7 @@ export default async function CustomerDetailPage({
           totalAgorot: true,
         },
       },
+      _count: { select: { orders: true } },
     },
   });
   if (!customer) notFound();
@@ -114,41 +124,54 @@ export default async function CustomerDetailPage({
                 {t("noOrders")}
               </p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{td("colOrder")}</TableHead>
-                    <TableHead>{td("colStatus")}</TableHead>
-                    <TableHead className="text-end">{td("colTotal")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {customer.orders.map((o) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/orders/${o.id}`}
-                          className="hover:underline"
-                        >
-                          <bdi>#{o.orderNumber}</bdi>
-                        </Link>
-                        <span className="block text-xs font-normal text-muted-foreground">
-                          {dateFmt.format(o.createdAt)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1.5">
-                          <OrderStatusBadge code={o.statusCode} />
-                          <PaymentBadge status={o.paymentStatus} />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-end tabular-nums">
-                        {formatMoney(o.totalAgorot, locale)}
-                      </TableCell>
+              <TableFrame>
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead>{td("colOrder")}</TableHead>
+                      <TableHead>{td("colStatus")}</TableHead>
+                      <TableHead className="text-end">
+                        {td("colTotal")}
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {customer.orders.map((o) => (
+                      <TableRow key={o.id}>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={`/orders/${o.id}`}
+                            className="hover:underline"
+                          >
+                            <bdi>#{o.orderNumber}</bdi>
+                          </Link>
+                          <span className="block text-xs font-normal text-muted-foreground">
+                            {dateFmt.format(o.createdAt)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1.5">
+                            <OrderStatusBadge code={o.statusCode} />
+                            <PaymentBadge status={o.paymentStatus} />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-end tabular-nums">
+                          {formatMoney(o.totalAgorot, locale)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableFrame>
+            )}
+            {customer._count.orders > customer.orders.length && (
+              <Button asChild variant="ghost" size="sm" className="mt-3 w-full">
+                {/* /orders searches by customer name, so this lands on the same
+                    history with the tools to search and page it. */}
+                <Link href={`/orders?q=${encodeURIComponent(customer.name)}`}>
+                  {t("seeAllOrders", { count: customer._count.orders })}
+                </Link>
+              </Button>
             )}
           </CardContent>
         </Card>

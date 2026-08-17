@@ -118,6 +118,7 @@
     "details": "Details",
     "orderHistory": "Order history",
     "noOrders": "No orders yet",
+    "seeAllOrders": "See all {count} orders",
     "deleteTitle": "Delete customer?",
     "deleteDescription": "This permanently removes “{name}”. This cannot be undone.",
     "created": "Customer added",
