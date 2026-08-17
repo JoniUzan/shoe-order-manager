@@ -85,8 +85,19 @@ export function orderListToQuery(p: OrderListParams): string {
   return orderParams.toQuery(p);
 }
 
-function buildWhere(ownerId: string, p: OrderListParams): Prisma.OrderWhereInput {
+/**
+ * Narrows the list to a subset of what the owner can see. Applied on top of
+ * `ownerId`, never instead of it — scoping is a view, not an authorization.
+ */
+export type OrderListScope = { customerId?: string };
+
+function buildWhere(
+  ownerId: string,
+  p: OrderListParams,
+  scope: OrderListScope = {},
+): Prisma.OrderWhereInput {
   const where: Prisma.OrderWhereInput = { ownerId };
+  if (scope.customerId) where.customerId = scope.customerId;
   if (p.filter === "open") where.statusCode = "not_done";
   if (p.filter === "unpaid") where.paymentStatus = { not: "paid" };
 
@@ -157,8 +168,9 @@ function toRow(o: RawRow): OrderRow {
 export async function listOrders(
   ownerId: string,
   params: OrderListParams,
+  scope?: OrderListScope,
 ): Promise<OrderListResult> {
-  const where = buildWhere(ownerId, params);
+  const where = buildWhere(ownerId, params, scope);
   const orderBy = buildOrderBy(params);
 
   // Returns the PrismaPromise rather than awaiting, so the same definition
