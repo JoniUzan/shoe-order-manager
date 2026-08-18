@@ -1,5 +1,4 @@
 import { prisma } from "@repo/db";
-import { formatMoney, formatSize } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -7,33 +6,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/ui/components/table";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil, Share2 } from "lucide-react";
 
-import { TableFrame } from "@/components/data-table/table-frame";
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
+import { OrderItemsTable } from "@/components/orders/order-items-table";
 import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
 import { PaymentControls } from "@/components/orders/payment-controls";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
+import type { RawSearchParams } from "@/lib/list-params";
+import {
+  listOrderItems,
+  parseOrderItemListParams,
+} from "@/lib/order-items-query";
 import { requireUser } from "@/lib/session";
 
 export default async function OrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<RawSearchParams>;
 }) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "orders" });
 
@@ -41,10 +40,6 @@ export default async function OrderDetailPage({
     where: { id, ownerId: user.id },
     include: {
       customer: true,
-      items: {
-        include: { shoeModel: { select: { name: true, sizeFormat: true } } },
-        orderBy: { id: "asc" },
-      },
       payments: {
         orderBy: { paidAt: "desc" },
         select: { id: true, amountAgorot: true, paidAt: true, note: true },
@@ -52,6 +47,12 @@ export default async function OrderDetailPage({
     },
   });
   if (!order) notFound();
+
+  const itemList = await listOrderItems(
+    user.id,
+    order.id,
+    parseOrderItemListParams(sp),
+  );
 
   const ts = await getTranslations({ locale, namespace: "share" });
 
@@ -95,44 +96,12 @@ export default async function OrderDetailPage({
         <PaymentBadge status={order.paymentStatus} />
       </div>
 
-      <TableFrame>
-        <Table>
-          <TableHeader className="bg-muted/40">
-            <TableRow>
-              <TableHead>{t("items")}</TableHead>
-              <TableHead>{t("size")}</TableHead>
-              <TableHead>{t("color")}</TableHead>
-              <TableHead className="text-center">{t("quantity")}</TableHead>
-              <TableHead className="text-end">{t("unitPrice")}</TableHead>
-              <TableHead className="text-end">{t("lineTotal")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {order.items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">
-                  {item.shoeModel?.name ?? item.customDescription}
-                </TableCell>
-                <TableCell>
-                  {formatSize(item.size, item.shoeModel?.sizeFormat)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {item.color ?? "—"}
-                </TableCell>
-                <TableCell className="text-center tabular-nums">
-                  {item.quantity}
-                </TableCell>
-                <TableCell className="text-end tabular-nums">
-                  {formatMoney(item.unitPriceAgorot, locale)}
-                </TableCell>
-                <TableCell className="text-end tabular-nums">
-                  {formatMoney(item.unitPriceAgorot * item.quantity, locale)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableFrame>
+      <OrderItemsTable
+        rows={itemList.rows}
+        total={itemList.total}
+        pageCount={itemList.pageCount}
+        params={itemList.params}
+      />
 
       <div className="grid gap-6 sm:grid-cols-2">
         {order.notes && (
