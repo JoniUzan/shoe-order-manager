@@ -1,5 +1,4 @@
 import { prisma } from "@repo/db";
-import { formatMoney } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -7,54 +6,47 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/ui/components/table";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
-import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { OrdersTable } from "@/components/orders/orders-table";
 import { Link } from "@/i18n/navigation";
+import type { RawSearchParams } from "@/lib/list-params";
+import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
 
 export default async function CustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<RawSearchParams>;
 }) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "customers" });
-  const td = await getTranslations({ locale, namespace: "dashboard" });
 
   const customer = await prisma.customer.findFirst({
     where: { id, ownerId: user.id },
-    include: {
-      orders: {
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          orderNumber: true,
-          createdAt: true,
-          statusCode: true,
-          paymentStatus: true,
-          totalAgorot: true,
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      contactName: true,
+      phone: true,
+      address: true,
+      notes: true,
     },
   });
   if (!customer) notFound();
 
-  const dateFmt = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-US", {
-    dateStyle: "medium",
+  // The history is the orders list, narrowed to this customer — same component,
+  // same search, filters, sorting, paging and quick look as /orders.
+  const list = await listOrders(user.id, parseOrderListParams(sp), {
+    customerId: customer.id,
   });
 
   const details: { label: string; value: string | null }[] = [
@@ -104,54 +96,30 @@ export default async function CustomerDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{t("orderHistory")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {customer.orders.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
+        {/* `min-w-0`: a grid item will not shrink below its content's
+            min-content, and a table's min-content is the sum of its columns —
+            without it the card widens the whole column past the phone and the
+            page scrolls sideways instead of the table. */}
+        <div className="flex min-w-0 flex-col gap-3 lg:col-span-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {t("orderHistory")}
+          </h3>
+          {list.total === 0 && list.params.q === "" ? (
+            <Card>
+              <CardContent className="py-6 text-center text-sm text-muted-foreground">
                 {t("noOrders")}
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{td("colOrder")}</TableHead>
-                    <TableHead>{td("colStatus")}</TableHead>
-                    <TableHead className="text-end">{td("colTotal")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {customer.orders.map((o) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/orders/${o.id}`}
-                          className="hover:underline"
-                        >
-                          <bdi>#{o.orderNumber}</bdi>
-                        </Link>
-                        <span className="block text-xs font-normal text-muted-foreground">
-                          {dateFmt.format(o.createdAt)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1.5">
-                          <OrderStatusBadge code={o.statusCode} />
-                          <PaymentBadge status={o.paymentStatus} />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-end tabular-nums">
-                        {formatMoney(o.totalAgorot, locale)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <OrdersTable
+              rows={list.rows}
+              total={list.total}
+              pageCount={list.pageCount}
+              params={list.params}
+              scopedToCustomer
+            />
+          )}
+        </div>
       </div>
     </div>
   );

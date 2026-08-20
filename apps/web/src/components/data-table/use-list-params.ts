@@ -1,9 +1,11 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { LIST_PARAM_KEYS } from "@/lib/list-params";
 
 /**
  * Keeps a list screen's state in the URL.
@@ -19,6 +21,7 @@ export function useListParams<P extends { q: string; page: number }>(
 ) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const [search, setSearch] = useState(params.q);
@@ -40,12 +43,23 @@ export function useListParams<P extends { q: string; page: number }>(
         lastPushed.current = patch.q;
         setSearch(patch.q);
       }
-      const qs = toQuery(next);
+      // `toQuery` only knows the list's own keys. Anything else in the URL is
+      // the page's — the reports screen keeps `tab` and `customer` there — so
+      // it rides along, otherwise the first sort would drop you back to the
+      // default tab.
+      const merged = new URLSearchParams();
+      for (const [k, v] of searchParams.entries()) {
+        if (!LIST_PARAM_KEYS.has(k)) merged.append(k, v);
+      }
+      for (const [k, v] of new URLSearchParams(toQuery(next))) {
+        merged.set(k, v);
+      }
+      const qs = merged.toString();
       startTransition(() => {
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       });
     },
-    [params, pathname, router, toQuery],
+    [params, pathname, router, searchParams, toQuery],
   );
 
   useEffect(() => {
