@@ -158,7 +158,6 @@
     "colCollected": "נגבה",
     "colOutstanding": "יתרה",
     "salesEmpty": "אין עדיין מכירות",
-    "salesSearchPlaceholder": "חיפוש תקופה",
     "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}"
   },
   "share": {

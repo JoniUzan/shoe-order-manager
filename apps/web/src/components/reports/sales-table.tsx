@@ -22,8 +22,8 @@ import {
  * choice every other list spends its tabs on.
  *
  * No search box: a period is a date, and typing at one is not how anybody
- * looks for it. `searchPlaceholder` is still required by the shell, so the
- * column labels carry the meaning instead.
+ * looks for it — so `strings` omits the placeholder and the shell leaves the
+ * box out. The column labels carry the meaning instead.
  */
 
 /** Which direction a column should take when you first sort by it. */
@@ -205,7 +205,6 @@ export function SalesTable({
         outstandingAgorot: t("colOutstanding"),
       }}
       strings={{
-        searchPlaceholder: t("salesSearchPlaceholder"),
         rowCount: t("salesRowCount", { count: total }),
         noResults: t("salesEmpty"),
         noMatch: t("salesEmpty"),

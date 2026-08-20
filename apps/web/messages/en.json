@@ -158,7 +158,6 @@
     "colCollected": "Collected",
     "colOutstanding": "Outstanding",
     "salesEmpty": "No sales yet",
-    "salesSearchPlaceholder": "Search period",
     "salesRowCount": "{count, plural, one {# period} other {# periods}}"
   },
   "share": {

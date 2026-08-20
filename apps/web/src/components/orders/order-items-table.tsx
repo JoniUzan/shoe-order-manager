@@ -20,9 +20,10 @@ import {
 /**
  * One order's line items, on the same table as every other list.
  *
- * Most orders fit on a page, and the shell hides the pager when they do — so on
- * a small order this reads as the plain table it was, and only earns its
- * controls on the large ones that used to be an unbroken wall of rows.
+ * Most orders fit on a page, and the shell hides the pager — and the toolbar —
+ * when they do. So on a small order this reads as the plain table it was, and
+ * only earns its controls on the large ones that used to be an unbroken wall
+ * of rows.
  */
 
 /** Which direction a column should take when you first sort by it. */
@@ -37,11 +38,14 @@ const FIRST_DIR: Record<OrderItemSort, "asc" | "desc"> = {
 export function OrderItemsTable({
   rows,
   total,
+  totalUnfiltered,
   pageCount,
   params,
 }: {
   rows: OrderItemRow[];
   total: number;
+  /** The order's line count before any filter — see `showToolbar` below. */
+  totalUnfiltered: number;
   pageCount: number;
   params: OrderItemListParams;
 }) {
@@ -190,6 +194,10 @@ export function OrderItemsTable({
       isPending={isPending}
       search={search}
       setSearch={setSearch}
+      // Searching and filtering eight lines you can already see is work for
+      // nothing. The threshold is a page, so the controls arrive exactly when
+      // the pager does.
+      showToolbar={totalUnfiltered > params.per}
       filterTabs={[
         { value: "all", label: t("itemsFilterAll") },
         { value: "catalog", label: t("itemsFilterCatalog") },

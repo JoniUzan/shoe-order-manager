@@ -67,6 +67,12 @@ export type OrderItemRow = {
 export type OrderItemListResult = {
   rows: OrderItemRow[];
   total: number;
+  /**
+   * How many lines the order has before any filter — what decides whether the
+   * table is worth a toolbar. `total` moves with the filter, so keying off it
+   * would make the controls vanish under the filter still being applied.
+   */
+  totalUnfiltered: number;
   pageCount: number;
   params: OrderItemListParams;
 };
@@ -169,6 +175,7 @@ export async function listOrderItems(
   return {
     rows: rows.slice(start, start + params.per),
     total,
+    totalUnfiltered: items.length,
     pageCount,
     params: page === params.page ? params : { ...params, page },
   };

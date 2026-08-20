@@ -99,6 +99,7 @@ export default async function OrderDetailPage({
       <OrderItemsTable
         rows={itemList.rows}
         total={itemList.total}
+        totalUnfiltered={itemList.totalUnfiltered}
         pageCount={itemList.pageCount}
         params={itemList.params}
       />
