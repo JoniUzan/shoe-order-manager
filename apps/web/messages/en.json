@@ -13,6 +13,7 @@
     "language": "Language"
   },
   "theme": {
+    "label": "Theme",
     "toggle": "Toggle theme",
     "light": "Light",
     "dark": "Dark",
