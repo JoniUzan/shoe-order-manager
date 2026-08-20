@@ -5,12 +5,12 @@ import { useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
- * The bordered, scroll-aware box a table sits in.
+ * The app's table standard: the bordered box, the cell rhythm, and the fades
+ * that admit there is more table off-screen.
  *
- * Split out of `DataTable` so the tables that are *not* list screens — order
- * line items, the report tables, a customer's order history — get the same
- * frame without the toolbar, the pager, or any URL state. It knows nothing
- * about rows; it watches its own overflow and draws the edges.
+ * Everything a table looks like — and nothing about what is in it — lives here,
+ * so the reports, the order line items and the three list screens can't drift
+ * apart again. `DataTable` adds the toolbar and the pager on top.
  */
 export function TableFrame({
   children,
@@ -45,7 +45,9 @@ export function TableFrame({
     // Chrome reports a negative scrollLeft in RTL; distance is what matters.
     const x = Math.abs(el.scrollLeft);
     const max = el.scrollWidth - el.clientWidth;
-    const next = { start: x > 1, end: max - x > 1 };
+    // A couple of pixels is sub-pixel rounding, not content. Fading over the
+    // last column to promise two hidden pixels is worse than the two pixels.
+    const next = { start: x > 2, end: max - x > 2 };
     // Bail out when nothing moved. `watch` is usually a fresh array literal, so
     // the effect below re-runs on every render — handing back a new object each
     // time would render again and never settle.
@@ -82,6 +84,20 @@ export function TableFrame({
       ref={tableWrap}
       className={cn(
         "relative overflow-hidden rounded-card border transition-opacity duration-150",
+        // The cell rhythm, declared once. Two things depend on the 12px:
+        // `SortHeader` pulls its button out by the button's own 10px so the
+        // heading sits on the same edge as the figures under it — with a
+        // narrower cell that button would hang past the table and register as
+        // 2px of overflow, which is exactly what used to keep the end fade lit
+        // over the money column. And the row height has to be stated, or a
+        // table whose last cell holds no button (every report) collapses to
+        // shorter than its own header.
+        // `py-0` hands the row's height entirely to `h-12`, so a cell holding a
+        // button measures the same as one holding a word — otherwise the three
+        // list screens sit a pixel taller than the reports, which is how they
+        // drifted apart in the first place. Every cell is `whitespace-nowrap`,
+        // so nothing wraps into the edge it gives up.
+        "[&_td]:px-3 [&_td]:py-0 [&_th]:px-3 [&_tbody_tr]:h-12",
         isPending && "opacity-60",
         className,
       )}

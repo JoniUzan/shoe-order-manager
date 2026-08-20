@@ -157,7 +157,9 @@ export function OwedTable({
           across every customer, not a sum of the page, so putting it in a
           `tfoot` under ten of them would read as though it added them up. */}
       {total > 0 && (
-        <div className="flex items-baseline justify-between rounded-card border bg-muted/40 px-4 py-3">
+        // `px-3` is the table's cell padding: the bottom line has to start on
+        // the same vertical as the customer names it is summing.
+        <div className="flex items-baseline justify-between rounded-card border bg-muted/40 px-3 py-3">
           <span className="text-sm font-medium">{t("owedTotal")}</span>
           <span className="text-base font-bold tabular-nums">
             {formatMoney(grandTotalAgorot, locale)}
