@@ -44,15 +44,13 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  useCallback,
-  useEffect,
   useOptimistic,
-  useRef,
   useState,
   type ReactNode,
   type TransitionStartFunction,
 } from "react";
 
+import { TableFrame } from "@/components/data-table/table-frame";
 import { LIST_PAGE_SIZES, type ListParams } from "@/lib/list-params";
 
 /**
@@ -107,6 +105,7 @@ export function DataTable<TRow, F extends string, S extends string>({
   onRowClick,
   isRowActive,
   aboveTable,
+  showToolbar = true,
 }: {
   rows: TRow[];
   columns: ColumnDef<TRow>[];
@@ -127,12 +126,20 @@ export function DataTable<TRow, F extends string, S extends string>({
   /** Column id → label, for the visibility menu. */
   columnLabels: Record<string, string>;
   strings: {
-    searchPlaceholder: string;
+    /** Omit to render no search box — a list nothing is worth typing at. */
+    searchPlaceholder?: string;
     /** Already formatted, e.g. "12 customers". */
     rowCount: string;
     noResults: string;
     noMatch: string;
   };
+  /**
+   * Whether this list is big enough to be worth steering. False drops the
+   * toolbar whole — a three-line order should not carry four controls.
+   * Decide it from the *unfiltered* count, or the toolbar disappears under
+   * the filter that is still narrowing the list.
+   */
+  showToolbar?: boolean;
   onRowClick?: (row: TRow) => void;
   isRowActive?: (row: TRow) => boolean;
   /** Slot between the toolbar and the table — a bulk-action bar, typically. */
@@ -144,47 +151,6 @@ export function DataTable<TRow, F extends string, S extends string>({
   const isRtl = locale === "he";
 
   const [visibility, setVisibility] = useState<VisibilityState>({});
-
-  /* ---------------------------------------------------------- scroll edges */
-
-  // A table wider than the phone silently hides the money columns behind a
-  // clipped edge — it looks finished when it isn't. These flags drive a fade
-  // at whichever edge still has content behind it.
-  const tableWrap = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ start: false, end: false });
-
-  const measureEdges = useCallback(() => {
-    const el = tableWrap.current?.querySelector<HTMLElement>(
-      '[data-slot="table-container"]',
-    );
-    if (!el) return;
-    // Chrome reports a negative scrollLeft in RTL; distance is what matters.
-    const x = Math.abs(el.scrollLeft);
-    const max = el.scrollWidth - el.clientWidth;
-    setEdges({ start: x > 1, end: max - x > 1 });
-  }, []);
-
-  // The listener and observer outlive the rows: `rows` is a new array on every
-  // navigation, so watching it here would tear the pair down and rebuild them
-  // on every page, sort and keystroke. The effect below re-measures instead.
-  useEffect(() => {
-    const el = tableWrap.current?.querySelector<HTMLElement>(
-      '[data-slot="table-container"]',
-    );
-    if (!el) return;
-    measureEdges();
-    el.addEventListener("scroll", measureEdges, { passive: true });
-    const ro = new ResizeObserver(measureEdges);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", measureEdges);
-      ro.disconnect();
-    };
-  }, [measureEdges]);
-
-  // New rows or a hidden column can change the overflow without resizing the
-  // container — a wider name on this page, one column fewer on the next.
-  useEffect(measureEdges, [rows, visibility, measureEdges]);
 
   // Reverts on its own if the navigation never lands, so the pill can never be
   // left marking a filter the list is not actually showing.
@@ -210,7 +176,14 @@ export function DataTable<TRow, F extends string, S extends string>({
   const First = isRtl ? ChevronsRight : ChevronsLeft;
   const Last = isRtl ? ChevronsLeft : ChevronsRight;
 
-  const isNarrowed = params.q !== "" || params.filter !== defaultFilter;
+  const hasSearch = strings.searchPlaceholder !== undefined;
+  const hideableColumns = table.getAllColumns().filter((c) => c.getCanHide());
+
+  // Only what the toolbar can actually undo counts as narrowing: offering
+  // "clear filters" over a `q` with no box to type it in would clear something
+  // the reader cannot see.
+  const isNarrowed =
+    (hasSearch && params.q !== "") || params.filter !== defaultFilter;
 
   function clearFilters() {
     // `setParams` resets the search box itself — it is the one that knows the
@@ -224,106 +197,97 @@ export function DataTable<TRow, F extends string, S extends string>({
     // leaving a hole under the toolbar whenever nothing is selected.
     <div className="flex flex-col">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* The filter is URL state, so a plain controlled value would leave the
+      {showToolbar && (
+        <div className="flex flex-wrap items-center gap-3">
+          {/* The filter is URL state, so a plain controlled value would leave the
             pill sitting still until the server answered — measured at 183ms of
             dead time before it even started to move. The optimistic value lets
             it leave on the click and reconcile when the rows arrive. */}
-        {filterTabs && filterTabs.length > 0 && (
-          <Tabs
-            value={filterView}
-            onValueChange={(v) =>
-              startTransition(() => {
-                setFilterView(v as F);
-                setParams({ filter: v as F });
-              })
-            }
-          >
-            <TabsList>
-              {filterTabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className={HIT_TALLER}
-                >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        )}
-
-        <div className="relative min-w-0 flex-1 sm:max-w-72">
-          <Search className="pointer-events-none absolute inset-y-0 start-2.5 my-auto size-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={strings.searchPlaceholder}
-            aria-label={tc("search")}
-            className="h-9 ps-8 pe-8"
-          />
-          {search !== "" && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              aria-label={t("clearSearch")}
-              className="absolute inset-y-0 end-2 my-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+          {filterTabs && filterTabs.length > 0 && (
+            <Tabs
+              value={filterView}
+              onValueChange={(v) =>
+                startTransition(() => {
+                  setFilterView(v as F);
+                  setParams({ filter: v as F });
+                })
+              }
             >
-              <X className="size-3.5" />
-            </button>
+              <TabsList>
+                {filterTabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={HIT_TALLER}
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          )}
+
+          {/* A list you cannot usefully search gets no box. The sales report is
+            bucketed by date, and typing at a month is not how anybody looks
+            for one — its query never read `q` at all, so the box that used to
+            stand here was answering nothing. */}
+          {hasSearch && (
+            <div className="relative min-w-0 flex-1 sm:max-w-72">
+              <Search className="pointer-events-none absolute inset-y-0 start-2.5 my-auto size-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={strings.searchPlaceholder}
+                aria-label={tc("search")}
+                className="h-9 ps-8 pe-8"
+              />
+              {search !== "" && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label={t("clearSearch")}
+                  className="absolute inset-y-0 end-2 my-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Every column pinned means the menu can only ever open on nothing. */}
+          {hideableColumns.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="ms-auto">
+                  <SlidersHorizontal />
+                  <span className="hidden sm:inline">{t("columns")}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hideableColumns.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {columnLabels[column.id] ?? column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="ms-auto">
-              <SlidersHorizontal />
-              <span className="hidden sm:inline">{t("columns")}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((c) => c.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {columnLabels[column.id] ?? column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      )}
 
       {aboveTable}
 
-      <div
-        ref={tableWrap}
-        className={cn(
-          "relative mt-4 overflow-hidden rounded-card border transition-opacity duration-150",
-          isPending && "opacity-60",
-        )}
+      <TableFrame
+        className={cn(showToolbar && "mt-4")}
+        isPending={isPending}
+        watch={[rows, visibility]}
       >
-        {(["start", "end"] as const).map((side) =>
-          edges[side] ? (
-            <div
-              key={side}
-              aria-hidden
-              className={cn(
-                "pointer-events-none absolute inset-y-0 z-10 w-12",
-                side === "start" ? "start-0" : "end-0",
-              )}
-              style={{
-                background: `linear-gradient(to ${
-                  (side === "end") === isRtl ? "right" : "left"
-                }, var(--background), transparent)`,
-              }}
-            />
-          ) : null,
-        )}
         <Table>
           <TableHeader className="bg-muted/40">
             {table.getHeaderGroups().map((hg) => (
@@ -408,7 +372,10 @@ export function DataTable<TRow, F extends string, S extends string>({
                       key={cell.id}
                       className={cell.column.columnDef.meta?.cellClassName}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -416,7 +383,7 @@ export function DataTable<TRow, F extends string, S extends string>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableFrame>
 
       {/* Footer — a pager over an empty result is chrome that only says no */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
@@ -430,9 +397,7 @@ export function DataTable<TRow, F extends string, S extends string>({
             </span>
             <Select
               value={String(params.per)}
-              onValueChange={(v) =>
-                setParams({ per: Number(v) })
-              }
+              onValueChange={(v) => setParams({ per: Number(v) })}
             >
               <SelectTrigger size="sm" className="w-[4.5rem]">
                 <SelectValue />
@@ -464,9 +429,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               variant="outline"
               size="icon"
               className={HIT_TALLER}
-              onClick={() =>
-                setParams({ page: params.page - 1 })
-              }
+              onClick={() => setParams({ page: params.page - 1 })}
               disabled={params.page <= 1}
               aria-label={t("prevPage")}
             >
@@ -476,9 +439,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               variant="outline"
               size="icon"
               className={HIT_TALLER}
-              onClick={() =>
-                setParams({ page: params.page + 1 })
-              }
+              onClick={() => setParams({ page: params.page + 1 })}
               disabled={params.page >= pageCount}
               aria-label={t("nextPage")}
             >
@@ -488,9 +449,7 @@ export function DataTable<TRow, F extends string, S extends string>({
               variant="outline"
               size="icon"
               className={cn("hidden sm:inline-flex", HIT_TALLER)}
-              onClick={() =>
-                setParams({ page: pageCount })
-              }
+              onClick={() => setParams({ page: pageCount })}
               disabled={params.page >= pageCount}
               aria-label={t("lastPage")}
             >

@@ -11,6 +11,20 @@
 
 export const LIST_PAGE_SIZES = [10, 20, 50] as const;
 
+/**
+ * The query keys a list owns. Everything else in the URL belongs to the page —
+ * the reports screen keeps its `tab` and `customer` there — so `useListParams`
+ * carries the rest through untouched instead of serializing over them.
+ */
+export const LIST_PARAM_KEYS = new Set([
+  "q",
+  "filter",
+  "sort",
+  "dir",
+  "per",
+  "page",
+]);
+
 export type ListParams<F extends string, S extends string> = {
   q: string;
   filter: F;
