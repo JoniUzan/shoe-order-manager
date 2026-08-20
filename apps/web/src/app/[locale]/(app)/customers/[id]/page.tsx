@@ -106,7 +106,7 @@ export default async function CustomerDetailPage({
           </h3>
           {list.total === 0 && list.params.q === "" ? (
             <Card>
-              <CardContent className="py-12 text-center text-sm text-muted-foreground">
+              <CardContent className="py-6 text-center text-sm text-muted-foreground">
                 {t("noOrders")}
               </CardContent>
             </Card>

@@ -235,7 +235,9 @@ async function SalesReport({
 function EmptyCard({ children }: { children: ReactNode }) {
   return (
     <Card>
-      <CardContent className="py-12 text-center text-sm text-muted-foreground">
+      {/* No vertical padding here: `Card` already carries `py-6`, and adding
+          to it stacked two paddings into a card mostly made of nothing. */}
+      <CardContent className="py-6 text-center text-sm text-muted-foreground">
         {children}
       </CardContent>
     </Card>
@@ -245,7 +247,7 @@ function EmptyCard({ children }: { children: ReactNode }) {
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
     <Card>
-      <CardContent className="flex flex-col gap-1 py-4">
+      <CardContent className="flex flex-col gap-1">
         <span className="text-sm text-muted-foreground">{label}</span>
         <span className="text-xl font-bold tabular-nums">{value}</span>
       </CardContent>
