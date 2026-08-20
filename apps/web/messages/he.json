@@ -60,6 +60,7 @@
     "close": "סגירה",
     "print": "הדפסה",
     "searchPlaceholder": "חיפוש לקוח או מספר הזמנה",
+    "searchPlaceholderScoped": "חיפוש מספר הזמנה",
     "noMatch": "לא נמצאו הזמנות מתאימות",
     "selectAll": "בחירת כל השורות בעמוד",
     "selectRow": "בחירת הזמנה #{number}",

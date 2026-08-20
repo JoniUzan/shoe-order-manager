@@ -76,7 +76,8 @@ export function OrdersTable({
    * The list is already narrowed to one customer, so the customer column would
    * repeat the same name on every row and sorting by it would do nothing. Drops
    * the column rather than hiding it, so it cannot be switched back on from the
-   * column menu into a state the rows do not support.
+   * column menu into a state the rows do not support. Narrows the search
+   * placeholder to match.
    */
   scopedToCustomer?: boolean;
 }) {
@@ -384,7 +385,11 @@ export function OrdersTable({
           balanceAgorot: t("colBalance"),
         }}
         strings={{
-          searchPlaceholder: t("searchPlaceholder"),
+          // Scoped to one customer, "search customer" offers a search that
+          // can only ever return the customer you are already looking at.
+          searchPlaceholder: t(
+            scopedToCustomer ? "searchPlaceholderScoped" : "searchPlaceholder",
+          ),
           rowCount: t("rowCount", { count: total }),
           noResults: t("noResults"),
           noMatch: t("noMatch"),

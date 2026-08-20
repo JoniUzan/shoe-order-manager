@@ -60,6 +60,7 @@
     "close": "Close",
     "print": "Print",
     "searchPlaceholder": "Search customer or order #",
+    "searchPlaceholderScoped": "Search order #",
     "noMatch": "No orders match your search",
     "selectAll": "Select all rows on this page",
     "selectRow": "Select order #{number}",
