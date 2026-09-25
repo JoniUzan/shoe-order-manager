@@ -64,6 +64,38 @@ const MODELS = [
   ["כפכף אורתופדי", "ORT-030", 11000],
 ] as const;
 
+/**
+ * Size runs and packs (סדרות) for a few models, so order lines can take N
+ * packs. Curves are pairs per size across the run — a typical wholesale box.
+ */
+const WOMEN = ["36", "37", "38", "39", "40", "41"];
+const MEN = ["40", "41", "42", "43", "44", "45"];
+const PACKS: Record<string, { sizes: string[]; packs: [string, number[]][] }> = {
+  "SNK-220": { sizes: WOMEN, packs: [["סדרה א׳", [1, 2, 3, 3, 2, 1]]] },
+  "EVE-330": {
+    sizes: WOMEN,
+    packs: [
+      ["סדרה א׳", [1, 2, 3, 3, 2, 1]],
+      ["סדרה ב׳", [0, 1, 2, 2, 1, 0]],
+    ],
+  },
+  "CHL-390": { sizes: MEN, packs: [["סדרה א׳", [1, 2, 2, 2, 2, 1]]] },
+  "RUN-260": {
+    sizes: MEN,
+    packs: [
+      ["סדרה א׳", [1, 2, 2, 2, 2, 1]],
+      ["סדרה ב׳", [0, 1, 2, 2, 1, 0]],
+    ],
+  },
+};
+/** "38:3,39:2" — the canonical curve string (serializeCurve in @repo/domain). */
+const curveOf = (sizes: string[], pairs: number[]) =>
+  sizes
+    .map((size, i) => [size, pairs[i] ?? 0] as const)
+    .filter(([, n]) => n > 0)
+    .map(([size, n]) => `${size}:${n}`)
+    .join(",");
+
 const COLORS = ["שחור", "לבן", "חום", "בז׳", "אפור", "נייבי", "בורדו", "טאופ"];
 const SIZES = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
 const CUSTOM = [
@@ -91,6 +123,8 @@ async function reset(ownerId: string) {
   });
   const orderIds = orders.map((o) => o.id);
 
+  // OrderPack rows go with their order, SizePack rows with their model (both
+  // cascade in the schema).
   await prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } });
   await prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
   await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
@@ -144,6 +178,7 @@ async function main() {
 
   const models = [];
   for (const [name, sku, price] of MODELS) {
+    const packed = PACKS[sku];
     models.push(
       await prisma.shoeModel.create({
         data: {
@@ -153,11 +188,25 @@ async function main() {
           defaultPriceAgorot: price,
           description: TAG,
           isActive: true,
+          sizes: packed ? packed.sizes.join(",") : null,
+          packs: packed
+            ? {
+                create: packed.packs.map(([packName, pairs], i) => ({
+                  name: packName,
+                  curve: curveOf(packed.sizes, pairs),
+                  sortOrder: i,
+                })),
+              }
+            : undefined,
         },
+        include: { packs: { orderBy: { sortOrder: "asc" } } },
       }),
     );
   }
-  console.log(`✓ ${models.length} catalog models`);
+  const packedModels = models.filter((m) => m.packs.length > 0);
+  console.log(
+    `✓ ${models.length} catalog models (${packedModels.length} with packs)`,
+  );
 
   const last = await prisma.order.findFirst({
     where: { ownerId: owner.id },
@@ -194,8 +243,54 @@ async function main() {
 
       const lineCount = between(1, 5);
       const items = [];
+      const packs = [];
       let total = 0;
       for (let l = 0; l < lineCount; l++) {
+        // About 30% of lines (0.72 catalog × 0.42) take 1–10 packs of a
+        // model that has them, some with a few extra pairs on top.
+        if (rand() < 0.72 && rand() < 0.42) {
+          const model = pick(packedModels);
+          const pack = pick(model.packs);
+          const count = between(1, 10);
+          const unit =
+            Math.round(
+              ((model.defaultPriceAgorot ?? 15000) * (0.9 + rand() * 0.25)) / 50,
+            ) * 50;
+          const color = pick(COLORS);
+          const packItems = pack.curve.split(",").map((part) => {
+            const [size, pairs] = part.split(":");
+            return {
+              shoeModelId: model.id,
+              customDescription: null,
+              size: size!,
+              color,
+              quantity: Number(pairs) * count,
+              unitPriceAgorot: unit,
+            };
+          });
+          packs.push({
+            sizePackId: pack.id,
+            packName: pack.name,
+            curve: pack.curve,
+            count,
+            items: packItems,
+          });
+          total += packItems.reduce((n, it) => n + it.quantity * unit, 0);
+          if (rand() < 0.4) {
+            const sizes = model.sizes!.split(",");
+            const quantity = between(1, 3);
+            total += unit * quantity;
+            items.push({
+              shoeModelId: model.id,
+              customDescription: null,
+              size: pick(sizes),
+              color,
+              quantity,
+              unitPriceAgorot: unit,
+            });
+          }
+          continue;
+        }
         const quantity = between(1, 12);
         const useCatalog = rand() < 0.72;
         const model = pick(models);
@@ -264,6 +359,17 @@ async function main() {
           items: { create: items },
         },
       });
+      for (const { items: packItems, ...pack } of packs) {
+        await prisma.orderPack.create({
+          data: {
+            orderId: order.id,
+            ...pack,
+            items: {
+              create: packItems.map((it) => ({ orderId: order.id, ...it })),
+            },
+          },
+        });
+      }
       created++;
 
       for (const p of paymentRows) {
