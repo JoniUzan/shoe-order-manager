@@ -75,7 +75,7 @@ list; see `CLAUDE.md` for the technical architecture.
 
 ## Not built yet
 
-- **M7 — Cloud (multi-device):** the app currently runs **locally** on one computer (its data lives in a local SQLite file). Moving to the cloud (Turso database + hosting) is a deliberate later step that unlocks:
+- **M7 — Cloud (multi-device):** the database is moving to **Supabase** (Postgres) — done in code; the app itself still needs hosting (Vercel). Once both are live, that unlocks:
   - using it from **any device** (phone + computer) on the same account,
   - a **one-tap** "send the order as a link" over WhatsApp,
   - and adding **more users** (e.g. staff) — the data model already supports this.
@@ -85,6 +85,7 @@ list; see `CLAUDE.md` for the technical architecture.
 
 ```bash
 pnpm install
+docker compose up -d   # local Postgres (copy the .env.example files first)
 pnpm db:migrate   # set up the database (first time)
 pnpm db:seed      # create the login account
 pnpm dev          # http://localhost:3000

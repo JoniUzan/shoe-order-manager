@@ -88,13 +88,12 @@ function buildWhere(
   if (p.filter === "hasOrders") where.orders = { some: {} };
 
   if (p.q) {
-    // No `mode: "insensitive"` — Prisma rejects it on the SQLite provider.
-    // SQLite's LIKE is already case-insensitive for ASCII, and Hebrew has no
-    // case, so a plain `contains` is the correct (and only) option here.
+    // Postgres `contains` is case-sensitive, so ask for ILIKE explicitly
+    // ("nike" should find "Nike"). Hebrew has no case, so it's unaffected.
     where.OR = [
-      { name: { contains: p.q } },
-      { contactName: { contains: p.q } },
-      { phone: { contains: p.q } },
+      { name: { contains: p.q, mode: "insensitive" } },
+      { contactName: { contains: p.q, mode: "insensitive" } },
+      { phone: { contains: p.q, mode: "insensitive" } },
     ];
   }
   return where;

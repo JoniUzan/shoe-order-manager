@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@repo/db";
+import { Prisma, prisma } from "@repo/db";
 import {
   orderSchema,
   recalculateOrderTotals,
@@ -19,6 +19,17 @@ async function requireOwnerId(): Promise<string> {
 function nullify(value?: string | null): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+// Two creates at once (say, phone and computer) can both read the same last
+// orderNumber; the loser trips @@unique([ownerId, orderNumber]) and simply
+// takes the next number on a fresh attempt.
+const ORDER_NUMBER_ATTEMPTS = 3;
+
+function isUniqueViolation(e: unknown): boolean {
+  return (
+    e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002"
+  );
 }
 
 export type OrderActionResult =
@@ -80,28 +91,38 @@ export async function createOrder(
   const totals = recalculateOrderTotals(data.items, 0);
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
-  const order = await prisma.$transaction(async (tx) => {
-    const last = await tx.order.findFirst({
-      where: { ownerId },
-      orderBy: { orderNumber: "desc" },
-      select: { orderNumber: true },
+  const create = () =>
+    prisma.$transaction(async (tx) => {
+      const last = await tx.order.findFirst({
+        where: { ownerId },
+        orderBy: { orderNumber: "desc" },
+        select: { orderNumber: true },
+      });
+      const orderNumber = (last?.orderNumber ?? 0) + 1;
+      return tx.order.create({
+        data: {
+          ownerId,
+          customerId: data.customerId,
+          orderNumber,
+          statusCode: data.statusCode,
+          notes: nullify(data.notes),
+          totalAgorot: totals.totalAgorot,
+          paymentStatus: totals.paymentStatus,
+          isCustomOrder,
+          items: { create: itemCreateData(data) },
+        },
+        select: { id: true },
+      });
     });
-    const orderNumber = (last?.orderNumber ?? 0) + 1;
-    return tx.order.create({
-      data: {
-        ownerId,
-        customerId: data.customerId,
-        orderNumber,
-        statusCode: data.statusCode,
-        notes: nullify(data.notes),
-        totalAgorot: totals.totalAgorot,
-        paymentStatus: totals.paymentStatus,
-        isCustomOrder,
-        items: { create: itemCreateData(data) },
-      },
-      select: { id: true },
-    });
-  });
+
+  let order: { id: string } | undefined;
+  for (let attempt = 1; !order; attempt++) {
+    try {
+      order = await create();
+    } catch (e) {
+      if (attempt >= ORDER_NUMBER_ATTEMPTS || !isUniqueViolation(e)) throw e;
+    }
+  }
 
   revalidateOrderViews();
   return { ok: true, id: order.id };
@@ -133,6 +154,14 @@ export async function updateOrder(
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
   const applied = await prisma.$transaction(async (tx) => {
+    // Touch the row first to take its lock (updateMany, so a deleted order is
+    // a count of 0, not a throw): a payment on this order then waits for this
+    // save, or this save for it, so the deposit read below is current.
+    // Postgres runs READ COMMITTED, where a plain read wouldn't block.
+    await tx.order.updateMany({
+      where: { id, ownerId },
+      data: { updatedAt: new Date() },
+    });
     // Editing items changes the total, which changes the payment status — so
     // the deposit has to be re-read here rather than round-tripped through the
     // form, where it could be minutes stale. Read inside the transaction so a

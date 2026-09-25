@@ -10,8 +10,8 @@ import {
 /**
  * "A page of sales periods" — the sales report's list definition.
  *
- * The bucketing is deliberately JS, not `date_trunc`/`strftime`: the schema is
- * kept portable for a future Turso/libSQL swap, so no DB date functions. That
+ * The bucketing is deliberately JS, not `date_trunc`: the schema is kept
+ * portable across Postgres hosts, so no DB date functions. That
  * settles the rest of the shape too — the buckets only exist after the rows are
  * read, so sorting and paging happen over them here.
  *

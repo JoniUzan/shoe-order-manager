@@ -1,0 +1,18 @@
+# Local Postgres for development: `docker compose up -d`.
+# Matches the DATABASE_URL / DIRECT_URL in packages/db/.env.example and
+# apps/web/.env.example. Production uses Supabase; this never touches it.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shoes
+      POSTGRES_PASSWORD: shoes
+      POSTGRES_DB: shoes
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

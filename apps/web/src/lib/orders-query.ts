@@ -102,11 +102,10 @@ function buildWhere(
   if (p.filter === "unpaid") where.paymentStatus = { not: "paid" };
 
   if (p.q) {
-    // No `mode: "insensitive"` — Prisma rejects it on the SQLite provider.
-    // SQLite's LIKE is already case-insensitive for ASCII, and Hebrew has no
-    // case, so a plain `contains` is the correct (and only) option here.
+    // Postgres `contains` is case-sensitive, so ask for ILIKE explicitly
+    // ("nike" should find "Nike"). Hebrew has no case, so it's unaffected.
     const or: Prisma.OrderWhereInput[] = [
-      { customer: { name: { contains: p.q } } },
+      { customer: { name: { contains: p.q, mode: "insensitive" } } },
     ];
     const asNumber = Number(p.q);
     if (Number.isInteger(asNumber) && asNumber > 0) {

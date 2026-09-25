@@ -1,15 +1,22 @@
 // Shoe Order Manager — Prisma schema
-// v1 datasource is SQLite; kept portable (no triggers, no generated columns,
-// no DB-side UUIDs, no DB date functions) so a later swap to Turso/libSQL is
-// a one-line datasource change. Money is stored as INTEGER agorot.
+// Datasource is Postgres (Supabase in production, used as plain Postgres —
+// no Supabase Auth, RLS or storage). Still kept portable (no triggers, no
+// generated columns, no DB-side UUIDs, no DB date functions) so moving to any
+// other Postgres host is a pg_dump + a new DATABASE_URL. Money is stored as
+// INTEGER agorot.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Runtime connection. On Supabase this is the pooled (transaction-mode,
+  // port 6543) URL, which serverless hosting needs.
+  url       = env("DATABASE_URL")
+  // Direct (session, port 5432) connection for `prisma migrate` — migrations
+  // can't run through a transaction-mode pooler. Locally, the same URL twice.
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------
@@ -111,8 +118,8 @@ model ShoeModel {
   description       String?
   defaultPriceAgorot Int?
   // The size run this model is ordered in, as a comma-separated list ordered
-  // ascending ("36,37,38"). A String, not Json or an array: SQLite has neither,
-  // and a scalar column keeps the libSQL swap open.
+  // ascending ("36,37,38"). A String rather than an array column: it predates
+  // the Postgres move, and a scalar keeps the schema portable.
   sizes             String?
   // Which sizing system those numbers belong to: "eu" | "us" | "uk". A label
   // only — every supported system is numeric, so it never changes what is a
@@ -133,7 +140,8 @@ model Order {
   ownerId       String
   customerId    String
   // Human-friendly running number, assigned per-owner in the create action
-  // (SQLite can't autoincrement a non-id column; app assignment is portable).
+  // (a per-owner sequence isn't expressible as autoincrement; app assignment
+  // is portable). Concurrent creates are retried on the unique constraint.
   orderNumber   Int
   statusCode    String   @default("not_done")
   isCustomOrder Boolean  @default(false)
@@ -164,7 +172,7 @@ model OrderItem {
   id                String  @id @default(cuid())
   orderId           String
   // Catalog reference XOR free-text custom item — invariant enforced in the
-  // Zod schema + Server Action (SQLite can't express a cross-column CHECK here).
+  // Zod schema + Server Action (Prisma can't declare a cross-column CHECK).
   shoeModelId       String?
   customDescription String?
   size              String // text: supports "42", "42.5", "US 9"

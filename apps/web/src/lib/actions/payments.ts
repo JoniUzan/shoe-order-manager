@@ -17,8 +17,24 @@ export type PaymentActionResult =
   | { ok: false; error: "invalid" | "not_found" | "too_much" };
 
 /**
+ * Lock the order row and read its current money. Every payment transaction
+ * starts here. Postgres runs READ COMMITTED, so without the lock two payments
+ * landing at once (a double tap, or phone + computer) could both pass the
+ * "not more than what's left" check and both sum without the other's row.
+ * With it, the second waits for the first to commit, then reads its result.
+ */
+function lockOrder(tx: Prisma.TransactionClient, orderId: string) {
+  return tx.order.update({
+    where: { id: orderId },
+    data: { updatedAt: new Date() },
+    select: { totalAgorot: true, depositAgorot: true },
+  });
+}
+
+/**
  * Recompute an order's denormalized payment fields (depositAgorot = sum of
- * payments, and paymentStatus) from its Payment rows. Runs inside a tx.
+ * payments, and paymentStatus) from its Payment rows. Runs inside a tx that
+ * already holds the order's lock (lockOrder).
  */
 async function recomputeOrderPayment(
   tx: Prisma.TransactionClient,
@@ -61,14 +77,15 @@ export async function recordPayment(
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, ownerId },
-    select: { totalAgorot: true, depositAgorot: true },
+    select: { id: true },
   });
   if (!order) return { ok: false, error: "not_found" };
 
-  const remaining = order.totalAgorot - order.depositAgorot;
-  if (amountAgorot > remaining) return { ok: false, error: "too_much" };
-
-  await prisma.$transaction(async (tx) => {
+  // The "too much" check runs on the locked, current deposit — checked before
+  // the transaction, a concurrent payment could make it stale.
+  const recorded = await prisma.$transaction(async (tx) => {
+    const current = await lockOrder(tx, orderId);
+    if (amountAgorot > current.totalAgorot - current.depositAgorot) return false;
     await tx.payment.create({
       data: {
         ownerId,
@@ -78,7 +95,9 @@ export async function recordPayment(
       },
     });
     await recomputeOrderPayment(tx, orderId);
+    return true;
   });
+  if (!recorded) return { ok: false, error: "too_much" };
 
   revalidateOrderViews(orderId);
   return { ok: true };
@@ -90,14 +109,16 @@ export async function markFullyPaid(
   const ownerId = await requireOwnerId();
   const order = await prisma.order.findFirst({
     where: { id: orderId, ownerId },
-    select: { totalAgorot: true, depositAgorot: true },
+    select: { id: true },
   });
   if (!order) return { ok: false, error: "not_found" };
 
-  const remaining = order.totalAgorot - order.depositAgorot;
-  if (remaining <= 0) return { ok: true };
-
+  // "Remaining" is read under the lock, so a double tap pays it once: the
+  // second transaction waits, then finds nothing left.
   await prisma.$transaction(async (tx) => {
+    const current = await lockOrder(tx, orderId);
+    const remaining = current.totalAgorot - current.depositAgorot;
+    if (remaining <= 0) return;
     await tx.payment.create({
       data: { ownerId, orderId, amountAgorot: remaining },
     });
@@ -119,6 +140,7 @@ export async function deletePayment(
   if (!payment) return { ok: false, error: "not_found" };
 
   await prisma.$transaction(async (tx) => {
+    await lockOrder(tx, payment.orderId);
     await tx.payment.delete({ where: { id: paymentId } });
     await recomputeOrderPayment(tx, payment.orderId);
   });

@@ -31,7 +31,7 @@ export default async function DashboardPage({
   const listParams = parseOrderListParams(await searchParams);
 
   // 90-day window for the sales chart. Bucketing happens in JS, not SQL —
-  // the schema stays portable (no date functions) for the Turso swap.
+  // the schema stays portable (no DB date functions) across Postgres hosts.
   const windowStart = new Date();
   windowStart.setHours(0, 0, 0, 0);
   windowStart.setDate(windowStart.getDate() - 89);
