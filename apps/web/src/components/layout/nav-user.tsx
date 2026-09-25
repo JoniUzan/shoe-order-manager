@@ -54,6 +54,7 @@ export function NavUser({
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const ThemeIcon = THEMES.find(({ value }) => value === theme)?.Icon ?? Sun;
   const [, startTransition] = useTransition();
 
   const initials =
@@ -142,7 +143,7 @@ export function NavUser({
             </DropdownMenuSub>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <Sun className="size-4" />
+                <ThemeIcon className="size-4" />
                 {tTheme("label")}
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
