@@ -24,7 +24,7 @@ packages/config/*     shared typescript / eslint config
 
 ```bash
 pnpm install
-docker compose up -d  # local Postgres 16 on :5432
+docker compose up -d  # local Postgres 17 on localhost:5432
 pnpm db:migrate       # run migrations
 pnpm db:seed          # seed order statuses + admin user
 pnpm dev              # http://localhost:3000
