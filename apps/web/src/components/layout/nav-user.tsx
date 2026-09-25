@@ -4,10 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
 import {
@@ -17,7 +22,8 @@ import {
   useSidebar,
 } from "@repo/ui/components/sidebar";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronsUpDown, Languages, LogOut } from "lucide-react";
+import { ChevronsUpDown, Languages, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useTransition } from "react";
 
 import { orbSrc } from "@/components/ui/orb";
@@ -30,16 +36,25 @@ const LOCALE_LABELS: Record<string, string> = {
   en: "English",
 };
 
+const THEMES = [
+  { value: "light", Icon: Sun },
+  { value: "dark", Icon: Moon },
+  { value: "system", Icon: Monitor },
+] as const;
+
 export function NavUser({
   user,
 }: {
   user: { name: string; email: string };
 }) {
   const t = useTranslations("nav");
+  const tTheme = useTranslations("theme");
   const locale = useLocale();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const ThemeIcon = THEMES.find(({ value }) => value === theme)?.Icon ?? Sun;
   const [, startTransition] = useTransition();
 
   const initials =
@@ -81,7 +96,9 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            // The sidebar sits on the start edge, so the menu opens toward the
+            // page: right in English, left in Hebrew.
+            side={isMobile ? "bottom" : locale === "he" ? "left" : "right"}
             align="end"
             sideOffset={4}
           >
@@ -104,23 +121,47 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Languages className="size-3.5" />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Languages className="size-4" />
                 {t("language")}
-              </span>
-            </DropdownMenuLabel>
-            <DropdownMenuGroup>
-              {routing.locales.map((l) => (
-                <DropdownMenuItem
-                  key={l}
-                  onClick={() => switchLocale(l)}
-                  className={l === locale ? "font-semibold" : undefined}
-                >
-                  {LOCALE_LABELS[l] ?? l}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup
+                    value={locale}
+                    onValueChange={switchLocale}
+                  >
+                    {routing.locales.map((l) => (
+                      <DropdownMenuRadioItem key={l} value={l}>
+                        {LOCALE_LABELS[l] ?? l}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ThemeIcon className="size-4" />
+                {tTheme("label")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup
+                    value={theme}
+                    onValueChange={setTheme}
+                  >
+                    {THEMES.map(({ value, Icon }) => (
+                      <DropdownMenuRadioItem key={value} value={value}>
+                        <Icon className="size-4" />
+                        {tTheme(value)}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <form action={signOutAction}>
               <input type="hidden" name="locale" value={locale} />

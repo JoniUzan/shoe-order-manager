@@ -13,7 +13,7 @@
     "language": "Language"
   },
   "theme": {
-    "toggle": "Toggle theme",
+    "label": "Theme",
     "light": "Light",
     "dark": "Dark",
     "system": "System"

@@ -5,8 +5,6 @@ import { SidebarTrigger } from "@repo/ui/components/sidebar";
 import { useTranslations } from "next-intl";
 
 import { usePathname } from "@/i18n/navigation";
-import { LocaleSwitcher } from "./locale-switcher";
-import { ModeToggle } from "./mode-toggle";
 
 function titleKeyForPath(pathname: string): string {
   if (pathname === "/" || pathname === "") return "dashboard";
@@ -30,10 +28,6 @@ export function SiteHeader() {
         className="me-2 data-[orientation=vertical]:h-4"
       />
       <h1 className="text-base font-medium">{title}</h1>
-      <div className="ms-auto flex items-center gap-2">
-        <ModeToggle />
-        <LocaleSwitcher />
-      </div>
     </header>
   );
 }

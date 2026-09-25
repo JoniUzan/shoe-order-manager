@@ -67,8 +67,8 @@ list; see `CLAUDE.md` for the technical architecture.
   a **who-owes-money** list, and a **recent orders** table.
 
 ## Languages & appearance
-- **Hebrew (right-to-left)** and **English**, switchable from the top bar or the user menu; the whole layout (including which side the sidebar is on) flips for Hebrew.
-- **Dark mode** toggle in the top bar (light / dark / system).
+- **Hebrew (right-to-left)** and **English**, switchable from the account menu (click your name at the bottom of the sidebar); the whole layout (including which side the sidebar is on) flips for Hebrew.
+- **Dark mode** — pick light / dark / system from the account menu's Theme submenu.
 - Money is shown in shekels (₪); the app stores it exactly (in agorot) so totals are always precise.
 
 ---
