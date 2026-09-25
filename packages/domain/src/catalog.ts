@@ -117,15 +117,131 @@ export function expandSizeRange(
   return out;
 }
 
-export const shoeModelSchema = z.object({
-  name: z.string().trim().min(1, { message: "required" }).max(200),
-  sku: z.string().trim().max(100).optional().or(z.literal("")),
-  description: z.string().trim().max(2000).optional().or(z.literal("")),
-  // Entered in shekels in the UI, converted to agorot before persisting.
-  defaultPriceAgorot: z.number().int().min(0).nullable().optional(),
-  sizes: z.array(sizeSchema).max(MAX_SIZES).default([]),
-  sizeFormat: z.enum(SIZE_FORMATS).default("eu"),
-  isActive: z.boolean().default(true),
-});
+// ---------------------------------------------------------------------------
+// Packs (Hebrew: סדרות) — a named box a model is sold in, with a fixed number
+// of pairs per size. Stored as a curve string, like `sizes`: "38:3,39:2,40:3".
+// ---------------------------------------------------------------------------
+
+/** Pairs per size in one pack, sizes ascending. */
+export type Curve = { size: string; pairs: number }[];
+
+/** The most packs one model may carry. */
+export const MAX_PACKS = 10;
+
+/**
+ * Tolerant, like `parseSizes`: a malformed part is skipped rather than
+ * failing the whole curve, and sizes are normalised so "42.0" reads as "42".
+ * A size listed twice is summed.
+ */
+export function parseCurve(stored: string | null | undefined): Curve {
+  if (!stored) return [];
+  const bySize = new Map<string, number>();
+  for (const part of stored.split(",")) {
+    const [rawSize, rawPairs] = part.split(":");
+    const size = normalizeSize(rawSize ?? "");
+    const pairs = Math.trunc(Number(rawPairs));
+    if (!size || !Number.isFinite(pairs) || pairs <= 0) continue;
+    bySize.set(size, (bySize.get(size) ?? 0) + pairs);
+  }
+  return [...bySize]
+    .map(([size, pairs]) => ({ size, pairs }))
+    .sort((a, b) => Number(a.size) - Number(b.size));
+}
+
+/** Canonical "38:3,39:2,40:3": zero-pair sizes dropped, sizes ascending. */
+export function serializeCurve(curve: Curve): string {
+  return parseCurve(curve.map((c) => `${c.size}:${c.pairs}`).join(","))
+    .map((c) => `${c.size}:${c.pairs}`)
+    .join(",");
+}
+
+/** Pairs in one pack. */
+export function curvePairs(curve: Curve): number {
+  return curve.reduce((n, c) => n + Math.max(0, c.pairs), 0);
+}
+
+/** The per-size quantities `count` packs add up to. */
+export function expandPack(
+  curve: Curve,
+  count: number,
+): { size: string; quantity: number }[] {
+  return curve
+    .filter((c) => c.pairs > 0)
+    .map((c) => ({ size: c.size, quantity: c.pairs * count }));
+}
+
+/** "38×3 · 39×2 · 40×3" — sizes are numeric, so this reads the same in RTL. */
+export function formatCurve(curve: Curve, separator = " · "): string {
+  return curve.map((c) => `${c.size}×${c.pairs}`).join(separator);
+}
+
+export const sizePackSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    name: z.string().trim().min(1, { message: "required" }).max(100),
+    curve: z
+      .array(
+        z.object({
+          size: sizeSchema,
+          pairs: z.number().int().min(0).max(999),
+        }),
+      )
+      .max(MAX_SIZES),
+  })
+  .superRefine((pack, ctx) => {
+    if (!pack.curve.some((c) => c.pairs > 0)) {
+      ctx.addIssue({ code: "custom", message: "pack_empty", path: ["curve"] });
+    }
+    const sizes = pack.curve.map((c) => normalizeSize(c.size));
+    if (new Set(sizes).size !== sizes.length) {
+      ctx.addIssue({
+        code: "custom",
+        message: "pack_duplicate_size",
+        path: ["curve"],
+      });
+    }
+  });
+
+export type SizePackInput = z.infer<typeof sizePackSchema>;
+
+export const shoeModelSchema = z
+  .object({
+    name: z.string().trim().min(1, { message: "required" }).max(200),
+    sku: z.string().trim().max(100).optional().or(z.literal("")),
+    description: z.string().trim().max(2000).optional().or(z.literal("")),
+    // Entered in shekels in the UI, converted to agorot before persisting.
+    defaultPriceAgorot: z.number().int().min(0).nullable().optional(),
+    sizes: z.array(sizeSchema).max(MAX_SIZES).default([]),
+    sizeFormat: z.enum(SIZE_FORMATS).default("eu"),
+    isActive: z.boolean().default(true),
+    packs: z.array(sizePackSchema).max(MAX_PACKS).default([]),
+  })
+  .superRefine((model, ctx) => {
+    // A pack is a box of this model, so every size it holds has to be one the
+    // model is made in. Removing a size from the run while a pack still uses
+    // it is refused here rather than silently dropping pairs from the pack.
+    const run = new Set(model.sizes.map(normalizeSize));
+    const names = new Set<string>();
+    model.packs.forEach((pack, i) => {
+      if (
+        pack.curve.some((c) => c.pairs > 0 && !run.has(normalizeSize(c.size)))
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: "pack_size_not_in_run",
+          path: ["packs", i, "curve"],
+        });
+      }
+      const name = pack.name.trim().toLocaleLowerCase();
+      if (names.has(name)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "pack_name_duplicate",
+          path: ["packs", i, "name"],
+        });
+      }
+      names.add(name);
+    });
+  });
 
 export type ShoeModelInput = z.infer<typeof shoeModelSchema>;
