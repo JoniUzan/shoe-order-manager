@@ -2,8 +2,12 @@
 
 import { Prisma, prisma } from "@repo/db";
 import {
+  expandPack,
+  MAX_LINE_PAIRS,
   orderSchema,
+  parseCurve,
   recalculateOrderTotals,
+  serializeCurve,
   type OrderInput,
 } from "@repo/domain";
 import { revalidatePath } from "next/cache";
@@ -41,15 +45,141 @@ async function modelsAreValid(
   ownerId: string,
   input: OrderInput,
 ): Promise<boolean> {
-  const ids = input.items
-    .map((i) => i.shoeModelId)
-    .filter((id): id is string => !!id);
+  const ids = [
+    ...input.items.map((i) => i.shoeModelId),
+    ...input.packs.map((p) => p.shoeModelId),
+  ].filter((id): id is string => !!id);
   if (ids.length === 0) return true;
   const unique = [...new Set(ids)];
   const count = await prisma.shoeModel.count({
     where: { id: { in: unique }, ownerId },
   });
   return count === unique.length;
+}
+
+/**
+ * A pack ready to write: the name and curve are snapshots taken on the
+ * server, never from the browser, and `items` is what they expand to.
+ */
+interface ResolvedPack {
+  sizePackId: string | null;
+  packName: string;
+  curve: string;
+  count: number;
+  items: {
+    shoeModelId: string;
+    customDescription: null;
+    size: string;
+    color: string | null;
+    quantity: number;
+    unitPriceAgorot: number;
+  }[];
+}
+
+type Db = Prisma.TransactionClient | typeof prisma;
+
+/**
+ * Build every pack's items from a stored curve. A new pack snapshots the
+ * catalog pack, which must belong to the block's model *and* this owner. A
+ * pack already on the order (edit only) reuses its own snapshot, so changing
+ * the count on an old order never picks up a catalog pack edited since.
+ * Returns null for anything that doesn't check out — the caller answers
+ * `invalid`.
+ */
+async function resolvePacks(
+  db: Db,
+  ownerId: string,
+  input: OrderInput,
+  orderId?: string,
+): Promise<ResolvedPack[] | null> {
+  if (input.packs.length === 0) return [];
+
+  const newIds = input.packs
+    .filter((p) => !p.orderPackId)
+    .map((p) => p.sizePackId!);
+  const oldIds = input.packs
+    .map((p) => p.orderPackId)
+    .filter((id): id is string => !!id);
+  // The same existing pack sent twice would be written twice.
+  if (new Set(oldIds).size !== oldIds.length) return null;
+  // A brand-new order has no packs of its own to refer to.
+  if (oldIds.length > 0 && !orderId) return null;
+
+  const [catalogPacks, orderPacks] = await Promise.all([
+    newIds.length
+      ? db.sizePack.findMany({
+          where: { id: { in: newIds }, shoeModel: { ownerId } },
+          select: { id: true, shoeModelId: true, name: true, curve: true },
+        })
+      : [],
+    oldIds.length
+      ? db.orderPack.findMany({
+          where: { id: { in: oldIds }, order: { id: orderId, ownerId } },
+          select: {
+            id: true,
+            sizePackId: true,
+            packName: true,
+            curve: true,
+            items: { select: { shoeModelId: true }, take: 1 },
+          },
+        })
+      : [],
+  ]);
+  const catalogById = new Map(catalogPacks.map((p) => [p.id, p]));
+  const orderById = new Map(orderPacks.map((p) => [p.id, p]));
+
+  const resolved: ResolvedPack[] = [];
+  for (const pack of input.packs) {
+    let source: { sizePackId: string | null; packName: string; curve: string };
+    if (pack.orderPackId) {
+      const old = orderById.get(pack.orderPackId);
+      // A pack stays with the model it was taken for.
+      if (!old || old.items[0]?.shoeModelId !== pack.shoeModelId) return null;
+      source = { sizePackId: old.sizePackId, packName: old.packName, curve: old.curve };
+    } else {
+      const cat = catalogById.get(pack.sizePackId!);
+      if (!cat || cat.shoeModelId !== pack.shoeModelId) return null;
+      source = { sizePackId: cat.id, packName: cat.name, curve: cat.curve };
+    }
+
+    const curve = parseCurve(source.curve);
+    const sizes = expandPack(curve, pack.count);
+    // Each size is still one order line, so it gets the same typo guard as a
+    // line typed by hand.
+    if (sizes.length === 0 || sizes.some((s) => s.quantity > MAX_LINE_PAIRS))
+      return null;
+    resolved.push({
+      ...source,
+      curve: serializeCurve(curve),
+      count: pack.count,
+      items: sizes.map((s) => ({
+        shoeModelId: pack.shoeModelId,
+        customDescription: null,
+        size: s.size,
+        color: nullify(pack.color),
+        quantity: s.quantity,
+        unitPriceAgorot: pack.unitPriceAgorot,
+      })),
+    });
+  }
+  return resolved;
+}
+
+/** Write each pack and the items it expands to. */
+async function createPacks(
+  tx: Prisma.TransactionClient,
+  orderId: string,
+  packs: ResolvedPack[],
+) {
+  for (const { items, ...pack } of packs) {
+    await tx.orderPack.create({
+      data: {
+        orderId,
+        ...pack,
+        items: { create: items.map((item) => ({ orderId, ...item })) },
+      },
+    });
+  }
 }
 
 function itemCreateData(input: OrderInput) {
@@ -85,10 +215,16 @@ export async function createOrder(
   if (!customer) return { ok: false, error: "invalid" };
   if (!(await modelsAreValid(ownerId, data)))
     return { ok: false, error: "invalid" };
+  const packs = await resolvePacks(prisma, ownerId, data);
+  if (!packs) return { ok: false, error: "invalid" };
 
   // A new order has no Payment rows yet, so nothing is paid. depositAgorot is
   // left at its schema default and only ever set by the payment actions.
-  const totals = recalculateOrderTotals(data.items, 0);
+  // Totals count every pair: the loose items and the ones the packs expand to.
+  const totals = recalculateOrderTotals(
+    [...data.items, ...packs.flatMap((p) => p.items)],
+    0,
+  );
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
   const create = () =>
@@ -99,7 +235,7 @@ export async function createOrder(
         select: { orderNumber: true },
       });
       const orderNumber = (last?.orderNumber ?? 0) + 1;
-      return tx.order.create({
+      const created = await tx.order.create({
         data: {
           ownerId,
           customerId: data.customerId,
@@ -113,6 +249,8 @@ export async function createOrder(
         },
         select: { id: true },
       });
+      await createPacks(tx, created.id, packs);
+      return created;
     });
 
   let order: { id: string } | undefined;
@@ -174,10 +312,21 @@ export async function updateOrder(
       where: { id },
       select: { depositAgorot: true },
     });
-    if (!existingOrder) return false;
-    const totals = recalculateOrderTotals(data.items, existingOrder.depositAgorot);
+    if (!existingOrder) return "not_found" as const;
+    // Read the order's current packs *before* anything is deleted: an existing
+    // pack is rebuilt from its own saved snapshot, which the deletes below
+    // would otherwise take with them.
+    const packs = await resolvePacks(tx, ownerId, data, id);
+    if (!packs) return "invalid" as const;
+    const totals = recalculateOrderTotals(
+      [...data.items, ...packs.flatMap((p) => p.items)],
+      existingOrder.depositAgorot,
+    );
 
+    // Pack items cascade with their pack; the loose ones go with the first
+    // delete. Both are rebuilt below.
     await tx.orderItem.deleteMany({ where: { orderId: id } });
+    await tx.orderPack.deleteMany({ where: { orderId: id } });
     await tx.order.update({
       where: { id },
       data: {
@@ -190,9 +339,10 @@ export async function updateOrder(
         items: { create: itemCreateData(data) },
       },
     });
-    return true;
+    await createPacks(tx, id, packs);
+    return "ok" as const;
   });
-  if (!applied) return { ok: false, error: "not_found" };
+  if (applied !== "ok") return { ok: false, error: applied };
 
   revalidateOrderViews(id);
   return { ok: true, id };
