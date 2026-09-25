@@ -99,13 +99,12 @@ function buildWhere(
   if (p.filter === "inactive") where.isActive = false;
 
   if (p.q) {
-    // No `mode: "insensitive"` — Prisma rejects it on the SQLite provider.
-    // SQLite's LIKE is already case-insensitive for ASCII, and Hebrew has no
-    // case, so a plain `contains` is the correct (and only) option here.
+    // Postgres `contains` is case-sensitive, so ask for ILIKE explicitly
+    // ("nike" should find "Nike"). Hebrew has no case, so it's unaffected.
     where.OR = [
-      { name: { contains: p.q } },
-      { sku: { contains: p.q } },
-      { description: { contains: p.q } },
+      { name: { contains: p.q, mode: "insensitive" } },
+      { sku: { contains: p.q, mode: "insensitive" } },
+      { description: { contains: p.q, mode: "insensitive" } },
     ];
   }
   return where;
@@ -114,16 +113,16 @@ function buildWhere(
 function buildOrderBy(
   p: CatalogListParams,
 ): Prisma.ShoeModelOrderByWithRelationInput[] {
-  // `sku` and `defaultPriceAgorot` are both nullable, and SQLite sorts NULLs
-  // first ascending. Prisma's `nulls` option is Postgres/MySQL only, so the
-  // models missing one land together at the top rather than the bottom.
+  // `sku` and `defaultPriceAgorot` are both nullable. Postgres would put the
+  // models missing one at the bottom ascending but the top descending, so pin
+  // them to the bottom in both directions — they're the least useful rows.
   const primary: Prisma.ShoeModelOrderByWithRelationInput =
     p.sort === "price"
-      ? { defaultPriceAgorot: p.dir }
+      ? { defaultPriceAgorot: { sort: p.dir, nulls: "last" } }
       : p.sort === "orderLines"
         ? { items: { _count: p.dir } }
         : p.sort === "sku"
-          ? { sku: p.dir }
+          ? { sku: { sort: p.dir, nulls: "last" } }
           : { name: p.dir };
 
   // A stable tiebreaker matters far more with server-side paging than without:

@@ -24,6 +24,14 @@ async function recomputeOrderPayment(
   tx: Prisma.TransactionClient,
   orderId: string,
 ) {
+  // Lock the order row before summing. Postgres runs READ COMMITTED, so two
+  // payments landing at once could each sum without the other's row and the
+  // later write would store a stale deposit. With the lock, the second waits
+  // for the first to commit and its sum includes both.
+  await tx.order.update({
+    where: { id: orderId },
+    data: { updatedAt: new Date() },
+  });
   const agg = await tx.payment.aggregate({
     where: { orderId },
     _sum: { amountAgorot: true },

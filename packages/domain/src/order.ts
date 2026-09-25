@@ -4,8 +4,8 @@ import { PAYMENT_STATUS, type PaymentStatus } from "./status";
 
 /**
  * A line item is EITHER a catalog reference (shoeModelId) OR a free-text
- * custom item (customDescription) — never both, never neither. SQLite can't
- * express this cross-column CHECK via Prisma, so it's enforced here.
+ * custom item (customDescription) — never both, never neither. Prisma can't
+ * declare this cross-column CHECK, so it's enforced here.
  */
 export const orderItemSchema = z
   .object({

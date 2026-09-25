@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A Turborepo monorepo for a B2B wholesale **shoe order manager** (the owner sells shoes to
-retail stores = "customers"). Single-user for now, Hebrew (RTL) + English, built cloud-ready
-but running on local SQLite in v1.
+retail stores = "customers"). Single-user for now, Hebrew (RTL) + English. Data lives in
+Postgres: Supabase in production (used as plain Postgres), Docker locally.
 
 ## Commands
 
@@ -19,11 +19,13 @@ pnpm typecheck               # tsc --noEmit across the workspace
 pnpm lint                    # eslint across packages that define a lint task (currently: web)
 pnpm --filter @repo/db typecheck   # typecheck a single package
 
-# Database (SQLite via Prisma, in packages/db)
+# Database (Postgres via Prisma, in packages/db)
+docker compose up -d         # local Postgres 16 on :5432 (matches the .env.example files)
 pnpm db:migrate              # prisma migrate dev (create/apply migrations)
 pnpm db:seed                 # seed OrderStatus rows + admin user
 pnpm db:studio               # browse data
 pnpm db:generate             # regenerate the Prisma client after schema edits
+pnpm --filter @repo/db copy-from-sqlite <file>   # one-time: old SQLite dev.db → Postgres
 ```
 
 There is no test runner. **Flows are verified with a real browser** via `playwright-core`
@@ -33,10 +35,12 @@ do **not** catch client-navigation or hydration bugs — drive the actual form.
 
 ## Environment
 
-- `apps/web/.env.local`: `DATABASE_URL` must be an **absolute** `file:` path to
-  `packages/db/prisma/dev.db` (relative paths resolve inconsistently at runtime), plus
-  `AUTH_SECRET` (`openssl rand -base64 33`) and `AUTH_TRUST_HOST=true`.
-- `packages/db/.env`: `DATABASE_URL="file:./dev.db"` for the Prisma CLI only.
+- `apps/web/.env.local` and `packages/db/.env` (copy the `.env.example` next to each):
+  `DATABASE_URL` + `DIRECT_URL`. Locally both are the Docker Postgres URL. On Supabase,
+  `DATABASE_URL` is the **transaction pooler** (port 6543, `?pgbouncer=true&connection_limit=1`)
+  and `DIRECT_URL` the **session pooler** (5432) — migrations can't run through the
+  transaction pooler. The web app also needs `AUTH_SECRET` (`openssl rand -base64 33`) and
+  `AUTH_TRUST_HOST=true`.
 - Default dev login: `admin@example.com` / `changeme123` (override with `ADMIN_EMAIL`/`ADMIN_PASSWORD` before `db:seed`).
 
 ## Architecture
@@ -76,16 +80,25 @@ flips automatically. Messages live in `apps/web/messages/{en,he}.json` — keep 
 
 - **All money is integer agorot** (`Int`, 1 ₪ = 100 agorot) — never floats. Convert at the UI
   edge with `@repo/domain/money` (`shekelsToAgorot`, `agorotToShekels`, `formatMoney`).
-- The Prisma schema is deliberately kept **portable for a future Turso/libSQL swap**: no DB
-  triggers, no generated columns, no DB-side UUIDs (`@default(cuid())`), no DB date functions.
-  Consequences that must be honored in app code:
+- The Prisma schema is deliberately kept **portable across Postgres hosts** (Supabase is used
+  as plain Postgres — no Supabase Auth/RLS/storage): no DB triggers, no generated columns, no
+  DB-side UUIDs (`@default(cuid())`), no DB date functions. Consequences that must be honored
+  in app code:
   - Order/line totals + payment status are computed in **app code** (`recalculateOrderTotals`),
     not by a trigger. Order actions recompute on write; payment actions recompute in a `$transaction`.
   - `orderNumber` is a **per-owner running number assigned in `createOrder`'s transaction**
-    (`@@unique([ownerId, orderNumber])`), not `autoincrement()`.
-  - Report time-bucketing is done in JS, not `date_trunc`/`strftime`.
+    (`@@unique([ownerId, orderNumber])`), not `autoincrement()`. Two creates at once can pick
+    the same number; the loser gets P2002 and `createOrder` retries.
+  - Report time-bucketing is done in JS, not `date_trunc`.
+- **Postgres runs READ COMMITTED**, so a read inside `$transaction` does not block a concurrent
+  writer. Any transaction that reads an order's payments/deposit and writes back a derived value
+  first **touches the order row** (`update`/`updateMany` of `updatedAt`) to take its row lock —
+  see `recomputeOrderPayment` and `updateOrder`. Keep that pattern for new derived writes.
+- Text search uses `contains` **with `mode: "insensitive"`** (Postgres `contains` is
+  case-sensitive). Nullable sort columns pass `nulls: "last"` so empty values don't jump to
+  the top when the direction flips.
 - A line item is a catalog reference (`shoeModelId`) **XOR** free text (`customDescription`) —
-  enforced in the Zod schema + Server Action, since SQLite/Prisma can't express the cross-column CHECK.
+  enforced in the Zod schema + Server Action, since Prisma can't declare the cross-column CHECK.
 
 ## Conventions & gotchas
 

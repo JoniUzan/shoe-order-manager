@@ -67,8 +67,8 @@ A neighboring product could copy the CRUD. What it could not truthfully copy:
   to a store.
 - **Money is shekels (₪)**, stored exactly as integer agorot. Sizes are free text ("42",
   "42.5", "US 9") because size systems differ per supplier.
-- **Runs locally today** on a single machine over SQLite. Cloud (Turso + hosting) is the
-  deliberate next step and is what unlocks true multi-device use, a one-tap shareable order
+- **Data lives in Postgres** (Supabase in production, used as plain Postgres). Hosting the
+  app is the next step and is what unlocks true multi-device use, a one-tap shareable order
   link, and additional users.
 
 ## Capabilities and Constraints

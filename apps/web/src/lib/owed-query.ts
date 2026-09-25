@@ -115,8 +115,8 @@ export async function listOwed(
   let rows = [...map.values()];
 
   if (params.q) {
-    // Matches the Prisma-backed lists: SQLite's LIKE is case-insensitive for
-    // ASCII and Hebrew has no case, so lowercasing both sides is the same deal.
+    // Matches the Prisma-backed lists, which search case-insensitively
+    // (`mode: "insensitive"`); Hebrew has no case, so it's unaffected.
     const needle = params.q.toLowerCase();
     rows = rows.filter((r) => r.name.toLowerCase().includes(needle));
   }
