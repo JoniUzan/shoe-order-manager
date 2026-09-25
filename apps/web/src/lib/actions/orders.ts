@@ -36,6 +36,16 @@ function isUniqueViolation(e: unknown): boolean {
   );
 }
 
+// A catalog pack deleted between resolvePacks reading it and the OrderPack
+// insert pointing at it fails the foreign key. That's an expected outcome of
+// a concurrent catalog edit, so it returns { ok: false } like any stale input
+// rather than throwing, which would leave the form stuck on Save.
+function isForeignKeyViolation(e: unknown): boolean {
+  return (
+    e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003"
+  );
+}
+
 export type OrderActionResult =
   | { ok: true; id: string }
   | { ok: false; error: "invalid" | "not_found" };
@@ -258,6 +268,7 @@ export async function createOrder(
     try {
       order = await create();
     } catch (e) {
+      if (isForeignKeyViolation(e)) return { ok: false, error: "invalid" };
       if (attempt >= ORDER_NUMBER_ATTEMPTS || !isUniqueViolation(e)) throw e;
     }
   }
@@ -291,57 +302,66 @@ export async function updateOrder(
 
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
-  const applied = await prisma.$transaction(async (tx) => {
-    // Touch the row first to take its lock (updateMany, so a deleted order is
-    // a count of 0, not a throw): a payment on this order then waits for this
-    // save, or this save for it, so the deposit read below is current.
-    // Postgres runs READ COMMITTED, where a plain read wouldn't block.
-    await tx.order.updateMany({
-      where: { id, ownerId },
-      data: { updatedAt: new Date() },
-    });
-    // Editing items changes the total, which changes the payment status — so
-    // the deposit has to be re-read here rather than round-tripped through the
-    // form, where it could be minutes stale. Read inside the transaction so a
-    // payment landing mid-save can't be lost.
-    // findUnique, not findUniqueOrThrow: this file returns { ok } for expected
-    // failures rather than throwing, and the order can be deleted between the
-    // ownership check above and this transaction. A rejection here would leave
-    // the form's `pending` flag stuck with Save disabled and no toast.
-    const existingOrder = await tx.order.findUnique({
-      where: { id },
-      select: { depositAgorot: true },
-    });
-    if (!existingOrder) return "not_found" as const;
-    // Read the order's current packs *before* anything is deleted: an existing
-    // pack is rebuilt from its own saved snapshot, which the deletes below
-    // would otherwise take with them.
-    const packs = await resolvePacks(tx, ownerId, data, id);
-    if (!packs) return "invalid" as const;
-    const totals = recalculateOrderTotals(
-      [...data.items, ...packs.flatMap((p) => p.items)],
-      existingOrder.depositAgorot,
-    );
+  const save = () =>
+    prisma.$transaction(async (tx) => {
+      // Touch the row first to take its lock (updateMany, so a deleted order is
+      // a count of 0, not a throw): a payment on this order then waits for this
+      // save, or this save for it, so the deposit read below is current.
+      // Postgres runs READ COMMITTED, where a plain read wouldn't block.
+      await tx.order.updateMany({
+        where: { id, ownerId },
+        data: { updatedAt: new Date() },
+      });
+      // Editing items changes the total, which changes the payment status — so
+      // the deposit has to be re-read here rather than round-tripped through the
+      // form, where it could be minutes stale. Read inside the transaction so a
+      // payment landing mid-save can't be lost.
+      // findUnique, not findUniqueOrThrow: this file returns { ok } for expected
+      // failures rather than throwing, and the order can be deleted between the
+      // ownership check above and this transaction. A rejection here would leave
+      // the form's `pending` flag stuck with Save disabled and no toast.
+      const existingOrder = await tx.order.findUnique({
+        where: { id },
+        select: { depositAgorot: true },
+      });
+      if (!existingOrder) return "not_found" as const;
+      // Read the order's current packs *before* anything is deleted: an existing
+      // pack is rebuilt from its own saved snapshot, which the deletes below
+      // would otherwise take with them.
+      const packs = await resolvePacks(tx, ownerId, data, id);
+      if (!packs) return "invalid" as const;
+      const totals = recalculateOrderTotals(
+        [...data.items, ...packs.flatMap((p) => p.items)],
+        existingOrder.depositAgorot,
+      );
 
-    // Pack items cascade with their pack; the loose ones go with the first
-    // delete. Both are rebuilt below.
-    await tx.orderItem.deleteMany({ where: { orderId: id } });
-    await tx.orderPack.deleteMany({ where: { orderId: id } });
-    await tx.order.update({
-      where: { id },
-      data: {
-        customerId: data.customerId,
-        statusCode: data.statusCode,
-        notes: nullify(data.notes),
-        totalAgorot: totals.totalAgorot,
-        paymentStatus: totals.paymentStatus,
-        isCustomOrder,
-        items: { create: itemCreateData(data) },
-      },
+      // Pack items cascade with their pack; the loose ones go with the first
+      // delete. Both are rebuilt below.
+      await tx.orderItem.deleteMany({ where: { orderId: id } });
+      await tx.orderPack.deleteMany({ where: { orderId: id } });
+      await tx.order.update({
+        where: { id },
+        data: {
+          customerId: data.customerId,
+          statusCode: data.statusCode,
+          notes: nullify(data.notes),
+          totalAgorot: totals.totalAgorot,
+          paymentStatus: totals.paymentStatus,
+          isCustomOrder,
+          items: { create: itemCreateData(data) },
+        },
+      });
+      await createPacks(tx, id, packs);
+      return "ok" as const;
     });
-    await createPacks(tx, id, packs);
-    return "ok" as const;
-  });
+
+  let applied: Awaited<ReturnType<typeof save>>;
+  try {
+    applied = await save();
+  } catch (e) {
+    if (isForeignKeyViolation(e)) return { ok: false, error: "invalid" };
+    throw e;
+  }
   if (applied !== "ok") return { ok: false, error: applied };
 
   revalidateOrderViews(id);
