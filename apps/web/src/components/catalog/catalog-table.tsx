@@ -1,6 +1,12 @@
 "use client";
 
-import { formatMoney, parseSizes } from "@repo/domain";
+import {
+  curvePairs,
+  formatCurve,
+  formatMoney,
+  parseCurve,
+  parseSizes,
+} from "@repo/domain";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -72,6 +78,35 @@ function SizeRun({ stored, empty }: { stored: string | null; empty: string }) {
         </span>
       ))}
     </div>
+  );
+}
+
+/** Each pack as one line: its name, pairs per pack and the per-size curve. */
+function PackList({
+  packs,
+  empty,
+  summary,
+}: {
+  packs: CatalogRow["packs"];
+  empty: string;
+  summary: (name: string, count: number) => string;
+}) {
+  if (packs.length === 0)
+    return <span className="text-muted-foreground">{empty}</span>;
+  return (
+    <ul className="flex flex-col gap-1">
+      {packs.map((pack) => {
+        const curve = parseCurve(pack.curve);
+        return (
+          <li key={pack.name}>
+            {summary(pack.name, curvePairs(curve))}{" "}
+            <span dir="ltr" className="text-xs text-muted-foreground tabular-nums">
+              ({formatCurve(curve, " ")})
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -304,6 +339,13 @@ export function CatalogTable({
                 />
                 <DetailBlock label={t("sizes")}>
                   <SizeRun stored={active.sizes} empty={t("sizesEmpty")} />
+                </DetailBlock>
+                <DetailBlock label={t("packs")}>
+                  <PackList
+                    packs={active.packs}
+                    empty={t("packsEmpty")}
+                    summary={(name, count) => t("packSummary", { name, count })}
+                  />
                 </DetailBlock>
                 <DetailBlock label={t("description")}>
                   {active.description ? (
