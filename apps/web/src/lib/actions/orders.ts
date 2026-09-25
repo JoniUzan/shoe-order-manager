@@ -159,7 +159,7 @@ export async function updateOrder(
     // save, or this save for it, so the deposit read below is current.
     // Postgres runs READ COMMITTED, where a plain read wouldn't block.
     await tx.order.updateMany({
-      where: { id },
+      where: { id, ownerId },
       data: { updatedAt: new Date() },
     });
     // Editing items changes the total, which changes the payment status — so

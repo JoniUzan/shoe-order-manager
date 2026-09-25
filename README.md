@@ -42,10 +42,8 @@ any other Postgres host later is a `pg_dump` / `pg_restore` plus a new `DATABASE
 1. Create a project; from **Connect → ORMs → Prisma** take the two URLs:
    `DATABASE_URL` = transaction pooler (port 6543, with `?pgbouncer=true&connection_limit=1`),
    `DIRECT_URL` = session pooler (port 5432), used only by migrations.
-2. With those in `packages/db/.env`: `pnpm --filter @repo/db migrate:deploy`.
-3. Move the old local data (one time, Node 22.5+): `pnpm --filter @repo/db copy-from-sqlite
-   prisma/dev.db`. Don't run `db:seed` against Supabase first — the copy refuses to run
-   into a database that already has users or orders, and it verifies counts and money totals.
+2. With those in `packages/db/.env`: `pnpm --filter @repo/db migrate:deploy`, then
+   `pnpm db:seed` (and `pnpm db:seed:demo` for demo data).
 
 Default login (dev): `admin@example.com` / `changeme123` — override with
 `ADMIN_EMAIL` / `ADMIN_PASSWORD` before running `pnpm db:seed`.

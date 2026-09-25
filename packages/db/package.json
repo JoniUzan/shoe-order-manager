@@ -15,8 +15,7 @@
     "seed": "prisma db seed",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",
-    "seed:demo": "tsx prisma/seed-demo.ts",
-    "copy-from-sqlite": "tsx scripts/copy-sqlite-to-postgres.ts"
+    "seed:demo": "tsx prisma/seed-demo.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

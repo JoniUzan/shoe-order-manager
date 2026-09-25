@@ -25,7 +25,6 @@ pnpm db:migrate              # prisma migrate dev (create/apply migrations)
 pnpm db:seed                 # seed OrderStatus rows + admin user
 pnpm db:studio               # browse data
 pnpm db:generate             # regenerate the Prisma client after schema edits
-pnpm --filter @repo/db copy-from-sqlite <file>   # one-time: old SQLite dev.db → Postgres
 ```
 
 There is no test runner. **Flows are verified with a real browser** via `playwright-core`
@@ -92,8 +91,9 @@ flips automatically. Messages live in `apps/web/messages/{en,he}.json` — keep 
   - Report time-bucketing is done in JS, not `date_trunc`.
 - **Postgres runs READ COMMITTED**, so a read inside `$transaction` does not block a concurrent
   writer. Any transaction that reads an order's payments/deposit and writes back a derived value
-  first **touches the order row** (`update`/`updateMany` of `updatedAt`) to take its row lock —
-  see `recomputeOrderPayment` and `updateOrder`. Keep that pattern for new derived writes.
+  first **touches the order row** (`update`/`updateMany` of `updatedAt`) to take its row lock,
+  and runs its checks (e.g. "not more than what's left") on values read *after* the lock — see
+  `lockOrder` in `actions/payments.ts` and `updateOrder`. Keep that pattern for new derived writes.
 - Text search uses `contains` **with `mode: "insensitive"`** (Postgres `contains` is
   case-sensitive). Nullable sort columns pass `nulls: "last"` so empty values don't jump to
   the top when the direction flips.

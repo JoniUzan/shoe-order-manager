@@ -4,6 +4,6 @@
     "noEmit": true,
     "lib": ["ES2022"]
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "prisma/**/*.ts"],
   "exclude": ["node_modules", "dist", "src/generated"]
 }
