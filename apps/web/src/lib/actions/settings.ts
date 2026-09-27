@@ -2,9 +2,11 @@
 
 import { Prisma, prisma } from "@repo/db";
 import {
+  businessSchema,
   passwordChangeSchema,
   preferencesSchema,
   profileSchema,
+  type BusinessInput,
   type PasswordChangeInput,
   type PreferencesInput,
   type ProfileInput,
@@ -18,6 +20,12 @@ async function requireUserId(): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("unauthorized");
   return session.user.id;
+}
+
+/** Trim a string field; empty becomes null for optional DB columns. */
+function nullify(value?: string): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 export type SettingsActionResult =
@@ -119,5 +127,29 @@ export async function updatePreferences(
   if (result.count === 0) return { ok: false, error: "not_found" };
 
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function updateBusiness(
+  input: BusinessInput,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = businessSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const data = parsed.data;
+
+  const result = await prisma.user.updateMany({
+    where: { id: userId },
+    data: {
+      businessName: nullify(data.businessName),
+      businessPhone: nullify(data.businessPhone),
+      businessAddress: nullify(data.businessAddress),
+      businessTaxId: nullify(data.businessTaxId),
+    },
+  });
+  if (result.count === 0) return { ok: false, error: "not_found" };
+
+  // Printed on every order's invoice page.
+  revalidatePath("/print", "layout");
   return { ok: true };
 }

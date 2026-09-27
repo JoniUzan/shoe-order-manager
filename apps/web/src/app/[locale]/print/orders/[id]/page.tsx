@@ -46,6 +46,16 @@ export default async function PrintOrderPage({
   });
   if (!order) notFound();
 
+  const business = await prisma.user.findUniqueOrThrow({
+    where: { id: user.id },
+    select: {
+      businessName: true,
+      businessPhone: true,
+      businessAddress: true,
+      businessTaxId: true,
+    },
+  });
+
   // Only for an order with packs; without them the invoice is unchanged.
   const packing =
     order.packs.length > 0
@@ -65,6 +75,7 @@ export default async function PrintOrderPage({
 
   // Text summary used as the WhatsApp caption + desktop fallback link.
   const waMessage = [
+    business.businessName,
     `${ts("messageHeader")} — ${t("orderNumber", { number: order.orderNumber })}`,
     order.customer.name,
     "",
@@ -128,10 +139,29 @@ export default async function PrintOrderPage({
         {/* Invoice (this node is what gets captured to PDF) */}
         <div id="order-invoice" className="bg-white p-2 text-black">
           <div className="mb-8 flex items-start justify-between border-b border-black/20 pb-4">
-            <div>
-              <h1 className="text-xl font-bold">{ta("name")}</h1>
-              <p className="text-sm text-black/60">{ta("tagline")}</p>
-            </div>
+            {business.businessName ? (
+              <div className="text-sm text-black/60">
+                <h1 className="text-xl font-bold text-black">
+                  {business.businessName}
+                </h1>
+                {business.businessAddress && <p>{business.businessAddress}</p>}
+                {business.businessPhone && (
+                  <p>
+                    <span dir="ltr">{business.businessPhone}</span>
+                  </p>
+                )}
+                {business.businessTaxId && (
+                  <p>
+                    {ts("taxId")}: {business.businessTaxId}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <h1 className="text-xl font-bold">{ta("name")}</h1>
+                <p className="text-sm text-black/60">{ta("tagline")}</p>
+              </div>
+            )}
             <div className="text-end">
               <p className="text-lg font-semibold">
                 {t("orderNumber", { number: order.orderNumber })}

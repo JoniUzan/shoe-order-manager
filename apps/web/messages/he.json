@@ -171,7 +171,8 @@
     "noPhone": "אין מספר טלפון ללקוח זה",
     "generating": "מכין PDF…",
     "pdfFallback": "ה-PDF הורד — צרפו אותו לצ׳אט הוואטסאפ שנפתח.",
-    "shareError": "לא ניתן היה להכין את ה-PDF. נסו להדפיס במקום."
+    "shareError": "לא ניתן היה להכין את ה-PDF. נסו להדפיס במקום.",
+    "taxId": "ח.פ / ע.מ"
   },
   "payments": {
     "title": "תשלומים",
@@ -400,6 +401,13 @@
     "languageHelp": "השפה שבה האפליקציה נפתחת אחרי התחברות, בכל מכשיר",
     "theme": "מראה",
     "themeHelp": "נשמר בחשבון, כך שכל המכשירים נראים אותו דבר",
+    "tabBusiness": "עסק",
+    "businessHelp": "מופיעים בראש כל הזמנה שמדפיסים או שולחים בוואטסאפ",
+    "businessName": "שם העסק",
+    "businessPhone": "טלפון",
+    "businessAddress": "כתובת",
+    "businessTaxId": "ח.פ / ע.מ",
+    "businessSaved": "פרטי העסק נשמרו",
     "errors": {
       "required": "שדה חובה",
       "email": "הזינו אימייל תקין",

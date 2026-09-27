@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 
 import type { SettingsData, SettingsTab } from "@/lib/settings-query";
 
+import { BusinessForm } from "./business-form";
 import { PasswordForm } from "./password-form";
 import { PreferencesForm } from "./preferences-form";
 import { ProfileForm } from "./profile-form";
@@ -42,6 +43,7 @@ export function SettingsPanel({
         <TabsTrigger value="profile">{t("tabProfile")}</TabsTrigger>
         <TabsTrigger value="password">{t("tabPassword")}</TabsTrigger>
         <TabsTrigger value="preferences">{t("tabPreferences")}</TabsTrigger>
+        <TabsTrigger value="business">{t("tabBusiness")}</TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
         <ProfileForm defaultValues={data.profile} />
@@ -51,6 +53,9 @@ export function SettingsPanel({
       </TabsContent>
       <TabsContent value="preferences">
         <PreferencesForm defaultValues={data.preferences} />
+      </TabsContent>
+      <TabsContent value="business">
+        <BusinessForm defaultValues={data.business} />
       </TabsContent>
     </Tabs>
   );
