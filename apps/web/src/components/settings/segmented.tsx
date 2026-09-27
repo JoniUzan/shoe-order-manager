@@ -64,13 +64,13 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={label}
       data-sliding={sliding || undefined}
-      className="group/seg relative inline-flex gap-0.5 rounded-[10px] border bg-muted p-0.75"
+      className="group/seg relative inline-flex gap-0.5 rounded-lg border bg-muted p-0.75"
     >
       {sliding && (
         <span
           aria-hidden
           className={cn(
-            "pointer-events-none absolute top-0.75 left-0 h-8 rounded-lg bg-background shadow-sm ring-1 ring-border",
+            "pointer-events-none absolute top-0.75 left-0 h-8 rounded-md bg-background shadow-sm ring-1 ring-border",
             travels && "transition-[transform,width] duration-200 ease-out-quint",
             "motion-reduce:transition-none",
           )}
@@ -95,7 +95,7 @@ export function Segmented<T extends string>({
           />
           <span
             className={cn(
-              "flex h-8 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm text-muted-foreground transition-colors duration-150",
+              "flex h-8 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors duration-150",
               "hover:text-foreground peer-checked:text-foreground",
               // Until the sliding pill is measured (SSR, first paint) the
               // checked option draws its own; after that the pill does.
