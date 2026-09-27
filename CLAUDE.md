@@ -69,8 +69,11 @@ package extends `@repo/typescript-config`):
 reset) — redirecting to login instead of crashing. The login page does the same check to avoid a
 redirect loop.
 
-**Settings** (`/settings`): a real route, plus an intercepting `(app)/@modal/(.)settings` that
-shows the same `SettingsPanel` as a dialog when it's followed from inside the app. Don't add a
+**Settings** (`/settings/[[...section]]`, sections `general|account|business`): a real route, plus
+an intercepting `(app)/@modal/(.)settings/[[...section]]` that shows the same `SettingsShell` as a
+near-full-screen dialog (computer) or a bottom drawer (phone, `useIsPhone`) when it's followed from
+inside the app. Section links use `replace`, so closing (history back) returns to the page underneath.
+Settings rows are `SettingSection`/`SettingRow`; text fields are `AutosaveInput` (saves on blur). Don't add a
 `@modal/[...catchAll]` — it makes every unknown URL match and turns 404s into 200s. A language
 change from the dialog uses a full `window.location` load: a client navigation to the other locale
 out of the intercepted route keeps the old tree (`dir`, strings). The user's `locale`/`theme` live
