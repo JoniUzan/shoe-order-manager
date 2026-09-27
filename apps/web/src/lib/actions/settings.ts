@@ -1,11 +1,16 @@
 "use server";
 
 import { Prisma, prisma } from "@repo/db";
-import { profileSchema, type ProfileInput } from "@repo/domain";
+import {
+  passwordChangeSchema,
+  profileSchema,
+  type PasswordChangeInput,
+  type ProfileInput,
+} from "@repo/domain";
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
-import { verifyPassword } from "@/lib/password";
+import { hashPassword, verifyPassword } from "@/lib/password";
 
 async function requireUserId(): Promise<string> {
   const session = await auth();
@@ -64,5 +69,31 @@ export async function updateProfile(
 
   // The name and email show in the sidebar on every page.
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function changePassword(
+  input: PasswordChangeInput,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = passwordChangeSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const data = parsed.data;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true },
+  });
+  if (!user) return { ok: false, error: "not_found" };
+
+  const valid =
+    !!user.passwordHash &&
+    (await verifyPassword(data.currentPassword, user.passwordHash));
+  if (!valid) return { ok: false, error: "wrong_password" };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: await hashPassword(data.newPassword) },
+  });
   return { ok: true };
 }

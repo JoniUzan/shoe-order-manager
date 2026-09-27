@@ -390,6 +390,11 @@
     "currentPasswordForEmail": "נדרשת כדי לשנות את האימייל שאיתו מתחברים",
     "profileSaved": "הפרופיל נשמר",
     "errorGeneric": "השמירה נכשלה. נסו שוב.",
+    "tabPassword": "סיסמה",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אימות הסיסמה החדשה",
+    "passwordHelp": "לפחות 8 תווים",
+    "passwordSaved": "הסיסמה שונתה",
     "errors": {
       "required": "שדה חובה",
       "email": "הזינו אימייל תקין",

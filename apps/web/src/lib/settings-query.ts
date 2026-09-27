@@ -1,6 +1,6 @@
 import { prisma } from "@repo/db";
 
-export const SETTINGS_TABS = ["profile"] as const;
+export const SETTINGS_TABS = ["profile", "password"] as const;
 
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 

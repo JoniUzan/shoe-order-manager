@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 
 import type { SettingsData, SettingsTab } from "@/lib/settings-query";
 
+import { PasswordForm } from "./password-form";
 import { ProfileForm } from "./profile-form";
 
 /**
@@ -38,9 +39,13 @@ export function SettingsPanel({
     <Tabs defaultValue={tab} onValueChange={onTabChange} className="gap-6">
       <TabsList className="max-w-full overflow-x-auto">
         <TabsTrigger value="profile">{t("tabProfile")}</TabsTrigger>
+        <TabsTrigger value="password">{t("tabPassword")}</TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
         <ProfileForm defaultValues={data.profile} />
+      </TabsContent>
+      <TabsContent value="password">
+        <PasswordForm />
       </TabsContent>
     </Tabs>
   );
