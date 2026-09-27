@@ -62,8 +62,11 @@ export function GeneralSection({
     // client navigation to the other locale updates the URL but keeps the old
     // tree (still `dir="rtl"`, still Hebrew). The whole page changes language
     // and direction anyway, so there is nothing to preserve.
+    // Same page, same dialog, the other language.
+    const { pathname, search } = window.location;
+    const rest = pathname.replace(/^\/(he|en)(?=\/|$)/, "");
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- see above
-    window.location.assign(`/${next}/settings/general`);
+    window.location.assign(`/${next}${rest}${search}#settings/general`);
   }
 
   return (

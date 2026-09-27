@@ -1,13 +1,13 @@
 import { prisma } from "@repo/db";
 import type { LocaleCode, ThemeCode } from "@repo/domain";
 
-export const SETTINGS_SECTIONS = ["general", "account", "business"] as const;
+import { SETTINGS_SECTIONS, type SettingsSection } from "./settings-sections";
 
-export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+export { SETTINGS_SECTIONS, type SettingsSection };
 
 /**
- * `/settings` → `null` (the section menu on a phone, General on a computer);
- * `/settings/<section>` → that section; anything else → `undefined` (404).
+ * The old `/settings/<section>` address → its section (`null` for bare
+ * `/settings`); anything else → `undefined` (404).
  */
 export function parseSettingsSection(
   segments: string[] | undefined,

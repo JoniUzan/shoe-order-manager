@@ -36,9 +36,10 @@ import { useTransition } from "react";
 
 import { orbSrc } from "@/components/ui/orb";
 import { LOCALE_LABELS, routing, type Locale } from "@/i18n/routing";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/actions/auth-actions";
 import { updatePreferences } from "@/lib/actions/settings";
+import { openSettings } from "@/components/settings/settings-hash";
 
 const THEMES = [
   { value: "light", Icon: Sun },
@@ -133,11 +134,9 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <Settings className="size-4" />
-                {t("settings")}
-              </Link>
+            <DropdownMenuItem onSelect={() => openSettings()}>
+              <Settings className="size-4" />
+              {t("settings")}
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>

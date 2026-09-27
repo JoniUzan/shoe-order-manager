@@ -12,12 +12,13 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
-import { Link } from "@/i18n/navigation";
-import type { SettingsData, SettingsSection } from "@/lib/settings-query";
+import type { SettingsData } from "@/lib/settings-query";
+import type { SettingsSection } from "@/lib/settings-sections";
 
 import { AccountSection } from "./account-section";
 import { BusinessSection } from "./business-section";
 import { GeneralSection } from "./general-section";
+import { SectionLink } from "./section-link";
 import { SettingsPhoneProvider } from "./setting-row";
 import { SettingsMenu } from "./settings-menu";
 
@@ -45,11 +46,10 @@ function SectionContent({
 }
 
 /**
- * The settings, in the dialog or on the `/settings` page. On a computer: a
- * side menu and the open section (General when none is named). On a phone:
- * the section menu, or one section with a back arrow. Sections are routes
- * (`/settings/business`), switched with `replace` so closing the dialog
- * (history back) returns to the page it was opened from.
+ * The settings dialog's content. On a computer: a side menu and the open
+ * section (General when none is named). On a phone: the section menu, or one
+ * section with a back arrow. Sections switch through the URL hash
+ * (`#settings/business`) — in place, never a navigation.
  */
 export function SettingsShell({
   section,
@@ -72,7 +72,7 @@ export function SettingsShell({
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="grid shrink-0 grid-cols-[40px_1fr_40px] items-center px-4 pt-2 pb-3">
             {section ? (
-              <RoundButton label={t("back")} href="/settings">
+              <RoundButton label={t("back")} section={null}>
                 <Back />
               </RoundButton>
             ) : onClose ? (
@@ -117,10 +117,9 @@ export function SettingsShell({
             {t("title")}
           </div>
           {NAV.map(({ id, Icon }) => (
-            <Link
+            <SectionLink
               key={id}
-              href={`/settings/${id}`}
-              replace
+              section={id}
               aria-current={id === open ? "page" : undefined}
               className={cn(
                 "flex h-10 items-center gap-3 rounded-[10px] px-3 text-[15px] transition-colors",
@@ -131,7 +130,7 @@ export function SettingsShell({
             >
               <Icon className="size-[18px]" />
               {t(`nav.${id}`)}
-            </Link>
+            </SectionLink>
           ))}
         </nav>
         <div className="relative min-w-0 flex-1 overflow-y-auto px-16 py-14">
@@ -156,22 +155,23 @@ export function SettingsShell({
 
 function RoundButton({
   label,
-  href,
+  section,
   onClick,
   children,
 }: {
   label: string;
-  href?: string;
+  /** Set (even to `null`, the menu) for a link to a section. */
+  section?: SettingsSection | null;
   onClick?: () => void;
   children: ReactNode;
 }) {
   const className =
     "grid size-10 place-items-center rounded-full border bg-background dark:bg-muted [&_svg]:size-5";
-  if (href) {
+  if (section !== undefined) {
     return (
-      <Link href={href} replace aria-label={label} className={className}>
+      <SectionLink section={section} aria-label={label} className={className}>
         {children}
-      </Link>
+      </SectionLink>
     );
   }
   return (

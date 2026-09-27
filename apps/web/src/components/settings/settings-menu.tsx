@@ -16,12 +16,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 
 import { orbSrc } from "@/components/ui/orb";
-import { Link } from "@/i18n/navigation";
 import { LOCALE_LABELS } from "@/i18n/routing";
 import { signOutAction } from "@/lib/actions/auth-actions";
 import type { SettingsData } from "@/lib/settings-query";
+import type { SettingsSection } from "@/lib/settings-sections";
 
 import { PasswordDialog } from "./password-dialog";
+import { SectionLink } from "./section-link";
 
 /** The phone's first screen: grouped cards of rows that open a section. */
 export function SettingsMenu({ data }: { data: SettingsData }) {
@@ -34,9 +35,8 @@ export function SettingsMenu({ data }: { data: SettingsData }) {
   return (
     <div className="flex flex-col gap-5">
       <Card>
-        <Link
-          href="/settings/account"
-          replace
+        <SectionLink
+          section="account"
           className="flex items-center gap-3 px-4 py-3.5"
         >
           <Avatar className="size-11 rounded-full">
@@ -60,12 +60,12 @@ export function SettingsMenu({ data }: { data: SettingsData }) {
             </div>
           </div>
           <Forward className="size-[18px] shrink-0 text-muted-foreground" />
-        </Link>
+        </SectionLink>
       </Card>
 
       <Group title={t("groupAccount")}>
         <Row
-          href="/settings/account"
+          section="account"
           icon={<CircleUser />}
           label={t("profileRow")}
           forward={<Forward />}
@@ -80,14 +80,14 @@ export function SettingsMenu({ data }: { data: SettingsData }) {
 
       <Group title={t("groupPreferences")}>
         <Row
-          href="/settings/general"
+          section="general"
           icon={<Moon />}
           label={t("themeRow")}
           value={tTheme(data.theme)}
           forward={<Forward />}
         />
         <Row
-          href="/settings/general"
+          section="general"
           icon={<Languages />}
           label={t("languageRow")}
           value={LOCALE_LABELS[data.locale]}
@@ -97,7 +97,7 @@ export function SettingsMenu({ data }: { data: SettingsData }) {
 
       <Group title={t("groupBusiness")}>
         <Row
-          href="/settings/business"
+          section="business"
           icon={<Store />}
           label={t("businessDetails")}
           value={data.business.businessName}
@@ -139,7 +139,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
  * icon (it belongs to the text column), and the last row has none.
  */
 function Row({
-  href,
+  section,
   onClick,
   type = "button",
   icon,
@@ -148,7 +148,7 @@ function Row({
   forward,
   destructive,
 }: {
-  href?: string;
+  section?: SettingsSection;
   onClick?: () => void;
   type?: "button" | "submit";
   icon: ReactNode;
@@ -174,11 +174,11 @@ function Row({
     destructive && "text-destructive",
   );
 
-  if (href) {
+  if (section) {
     return (
-      <Link href={href} replace className={className}>
+      <SectionLink section={section} className={className}>
         {content}
-      </Link>
+      </SectionLink>
     );
   }
   return (

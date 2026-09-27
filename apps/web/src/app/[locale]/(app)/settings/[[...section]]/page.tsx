@@ -1,11 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { SettingsPage } from "@/components/settings/settings-page";
-import { requireUser } from "@/lib/session";
-import { getSettings, parseSettingsSection } from "@/lib/settings-query";
+import { parseSettingsSection } from "@/lib/settings-query";
 
-/** Settings as a full page — a reload or a direct link to `/settings/…`. */
-export default async function SettingsRoute({
+/**
+ * The settings used to be a route; they are a dialog opened by the URL hash
+ * now (`#settings/account`). Old links land on the dashboard with it open.
+ */
+export default async function SettingsRedirect({
   params,
 }: {
   params: Promise<{ locale: string; section?: string[] }>;
@@ -13,8 +14,5 @@ export default async function SettingsRoute({
   const { locale, section: segments } = await params;
   const section = parseSettingsSection(segments);
   if (section === undefined) notFound();
-  const user = await requireUser(locale);
-  const data = await getSettings(user.id);
-
-  return <SettingsPage section={section} data={data} />;
+  redirect(`/${locale}#settings${section ? `/${section}` : ""}`);
 }
