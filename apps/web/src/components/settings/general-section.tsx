@@ -11,7 +11,7 @@ import {
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { LOCALE_LABELS, routing } from "@/i18n/routing";
@@ -33,10 +33,18 @@ export function GeneralSection({
   const { setTheme } = useTheme();
   const [theme, setThemeValue] = useState(savedTheme);
   const [switching, setSwitching] = useState(false);
+  const themeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(themeTimer.current), []);
 
   async function onThemeChange(next: ThemeCode) {
     setThemeValue(next);
-    setTheme(next);
+    // Let the picker's pill finish sliding (200ms) before the page changes
+    // theme: the ThemeProvider disables every transition at the moment of a
+    // switch, which would cut the slide short into a jump.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    clearTimeout(themeTimer.current);
+    themeTimer.current = setTimeout(() => setTheme(next), reduced ? 0 : 200);
     const res = await updatePreferences({ theme: next });
     if (!res.ok) toast.error(t("errorGeneric"));
   }
