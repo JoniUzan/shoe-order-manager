@@ -562,90 +562,90 @@ export function OrderForm({
                       (p) => p.id === pack.sizePackId || !takenPacks.has(p.id),
                     );
                     return (
-                      <div
-                        key={k}
-                        className="flex flex-wrap items-center gap-x-2 gap-y-1"
-                      >
-                        <div className="flex min-w-0 flex-1 basis-44 flex-col">
-                          {pack.orderPackId ? (
-                            // Already on the order: it keeps the name and curve
-                            // it was sold with, so it isn't re-pickable — remove
-                            // it and add another pack to change it.
-                            <span className="flex h-11 min-w-0 items-center gap-1.5 font-medium md:h-9">
-                              <Package className="size-4 shrink-0 text-muted-foreground" />
-                              <span className="truncate">{pack.packName}</span>
-                            </span>
-                          ) : (
-                            <Select
-                              value={pack.sizePackId}
-                              onValueChange={(v) => choosePack(index, k, v)}
-                            >
-                              <SelectTrigger
-                                className="h-11 w-full md:h-9"
-                                aria-label={t("pack")}
-                                aria-invalid={!!packErrors?.sizePackId}
-                              >
-                                <SelectValue placeholder={t("selectPack")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {options.map((p) => (
-                                  <SelectItem key={p.id} value={p.id}>
-                                    {p.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                          {pack.curve.length > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              <span dir="ltr" className="tabular-nums">
-                                {formatCurve(pack.curve)}
+                      <div key={k} className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                          <div className="min-w-0 flex-1 basis-44">
+                            {pack.orderPackId ? (
+                              // Already on the order: it keeps the name and curve
+                              // it was sold with, so it isn't re-pickable — remove
+                              // it and add another pack to change it.
+                              <span className="flex h-11 min-w-0 items-center gap-1.5 ps-3 font-medium md:h-9">
+                                <Package className="size-4 shrink-0 text-muted-foreground" />
+                                <span className="truncate">{pack.packName}</span>
                               </span>
+                            ) : (
+                              <Select
+                                value={pack.sizePackId}
+                                onValueChange={(v) => choosePack(index, k, v)}
+                              >
+                                <SelectTrigger
+                                  className="h-11 w-full md:h-9"
+                                  aria-label={t("pack")}
+                                  aria-invalid={!!packErrors?.sizePackId}
+                                >
+                                  <SelectValue placeholder={t("selectPack")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {options.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span aria-hidden className="text-muted-foreground">
+                              ×
                             </span>
-                          )}
+                            <Input
+                              type="number"
+                              min="1"
+                              max={MAX_PACK_COUNT}
+                              inputMode="numeric"
+                              dir="ltr"
+                              className="h-11 w-20 px-1 text-center font-medium md:h-9"
+                              aria-label={t("packCount")}
+                              aria-invalid={!!packErrors?.count}
+                              {...form.register(`blocks.${index}.packs.${k}.count`, {
+                                // Same as a pairs cell: the "no pairs" root error
+                                // must drop once a count is typed.
+                                onChange: () =>
+                                  form.clearErrors(`blocks.${index}.rows`),
+                              })}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              {t("packsUnit")}
+                            </span>
+                            {/* Fixed width so the remove buttons line up across rows. */}
+                            <span className="w-24 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+                              ={" "}
+                              {t("pairsCount", {
+                                count:
+                                  Math.max(0, packCountOf(pack)) *
+                                  curvePairs(pack.curve),
+                              })}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePack(index, k)}
+                              aria-label={t("removePack", { name: pack.packName })}
+                              className="size-11 md:size-9"
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span aria-hidden className="text-muted-foreground">
-                            ×
+                        {pack.curve.length > 0 && (
+                          <span className="ps-3 text-xs text-muted-foreground">
+                            <span dir="ltr" className="tabular-nums">
+                              {formatCurve(pack.curve)}
+                            </span>
                           </span>
-                          <Input
-                            type="number"
-                            min="1"
-                            max={MAX_PACK_COUNT}
-                            inputMode="numeric"
-                            dir="ltr"
-                            className="h-11 w-20 px-1 text-center font-medium md:h-9"
-                            aria-label={t("packCount")}
-                            aria-invalid={!!packErrors?.count}
-                            {...form.register(`blocks.${index}.packs.${k}.count`, {
-                              // Same as a pairs cell: the "no pairs" root error
-                              // must drop once a count is typed.
-                              onChange: () =>
-                                form.clearErrors(`blocks.${index}.rows`),
-                            })}
-                          />
-                          <span className="text-xs text-muted-foreground">
-                            {t("packsUnit")}
-                          </span>
-                          <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
-                            ={" "}
-                            {t("pairsCount", {
-                              count:
-                                Math.max(0, packCountOf(pack)) *
-                                curvePairs(pack.curve),
-                            })}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removePack(index, k)}
-                            aria-label={t("removePack", { name: pack.packName })}
-                            className="size-11 md:size-9"
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
