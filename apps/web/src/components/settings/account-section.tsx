@@ -1,5 +1,6 @@
 "use client";
 
+import { nameSchema } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -34,7 +35,9 @@ export function AccountSection({
             autoComplete="name"
             placeholder={t("placeholders.name")}
             defaultValue={name}
-            validate={(v) => (v ? undefined : "required")}
+            validate={(v) =>
+              nameSchema.safeParse({ name: v }).error?.issues[0]?.message
+            }
             onSave={async (v) => (await updateName({ name: v })).ok}
           />
         </SettingRow>

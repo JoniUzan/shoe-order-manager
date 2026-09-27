@@ -13,7 +13,7 @@ import {
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -33,17 +33,18 @@ export function EmailDialog({
 }) {
   const t = useTranslations("settings");
   const [pending, setPending] = useState(false);
-  const empty = { email: currentEmail, currentPassword: "" };
   const form = useForm<EmailChangeInput>({
     resolver: zodResolver(emailChangeSchema),
-    defaultValues: empty,
+    defaultValues: { email: currentEmail, currentPassword: "" },
   });
   const { errors } = form.formState;
 
-  function setOpen(next: boolean) {
-    if (next) form.reset(empty);
-    onOpenChange(next);
-  }
+  // Opened from outside (the row's Change button), so Radix never reports the
+  // opening: start each open fresh — the current email, no password, no
+  // errors left from last time.
+  useEffect(() => {
+    if (open) form.reset({ email: currentEmail, currentPassword: "" });
+  }, [open, currentEmail, form]);
 
   async function onSubmit(values: EmailChangeInput) {
     setPending(true);
@@ -62,7 +63,7 @@ export function EmailDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>{t("changeEmail")}</DialogTitle>
@@ -102,7 +103,7 @@ export function EmailDialog({
             type="button"
             variant="outline"
             disabled={pending}
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
           >
             {t("cancel")}
           </Button>

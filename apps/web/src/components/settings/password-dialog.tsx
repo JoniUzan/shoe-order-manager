@@ -16,7 +16,7 @@ import {
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -46,10 +46,10 @@ export function PasswordDialog({
   });
   const { errors } = form.formState;
 
-  function setOpen(next: boolean) {
-    if (!next) form.reset(EMPTY);
-    onOpenChange(next);
-  }
+  // Opened from outside, so start each open fresh (no values, no errors).
+  useEffect(() => {
+    if (open) form.reset(EMPTY);
+  }, [open, form]);
 
   async function onSubmit(values: PasswordChangeInput) {
     setPending(true);
@@ -57,7 +57,7 @@ export function PasswordDialog({
     setPending(false);
     if (res.ok) {
       toast.success(t("passwordSaved"));
-      setOpen(false);
+      onOpenChange(false);
     } else if (res.error === "wrong_password") {
       form.setError("currentPassword", { message: "wrongPassword" });
     } else {
@@ -66,7 +66,7 @@ export function PasswordDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>{t("changePassword")}</DialogTitle>
@@ -124,7 +124,7 @@ export function PasswordDialog({
             type="button"
             variant="outline"
             disabled={pending}
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
           >
             {t("cancel")}
           </Button>

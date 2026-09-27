@@ -1,6 +1,6 @@
 "use client";
 
-import type { BusinessInput } from "@repo/domain";
+import { businessSchema, type BusinessInput } from "@repo/domain";
 import { useTranslations } from "next-intl";
 
 import { updateBusiness } from "@/lib/actions/settings";
@@ -40,6 +40,10 @@ export function BusinessSection({ business }: { business: BusinessInput }) {
             inputMode={"inputMode" in field ? field.inputMode : undefined}
             placeholder={t(`placeholders.${field.key}`)}
             defaultValue={business[field.key] ?? ""}
+            validate={(v) =>
+              businessSchema.shape[field.key].safeParse(v).error?.issues[0]
+                ?.message
+            }
             onSave={async (v) =>
               (await updateBusiness({ [field.key]: v })).ok
             }

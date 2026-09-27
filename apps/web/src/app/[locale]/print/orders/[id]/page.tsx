@@ -46,15 +46,7 @@ export default async function PrintOrderPage({
   });
   if (!order) notFound();
 
-  const business = await prisma.user.findUniqueOrThrow({
-    where: { id: user.id },
-    select: {
-      businessName: true,
-      businessPhone: true,
-      businessAddress: true,
-      businessTaxId: true,
-    },
-  });
+  const business = user; // requireUser loads the business details too
 
   // Only for an order with packs; without them the invoice is unchanged.
   const packing =

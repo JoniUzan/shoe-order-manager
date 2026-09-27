@@ -19,7 +19,20 @@ export async function requireUser(locale: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, theme: true },
+    // Also everything the settings dialog (in every page's layout) and the
+    // printed order show, so neither needs a second read that could find the
+    // row gone.
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      locale: true,
+      theme: true,
+      businessName: true,
+      businessPhone: true,
+      businessAddress: true,
+      businessTaxId: true,
+    },
   });
   if (!user) {
     redirect(`/${locale}/login`);

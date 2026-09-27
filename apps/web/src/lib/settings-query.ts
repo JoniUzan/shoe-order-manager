@@ -1,4 +1,3 @@
-import { prisma } from "@repo/db";
 import type { LocaleCode, ThemeCode } from "@repo/domain";
 
 import { SETTINGS_SECTIONS, type SettingsSection } from "./settings-sections";
@@ -19,21 +18,19 @@ export function parseSettingsSection(
     : undefined;
 }
 
-/** Everything the settings show, for the signed-in user. */
-export async function getSettings(userId: string) {
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: userId },
-    select: {
-      name: true,
-      email: true,
-      locale: true,
-      theme: true,
-      businessName: true,
-      businessPhone: true,
-      businessAddress: true,
-      businessTaxId: true,
-    },
-  });
+type SettingsUser = {
+  name: string | null;
+  email: string;
+  locale: string;
+  theme: string;
+  businessName: string | null;
+  businessPhone: string | null;
+  businessAddress: string | null;
+  businessTaxId: string | null;
+};
+
+/** What the settings dialog shows, from the user `requireUser` returned. */
+export function toSettingsData(user: SettingsUser) {
   return {
     name: user.name ?? "",
     email: user.email,
@@ -48,4 +45,4 @@ export async function getSettings(userId: string) {
   };
 }
 
-export type SettingsData = Awaited<ReturnType<typeof getSettings>>;
+export type SettingsData = ReturnType<typeof toSettingsData>;
