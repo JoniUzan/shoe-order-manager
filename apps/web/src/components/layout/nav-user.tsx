@@ -35,14 +35,10 @@ import { useTheme } from "next-themes";
 import { useTransition } from "react";
 
 import { orbSrc } from "@/components/ui/orb";
-import { routing } from "@/i18n/routing";
+import { LOCALE_LABELS, routing, type Locale } from "@/i18n/routing";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/actions/auth-actions";
-
-const LOCALE_LABELS: Record<string, string> = {
-  he: "עברית",
-  en: "English",
-};
+import { updatePreferences } from "@/lib/actions/settings";
 
 const THEMES = [
   { value: "light", Icon: Sun },
@@ -69,11 +65,19 @@ export function NavUser({
     (user.name || user.email).trim().charAt(0).toUpperCase() || "?";
   const orb = orbSrc(user.email || user.name);
 
+  // The quick switches also save to the account (fire-and-forget: the switch
+  // itself already happened on this device), so they match the settings.
   function switchLocale(next: string) {
     if (next === locale) return;
+    void updatePreferences({ locale: next as Locale });
     startTransition(() => {
       router.replace(pathname, { locale: next });
     });
+  }
+
+  function switchTheme(next: string) {
+    setTheme(next);
+    void updatePreferences({ theme: next as (typeof THEMES)[number]["value"] });
   }
 
   return (
@@ -148,7 +152,7 @@ export function NavUser({
                   >
                     {routing.locales.map((l) => (
                       <DropdownMenuRadioItem key={l} value={l}>
-                        {LOCALE_LABELS[l] ?? l}
+                        {LOCALE_LABELS[l]}
                       </DropdownMenuRadioItem>
                     ))}
                   </DropdownMenuRadioGroup>
@@ -164,7 +168,7 @@ export function NavUser({
                 <DropdownMenuSubContent>
                   <DropdownMenuRadioGroup
                     value={theme}
-                    onValueChange={setTheme}
+                    onValueChange={switchTheme}
                   >
                     {THEMES.map(({ value, Icon }) => (
                       <DropdownMenuRadioItem key={value} value={value}>

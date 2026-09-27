@@ -395,6 +395,11 @@
     "confirmPassword": "אימות הסיסמה החדשה",
     "passwordHelp": "לפחות 8 תווים",
     "passwordSaved": "הסיסמה שונתה",
+    "tabPreferences": "העדפות",
+    "language": "שפה",
+    "languageHelp": "השפה שבה האפליקציה נפתחת אחרי התחברות, בכל מכשיר",
+    "theme": "מראה",
+    "themeHelp": "נשמר בחשבון, כך שכל המכשירים נראים אותו דבר",
     "errors": {
       "required": "שדה חובה",
       "email": "הזינו אימייל תקין",

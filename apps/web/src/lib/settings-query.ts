@@ -1,6 +1,7 @@
 import { prisma } from "@repo/db";
+import type { LocaleCode, ThemeCode } from "@repo/domain";
 
-export const SETTINGS_TABS = ["profile", "password"] as const;
+export const SETTINGS_TABS = ["profile", "password", "preferences"] as const;
 
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
@@ -14,10 +15,14 @@ export function parseSettingsTab(raw: string | string[] | undefined): SettingsTa
 export async function getSettings(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { name: true, email: true },
+    select: { name: true, email: true, locale: true, theme: true },
   });
   return {
     profile: { name: user.name ?? "", email: user.email },
+    preferences: {
+      locale: user.locale as LocaleCode,
+      theme: user.theme as ThemeCode,
+    },
   };
 }
 

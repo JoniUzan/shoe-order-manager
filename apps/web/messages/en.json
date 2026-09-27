@@ -395,6 +395,11 @@
     "confirmPassword": "Confirm new password",
     "passwordHelp": "At least 8 characters",
     "passwordSaved": "Password changed",
+    "tabPreferences": "Preferences",
+    "language": "Language",
+    "languageHelp": "The language the app opens in when you sign in, on any device",
+    "theme": "Appearance",
+    "themeHelp": "Saved to your account, so every device matches",
     "errors": {
       "required": "This field is required",
       "email": "Enter a valid email",

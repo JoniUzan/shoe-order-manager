@@ -3,8 +3,10 @@
 import { Prisma, prisma } from "@repo/db";
 import {
   passwordChangeSchema,
+  preferencesSchema,
   profileSchema,
   type PasswordChangeInput,
+  type PreferencesInput,
   type ProfileInput,
 } from "@repo/domain";
 import { revalidatePath } from "next/cache";
@@ -95,5 +97,27 @@ export async function changePassword(
     where: { id: userId },
     data: { passwordHash: await hashPassword(data.newPassword) },
   });
+  return { ok: true };
+}
+
+/**
+ * Saves the language and/or theme on the account, so a new device (or a
+ * fresh sign-in) opens the way the user left it. Takes either one alone —
+ * the account menu's quick switches send just the one they changed.
+ */
+export async function updatePreferences(
+  input: Partial<PreferencesInput>,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = preferencesSchema.partial().safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+
+  const result = await prisma.user.updateMany({
+    where: { id: userId },
+    data: parsed.data,
+  });
+  if (result.count === 0) return { ok: false, error: "not_found" };
+
+  revalidatePath("/", "layout");
   return { ok: true };
 }

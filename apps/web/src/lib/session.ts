@@ -19,7 +19,7 @@ export async function requireUser(locale: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, theme: true },
   });
   if (!user) {
     redirect(`/${locale}/login`);
