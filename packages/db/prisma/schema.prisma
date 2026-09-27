@@ -31,6 +31,14 @@ model User {
   image         String?
   passwordHash  String?
   locale        String    @default("he") // "he" | "en"
+  theme         String    @default("system") // "light" | "dark" | "system"
+
+  // Business details, printed on the invoice and the WhatsApp message.
+  businessName    String?
+  businessPhone   String?
+  businessAddress String?
+  businessTaxId   String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
