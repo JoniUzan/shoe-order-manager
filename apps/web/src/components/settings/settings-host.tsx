@@ -58,7 +58,7 @@ export function SettingsHost({ data }: { data: SettingsData }) {
           e.preventDefault();
           (e.currentTarget as HTMLElement).focus();
         }}
-        className="top-10 right-10 bottom-10 left-10 flex w-auto max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-none"
+        className="inset-10 flex w-auto max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-none"
       >
         <DialogTitle className="sr-only">{t("title")}</DialogTitle>
         <SettingsShell section={section} data={data} phone={false} onClose={closeSettings} />

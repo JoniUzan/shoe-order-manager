@@ -118,6 +118,8 @@ export async function changePassword(
     where: { id: userId },
     data: { passwordHash: await hashPassword(data.newPassword) },
   });
+
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
