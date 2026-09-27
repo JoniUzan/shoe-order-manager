@@ -33,8 +33,8 @@ list; see `CLAUDE.md` for the technical architecture.
 ## Settings
 Open **Settings** from the account menu (click your name at the bottom of the sidebar). On a computer
 it opens as a large dialog over the page you're on, with a side menu; on a phone it's a sheet that
-rises from the bottom, starting from a menu of sections. Each section has its own address
-(`/he/settings/business`), which also opens it as a full page. There are no Save buttons: text fields
+rises from the bottom, starting from a menu of sections. The address shows where you are
+(`/he/orders#settings/business`), so a reload keeps the dialog open and Back closes it. There are no Save buttons: text fields
 save when you leave them (a "Saved" mark appears), choices apply as you pick them.
 - **General** — appearance (system / light / dark) and language, saved to your account so every device
   opens the same way. The account menu's switches save here too.
