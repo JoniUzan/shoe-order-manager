@@ -2,7 +2,6 @@
 
 import {
   curvePairs,
-  formatCurve,
   formatMoney,
   parseCurve,
   parseSizes,
@@ -23,6 +22,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { ModelRowActions } from "@/components/catalog/model-row-actions";
+import { CurveText } from "@/components/catalog/curve-text";
 import { DataTable } from "@/components/data-table/data-table";
 import { DetailRow } from "@/components/data-table/detail-row";
 import { SortHeader } from "@/components/data-table/sort-header";
@@ -101,7 +101,7 @@ function PackList({
           <li key={pack.name}>
             {summary(pack.name, curvePairs(curve))}{" "}
             <span dir="ltr" className="text-xs text-muted-foreground tabular-nums">
-              ({formatCurve(curve, " ")})
+              (<CurveText curve={curve} separator=" " />)
             </span>
           </li>
         );

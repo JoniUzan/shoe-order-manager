@@ -1,4 +1,3 @@
-import { formatCurve } from "@repo/domain";
 import {
   Card,
   CardContent,
@@ -8,7 +7,8 @@ import {
 import { getTranslations } from "next-intl/server";
 import { Package } from "lucide-react";
 
-import { formatExtras, type PackingSummary } from "@/lib/packing";
+import { CurveText } from "@/components/catalog/curve-text";
+import type { PackingSummary } from "@/lib/packing";
 
 /**
  * The order as whoever packs it reads it: N boxes of each pack, then the loose
@@ -45,7 +45,7 @@ export async function PackingCard({
                   dir="ltr"
                   className="text-xs text-muted-foreground tabular-nums"
                 >
-                  ({formatCurve(pack.curve)})
+                  (<CurveText curve={pack.curve} />)
                 </span>
               </p>
             ))}
@@ -53,7 +53,12 @@ export async function PackingCard({
               <p className="ps-2 text-muted-foreground">
                 {group.packs.length > 0 ? t("extraLine") : t("looseLine")}{" "}
                 <span dir="ltr" className="text-foreground tabular-nums">
-                  {formatExtras(group.extras)}
+                  <CurveText
+                    curve={group.extras.map((e) => ({
+                      size: e.size,
+                      pairs: e.quantity,
+                    }))}
+                  />
                 </span>
               </p>
             )}

@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { CurveText } from "@/components/catalog/curve-text";
 import { PrintButton } from "@/components/orders/print-button";
 import { ShareOrderButton } from "@/components/orders/share-order-button";
 import { Link } from "@/i18n/navigation";
@@ -174,7 +175,7 @@ export default async function PrintOrderPage({
                       <p key={k} className="ps-3">
                         {t("packLine", { count: pack.count, name: pack.name })}{" "}
                         <span dir="ltr" className="text-black/60 tabular-nums">
-                          ({formatCurve(pack.curve)})
+                          (<CurveText curve={pack.curve} />)
                         </span>
                       </p>
                     ))}
@@ -182,7 +183,12 @@ export default async function PrintOrderPage({
                       <p className="ps-3 text-black/60">
                         {group.packs.length > 0 ? t("extraLine") : t("looseLine")}{" "}
                         <span dir="ltr" className="text-black tabular-nums">
-                          {formatExtras(group.extras)}
+                          <CurveText
+                            curve={group.extras.map((e) => ({
+                              size: e.size,
+                              pairs: e.quantity,
+                            }))}
+                          />
                         </span>
                       </p>
                     )}

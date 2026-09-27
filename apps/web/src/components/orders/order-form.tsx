@@ -4,7 +4,6 @@ import {
   agorotToShekels,
   curvePairs,
   expandPack,
-  formatCurve,
   formatMoney,
   MAX_LINE_PAIRS,
   MAX_PACK_COUNT,
@@ -37,6 +36,7 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 
+import { CurveText } from "@/components/catalog/curve-text";
 import { Combobox } from "@/components/ui/combobox";
 import { useRouter } from "@/i18n/navigation";
 import { createOrder, updateOrder } from "@/lib/actions/orders";
@@ -642,7 +642,7 @@ export function OrderForm({
                         {pack.curve.length > 0 && (
                           <span className="ps-3 text-xs text-muted-foreground">
                             <span dir="ltr" className="tabular-nums">
-                              {formatCurve(pack.curve)}
+                              <CurveText curve={pack.curve} />
                             </span>
                           </span>
                         )}
@@ -763,7 +763,7 @@ export function OrderForm({
                       dir="ltr"
                       className="rounded-md bg-muted px-1.5 py-0.5 tabular-nums"
                     >
-                      {size}×{quantity}
+                      <span className="font-semibold">{size}</span>×{quantity}
                     </span>
                   ))}
                 </div>
