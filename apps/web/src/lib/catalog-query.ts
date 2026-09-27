@@ -57,6 +57,8 @@ export type CatalogRow = {
   /** The stored size run, comma-separated — parse with `parseSizes`. */
   sizes: string | null;
   sizeFormat: string;
+  /** The model's packs in catalog order; `curve` parses with `parseCurve`. */
+  packs: { name: string; curve: string }[];
   isActive: boolean;
   createdAt: string;
   /**
@@ -140,6 +142,10 @@ const ROW_SELECT = {
   defaultPriceAgorot: true,
   sizes: true,
   sizeFormat: true,
+  packs: {
+    select: { name: true, curve: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  },
   isActive: true,
   createdAt: true,
   _count: { select: { items: true } },
@@ -156,6 +162,7 @@ function toRow(m: RawRow): CatalogRow {
     defaultPriceAgorot: m.defaultPriceAgorot,
     sizes: m.sizes,
     sizeFormat: m.sizeFormat,
+    packs: m.packs,
     isActive: m.isActive,
     createdAt: m.createdAt.toISOString(),
     orderLines: m._count.items,

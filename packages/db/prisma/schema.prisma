@@ -131,8 +131,30 @@ model ShoeModel {
 
   owner User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   items OrderItem[]
+  packs SizePack[]
 
   @@index([ownerId])
+}
+
+// A pack (Hebrew: סדרה) a model is sold in: a fixed number of pairs per size,
+// e.g. 38×3, 39×2, 40×3. No ownerId of its own — always reached through its
+// owned ShoeModel (`shoeModel: { ownerId }`), never loaded by id alone.
+model SizePack {
+  id          String   @id @default(cuid())
+  shoeModelId String
+  name        String
+  // Pairs per size, "38:3,39:2,40:3" — canonical form from serializeCurve in
+  // @repo/domain. A string for the same reason as ShoeModel.sizes: it is only
+  // ever read and written whole, and never searched by size.
+  curve       String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shoeModel ShoeModel   @relation(fields: [shoeModelId], references: [id], onDelete: Cascade)
+  packs     OrderPack[]
+
+  @@index([shoeModelId])
 }
 
 model Order {
@@ -158,6 +180,7 @@ model Order {
   customer Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
   status   OrderStatus @relation(fields: [statusCode], references: [code])
   items    OrderItem[]
+  packs    OrderPack[]
   payments Payment[]
 
   @@unique([ownerId, orderNumber])
@@ -179,9 +202,35 @@ model OrderItem {
   color             String?
   quantity          Int
   unitPriceAgorot   Int     @default(0)
+  // Set when this size row is part of a pack taken on the order; null for
+  // loose (extra) pairs. The row still carries its own quantity, so totals and
+  // reports keep summing items and never need to know about packs.
+  packId            String?
 
   order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   shoeModel ShoeModel? @relation(fields: [shoeModelId], references: [id], onDelete: SetNull)
+  pack      OrderPack? @relation(fields: [packId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([packId])
+}
+
+// N packs taken on an order. Its pairs are ordinary OrderItem rows (one per
+// size, quantity = count × pairs in the curve) pointing back here via packId.
+// Name and curve are snapshots, so editing or deleting the catalog pack later
+// never changes what an existing order says was sold.
+model OrderPack {
+  id         String  @id @default(cuid())
+  orderId    String
+  // The catalog pack it came from; SetNull if that pack is deleted later.
+  sizePackId String?
+  packName   String
+  curve      String // pairs per pack, "38:3,39:2,40:3"
+  count      Int // 1..999
+
+  order    Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sizePack SizePack?   @relation(fields: [sizePackId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
 
   @@index([orderId])
 }

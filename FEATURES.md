@@ -13,7 +13,7 @@ list; see `CLAUDE.md` for the technical architecture.
 |---|---|
 | **Login** | Secure email + password sign-in (one account for now) |
 | **Customers** | Add/edit/delete the stores you sell to; see each one's order history and balance |
-| **Catalog** | Keep a list of shoe models (with a default price) to reuse in orders |
+| **Catalog** | Keep a list of shoe models (with a default price, size run and packs) to reuse in orders |
 | **Orders** | Create orders with catalog or custom items, sizes, colors, quantities, prices |
 | **Payments** | Record payments (full or partial), track who still owes money |
 | **Share** | Send the order as a **PDF over WhatsApp**, or print it |
@@ -38,12 +38,15 @@ list; see `CLAUDE.md` for the technical architecture.
 - A reusable list of models you sell often, each with an optional **default price** and active/inactive flag.
 - Add / edit / delete (delete is blocked if the model is used in an order).
 - When building an order, picking a model **auto-fills its price**.
+- **Packs (סדרות)** — up to 10 per model: a named box with a fixed number of pairs per size (e.g. *Standard pack*: 38×3, 39×2, 40×3). The pack's columns follow the model's size run; a size can't be removed from the run while a pack still uses it.
 
 ## Orders
 - **Create / edit** with any number of line items. Each line is either:
   - a **catalog model** (pick from your catalog), or
   - a **custom item** (free text — for one-off/special pairs).
   Each line has size, color, quantity, and unit price, with **live line + order totals**.
+- **Packs** — for a model with packs, take N of one or more packs plus extra single pairs; a total-per-size line shows what it all adds up to. Price stays per pair.
+- **Packing summary** — an order with packs shows what to pick on the order page, the invoice and the WhatsApp text: "10 × Standard pack (38×3 · 39×2 · 40×3) + extra 41×1 — Packs to pick: 10 · Loose pairs: 1" (Hebrew: קרטונים לליקוט). An order keeps the pack as it was sold even if the catalog pack is later edited or deleted.
 - **Order list** with filters: All / Open / Unpaid. Each order has a running number (#1, #2, …).
 - **Order page** — customer, line items, totals, and a **Done / Reopen** status toggle.
 - Delete with confirmation.

@@ -7,7 +7,9 @@ export type {
   OrderStatus,
   Customer,
   ShoeModel,
+  SizePack,
   Order,
   OrderItem,
+  OrderPack,
   Payment,
 } from "@prisma/client";

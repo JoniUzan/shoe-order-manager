@@ -1,16 +1,23 @@
 # Local Postgres for development: `docker compose up -d`.
 # Matches the DATABASE_URL / DIRECT_URL in packages/db/.env.example and
 # apps/web/.env.example. Production uses Supabase; this never touches it.
+#
+# Major version 17 to match Supabase, so local behaves like production.
+# Upgrading from a 16 volume: `docker compose down -v`, then up again and
+# re-run `pnpm db:migrate && pnpm db:seed` (a data directory can't be opened
+# by a different major version).
 services:
   db:
-    image: postgres:16
+    image: postgres:17
     restart: unless-stopped
     environment:
-      POSTGRES_USER: shoes
-      POSTGRES_PASSWORD: shoes
-      POSTGRES_DB: shoes
+      POSTGRES_USER: postgres
+      POSTGRES_DB: shoe_order_manager
+      # No password: the port below is bound to this machine only, so trust
+      # auth lets local tools connect without a credential living in the repo.
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

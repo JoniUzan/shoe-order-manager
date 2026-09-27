@@ -14,6 +14,7 @@ import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { OrderItemsTable } from "@/components/orders/order-items-table";
 import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
+import { PackingCard } from "@/components/orders/packing-card";
 import { PaymentControls } from "@/components/orders/payment-controls";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
@@ -22,6 +23,7 @@ import {
   listOrderItems,
   parseOrderItemListParams,
 } from "@/lib/order-items-query";
+import { buildPackingSummary } from "@/lib/packing";
 import { requireUser } from "@/lib/session";
 
 export default async function OrderDetailPage({
@@ -44,9 +46,33 @@ export default async function OrderDetailPage({
         orderBy: { paidAt: "desc" },
         select: { id: true, amountAgorot: true, paidAt: true, note: true },
       },
+      packs: {
+        orderBy: { id: "asc" },
+        select: { id: true, packName: true, curve: true, count: true },
+      },
     },
   });
   if (!order) notFound();
+
+  // The packing card needs every item, not the paged table's slice — and only
+  // exists at all when the order has a pack, so an order without one costs
+  // nothing extra.
+  const packing =
+    order.packs.length > 0
+      ? buildPackingSummary(
+          (
+            await prisma.orderItem.findMany({
+              where: { orderId: order.id, order: { ownerId: user.id } },
+              orderBy: { id: "asc" },
+              include: { shoeModel: { select: { name: true } } },
+            })
+          ).map((it) => ({
+            ...it,
+            name: it.shoeModel?.name ?? it.customDescription ?? "",
+          })),
+          order.packs,
+        )
+      : null;
 
   const itemList = await listOrderItems(
     user.id,
@@ -95,6 +121,8 @@ export default async function OrderDetailPage({
         <OrderStatusBadge code={order.statusCode} />
         <PaymentBadge status={order.paymentStatus} />
       </div>
+
+      {packing && <PackingCard summary={packing} locale={locale} />}
 
       <OrderItemsTable
         rows={itemList.rows}

@@ -23,6 +23,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import {
+  PackEditor,
+  packCurve,
+  packErrors,
+  type PackFormValue,
+} from "@/components/catalog/pack-editor";
 import { SizeListInput } from "@/components/catalog/size-list-input";
 import { useRouter } from "@/i18n/navigation";
 import { createShoeModel, updateShoeModel } from "@/lib/actions/catalog";
@@ -35,6 +41,7 @@ export interface FormValues {
   sizes: string[];
   sizeFormat: SizeFormat;
   isActive: boolean;
+  packs: PackFormValue[];
 }
 
 const EMPTY: FormValues = {
@@ -45,6 +52,7 @@ const EMPTY: FormValues = {
   sizes: [],
   sizeFormat: "eu",
   isActive: true,
+  packs: [],
 };
 
 export function CatalogForm({
@@ -59,12 +67,20 @@ export function CatalogForm({
   const tc = useTranslations("common");
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  // Pack errors are derived from the live values (see packErrors) and only
+  // shown once a save has been tried, so a half-typed pack isn't shouted at.
+  const [showPackErrors, setShowPackErrors] = useState(false);
 
   const form = useForm<FormValues>({
     defaultValues: defaultValues ?? EMPTY,
   });
 
   async function onSubmit(values: FormValues) {
+    if (packErrors(values.packs, values.sizes).some(Boolean)) {
+      setShowPackErrors(true);
+      toast.error(t("errorPacks"));
+      return;
+    }
     const priceText = values.price.trim();
     const input: ShoeModelInput = {
       name: values.name.trim(),
@@ -74,6 +90,11 @@ export function CatalogForm({
       sizes: values.sizes,
       sizeFormat: values.sizeFormat,
       isActive: values.isActive,
+      packs: values.packs.map((pack) => ({
+        id: pack.id,
+        name: pack.name.trim(),
+        curve: packCurve(pack),
+      })),
     };
     setPending(true);
     const res = modelId
@@ -91,6 +112,7 @@ export function CatalogForm({
   const isActive = form.watch("isActive");
   const sizes = form.watch("sizes");
   const sizeFormat = form.watch("sizeFormat");
+  const packs = form.watch("packs");
 
   return (
     <form
@@ -170,6 +192,17 @@ export function CatalogForm({
           id="sizes"
           value={sizes}
           onChange={(next) => form.setValue("sizes", next, { shouldDirty: true })}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label>{t("packs")}</Label>
+        <p className="text-xs text-muted-foreground">{t("packsHelp")}</p>
+        <PackEditor
+          value={packs}
+          sizes={sizes}
+          showErrors={showPackErrors}
+          onChange={(next) => form.setValue("packs", next, { shouldDirty: true })}
         />
       </div>
 

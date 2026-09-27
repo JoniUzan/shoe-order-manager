@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { parseSizes } from "@repo/domain";
+import { parseCurve, parseSizes } from "@repo/domain";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -20,7 +20,7 @@ export default async function EditOrderPage({
   const [order, customers, models] = await Promise.all([
     prisma.order.findFirst({
       where: { id, ownerId: user.id },
-      include: { items: { orderBy: { id: "asc" } } },
+      include: { items: { orderBy: { id: "asc" } }, packs: true },
     }),
     prisma.customer.findMany({
       where: { ownerId: user.id },
@@ -32,12 +32,26 @@ export default async function EditOrderPage({
     prisma.shoeModel.findMany({
       where: { ownerId: user.id },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, defaultPriceAgorot: true, sizes: true, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        defaultPriceAgorot: true,
+        sizes: true,
+        isActive: true,
+        packs: {
+          select: { id: true, name: true, curve: true },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        },
+      },
     }),
   ]);
   if (!order) notFound();
 
-  const modelOptions = models.map((m) => ({ ...m, sizes: parseSizes(m.sizes) }));
+  const modelOptions = models.map((m) => ({
+    ...m,
+    sizes: parseSizes(m.sizes),
+    packs: m.packs.map((p) => ({ ...p, curve: parseCurve(p.curve) })),
+  }));
   const sizesByModelId = new Map(modelOptions.map((m) => [m.id, m.sizes]));
 
   return (
@@ -51,7 +65,11 @@ export default async function EditOrderPage({
           customerId: order.customerId,
           notes: order.notes ?? "",
           statusCode: order.statusCode,
-          blocks: groupItemsIntoBlocks(order.items, sizesByModelId),
+          blocks: groupItemsIntoBlocks(
+            order.items,
+            sizesByModelId,
+            order.packs,
+          ),
         }}
       />
     </div>

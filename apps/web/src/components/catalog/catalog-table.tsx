@@ -1,6 +1,11 @@
 "use client";
 
-import { formatMoney, parseSizes } from "@repo/domain";
+import {
+  curvePairs,
+  formatMoney,
+  parseCurve,
+  parseSizes,
+} from "@repo/domain";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -17,6 +22,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { ModelRowActions } from "@/components/catalog/model-row-actions";
+import { CurveText } from "@/components/catalog/curve-text";
 import { DataTable } from "@/components/data-table/data-table";
 import { DetailRow } from "@/components/data-table/detail-row";
 import { SortHeader } from "@/components/data-table/sort-header";
@@ -72,6 +78,35 @@ function SizeRun({ stored, empty }: { stored: string | null; empty: string }) {
         </span>
       ))}
     </div>
+  );
+}
+
+/** Each pack as one line: its name, pairs per pack and the per-size curve. */
+function PackList({
+  packs,
+  empty,
+  summary,
+}: {
+  packs: CatalogRow["packs"];
+  empty: string;
+  summary: (name: string, count: number) => string;
+}) {
+  if (packs.length === 0)
+    return <span className="text-muted-foreground">{empty}</span>;
+  return (
+    <ul className="flex flex-col gap-1">
+      {packs.map((pack) => {
+        const curve = parseCurve(pack.curve);
+        return (
+          <li key={pack.name}>
+            {summary(pack.name, curvePairs(curve))}{" "}
+            <span dir="ltr" className="text-xs text-muted-foreground tabular-nums">
+              (<CurveText curve={curve} separator=" " />)
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -304,6 +339,13 @@ export function CatalogTable({
                 />
                 <DetailBlock label={t("sizes")}>
                   <SizeRun stored={active.sizes} empty={t("sizesEmpty")} />
+                </DetailBlock>
+                <DetailBlock label={t("packs")}>
+                  <PackList
+                    packs={active.packs}
+                    empty={t("packsEmpty")}
+                    summary={(name, count) => t("packSummary", { name, count })}
+                  />
                 </DetailBlock>
                 <DetailBlock label={t("description")}>
                   {active.description ? (

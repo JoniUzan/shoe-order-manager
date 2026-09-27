@@ -20,7 +20,7 @@ pnpm lint                    # eslint across packages that define a lint task (c
 pnpm --filter @repo/db typecheck   # typecheck a single package
 
 # Database (Postgres via Prisma, in packages/db)
-docker compose up -d         # local Postgres 16 on :5432 (matches the .env.example files)
+docker compose up -d         # local Postgres 17 on localhost:5432 (matches the .env.example files)
 pnpm db:migrate              # prisma migrate dev (create/apply migrations)
 pnpm db:seed                 # seed OrderStatus rows + admin user
 pnpm db:studio               # browse data
@@ -99,6 +99,14 @@ flips automatically. Messages live in `apps/web/messages/{en,he}.json` — keep 
   the top when the direction flips.
 - A line item is a catalog reference (`shoeModelId`) **XOR** free text (`customDescription`) —
   enforced in the Zod schema + Server Action, since Prisma can't declare the cross-column CHECK.
+- **Packs** (UI: English "Pack/packs"; Hebrew "סדרה" for the definition, "קרטונים" for the
+  count). `SizePack` is a model's pack (`curve` string `"38:3,39:2"`, see `parseCurve` /
+  `serializeCurve` in `@repo/domain`); `OrderPack` is N of a pack on an order, with a
+  **name + curve snapshot**. A pack's pairs are ordinary `OrderItem` rows (`packId` set,
+  `quantity = count × pairs`), so totals/reports keep summing items. Neither pack table has an
+  `ownerId`: always reach them through an owned parent (`shoeModel: { ownerId }` /
+  `order: { ownerId }`). The order form sends only *which pack and how many*; the server builds
+  the items from the stored curve (`resolvePacks` in `actions/orders.ts`).
 
 ## Conventions & gotchas
 

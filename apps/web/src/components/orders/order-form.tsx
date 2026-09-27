@@ -2,19 +2,31 @@
 
 import {
   agorotToShekels,
+  curvePairs,
+  expandPack,
   formatMoney,
+  MAX_LINE_PAIRS,
+  MAX_PACK_COUNT,
   normalizeSize,
   shekelsToAgorot,
+  type Curve,
   type OrderInput,
 } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
 import { Textarea } from "@repo/ui/components/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@repo/ui/components/toggle-group";
 import { cn } from "@repo/ui/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
-import { Plus, Trash2, X } from "lucide-react";
+import { Package, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useId, useState } from "react";
 import {
   useFieldArray,
@@ -24,15 +36,20 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 
+import { CurveText } from "@/components/catalog/curve-text";
 import { Combobox } from "@/components/ui/combobox";
 import { useRouter } from "@/i18n/navigation";
 import { createOrder, updateOrder } from "@/lib/actions/orders";
 import {
+  activePacks,
   blockAgorot,
   blockPairs,
   EMPTY_BLOCK,
+  packCountOf,
   pairsOf,
+  type BlockForm,
   type OrderFormValues,
+  type PackRow,
   type SizeRow,
 } from "@/lib/order-blocks";
 
@@ -48,6 +65,26 @@ export interface ModelOption {
   defaultPriceAgorot: number | null;
   sizes: string[];
   isActive: boolean;
+  /** The model's packs, in catalog order. */
+  packs: { id: string; name: string; curve: Curve }[];
+}
+
+/**
+ * Pairs per size across the whole block — packs expanded plus the loose
+ * pairs — so the grid of extras never hides what the block really adds up to.
+ */
+function totalsBySize(block: BlockForm): [string, number][] {
+  const totals = new Map<string, number>();
+  const add = (size: string, n: number) => {
+    if (!size || n <= 0) return;
+    totals.set(size, (totals.get(size) ?? 0) + n);
+  };
+  for (const pack of activePacks(block)) {
+    for (const s of expandPack(pack.curve, Math.max(0, packCountOf(pack))))
+      add(s.size, s.quantity);
+  }
+  for (const row of block.rows) add(normalizeSize(row.size), pairsOf(row));
+  return [...totals].sort(([a], [b]) => Number(a) - Number(b));
 }
 
 export function OrderForm({
@@ -67,6 +104,10 @@ export function OrderForm({
   const router = useRouter();
   const uid = useId();
   const [pending, setPending] = useState(false);
+
+  function modelPacks(modelId: string | undefined) {
+    return models.find((m) => m.id === modelId)?.packs ?? [];
+  }
 
   /**
    * Validation runs as a resolver rather than as `setError` calls inside the
@@ -108,9 +149,39 @@ export function OrderForm({
           if (Number(row.pairs) < 0) {
             fail(`blocks.${i}.rows.${j}.pairs`, t("errorPairsNegative"));
           }
+          if (pairsOf(row) > MAX_LINE_PAIRS) {
+            fail(
+              `blocks.${i}.rows.${j}.pairs`,
+              t("errorPairsTooMany", { max: MAX_LINE_PAIRS }),
+            );
+          }
+        });
+        activePacks(block).forEach((pack, k) => {
+          if (!pack.orderPackId && !pack.sizePackId) {
+            fail(`blocks.${i}.packs.${k}.sizePackId`, t("errorNoPack"));
+          }
+          const count = Number(pack.count);
+          if (!Number.isInteger(count) || count < 1 || count > MAX_PACK_COUNT) {
+            fail(
+              `blocks.${i}.packs.${k}.count`,
+              t("errorPackCount", { max: MAX_PACK_COUNT }),
+            );
+          } else if (pack.curve.some((c) => c.pairs * count > MAX_LINE_PAIRS)) {
+            // Each size of a pack is still one order line, with the same cap.
+            fail(
+              `blocks.${i}.packs.${k}.count`,
+              t("errorPairsTooMany", { max: MAX_LINE_PAIRS }),
+            );
+          }
         });
         if (blockPairs(block) <= 0) {
-          fail(`blocks.${i}.rows.root`, t("errorNoPairs"));
+          fail(
+            `blocks.${i}.rows.root`,
+            activePacks(block).length > 0 ||
+              !!models.find((m) => m.id === block.shoeModelId)?.packs.length
+              ? t("errorNoPairsOrPacks")
+              : t("errorNoPairs"),
+          );
         }
       });
 
@@ -118,7 +189,7 @@ export function OrderForm({
         ? { values, errors: {} }
         : { values: {}, errors };
     },
-    [t],
+    [t, models],
   );
 
   const form = useForm<OrderFormValues>({
@@ -127,7 +198,7 @@ export function OrderForm({
       customerId: "",
       notes: "",
       statusCode: "not_done",
-      blocks: [{ ...EMPTY_BLOCK, rows: [] }],
+      blocks: [{ ...EMPTY_BLOCK, packs: [], rows: [] }],
     },
   });
   const { fields, append, remove } = useFieldArray({
@@ -178,10 +249,71 @@ export function OrderForm({
     form.clearErrors(`blocks.${index}.rows`);
   }
 
+  function currentPacks(index: number): PackRow[] {
+    return form.getValues(`blocks.${index}.packs`) ?? [];
+  }
+
+  function setPacks(index: number, packs: PackRow[]) {
+    form.setValue(`blocks.${index}.packs`, packs, { shouldDirty: true });
+    // Same reason as setRows: errors are keyed by index. The rows' root error
+    // ("no pairs") may also no longer apply once a pack is added.
+    form.clearErrors(`blocks.${index}.packs`);
+    form.clearErrors(`blocks.${index}.rows`);
+  }
+
+  /** Catalog packs of this model not yet taken by another pack row. */
+  function freePacks(index: number, exceptRow?: number) {
+    const block = form.getValues(`blocks.${index}`);
+    const taken = new Set(
+      (block?.packs ?? [])
+        .filter((_, k) => k !== exceptRow)
+        .map((p) => p.sizePackId)
+        .filter(Boolean),
+    );
+    return modelPacks(block?.shoeModelId).filter((p) => !taken.has(p.id));
+  }
+
+  function addPack(index: number) {
+    const next = freePacks(index)[0];
+    if (!next) return;
+    setPacks(index, [
+      ...currentPacks(index),
+      { sizePackId: next.id, packName: next.name, curve: next.curve, count: "" },
+    ]);
+  }
+
+  function choosePack(index: number, k: number, sizePackId: string) {
+    const pack = modelPacks(form.getValues(`blocks.${index}.shoeModelId`)).find(
+      (p) => p.id === sizePackId,
+    );
+    if (!pack) return;
+    setPacks(
+      index,
+      currentPacks(index).map((row, i) =>
+        i === k
+          ? { ...row, sizePackId: pack.id, packName: pack.name, curve: pack.curve }
+          : row,
+      ),
+    );
+  }
+
+  function removePack(index: number, k: number) {
+    setPacks(
+      index,
+      currentPacks(index).filter((_, i) => i !== k),
+    );
+  }
+
   function onModelChange(index: number, modelId: string) {
     const model = models.find((m) => m.id === modelId);
+    const previous = form.getValues(`blocks.${index}.shoeModelId`);
     form.setValue(`blocks.${index}.shoeModelId`, modelId, { shouldDirty: true });
     form.clearErrors(`blocks.${index}.shoeModelId`);
+    // A pack is a box of one particular model, so it can't follow the block
+    // to another one.
+    if (modelId !== previous && currentPacks(index).length > 0) {
+      setPacks(index, []);
+    }
 
     if (
       model?.defaultPriceAgorot != null &&
@@ -234,7 +366,7 @@ export function OrderForm({
       customerId: values.customerId,
       notes: values.notes,
       statusCode: values.statusCode || "not_done",
-      // Sizes left blank or at zero never become line items.
+      // Loose pairs only. Sizes left blank or at zero never become line items.
       items: values.blocks.flatMap((block) =>
         block.rows
           .filter((row) => pairsOf(row) > 0 && normalizeSize(row.size))
@@ -252,6 +384,18 @@ export function OrderForm({
             unitPriceAgorot: shekelsToAgorot(Number(block.unitPrice) || 0),
           })),
       ),
+      // Only which pack and how many: the server expands each pack from its
+      // stored curve, so the per-size pairs are never taken from here.
+      packs: values.blocks.flatMap((block) =>
+        activePacks(block).map((pack) => ({
+          orderPackId: pack.orderPackId,
+          sizePackId: pack.sizePackId || undefined,
+          shoeModelId: block.shoeModelId,
+          color: block.color,
+          unitPriceAgorot: shekelsToAgorot(Number(block.unitPrice) || 0),
+          count: packCountOf(pack),
+        })),
+      ),
     };
 
     setPending(true);
@@ -262,7 +406,11 @@ export function OrderForm({
       toast.success(orderId ? t("updated") : t("created"));
       router.push(`/orders/${res.id}`);
     } else {
-      toast.error(t("errorGeneric"));
+      toast.error(
+        res.error === "total_too_large"
+          ? t("errorTotalTooLarge")
+          : t("errorGeneric"),
+      );
       setPending(false);
     }
   }
@@ -314,6 +462,15 @@ export function OrderForm({
           if (!block) return null;
           const blockErrors = errors.blocks?.[index];
           const isCatalog = block.mode === "catalog";
+          const catalogPacks = isCatalog ? modelPacks(block.shoeModelId) : [];
+          // An old order can hold a pack its model no longer offers, so the
+          // row shows whenever either side has one.
+          const showPacks =
+            isCatalog && (catalogPacks.length > 0 || block.packs.length > 0);
+          const takenPacks = new Set(block.packs.map((p) => p.sizePackId));
+          const sizeTotals = activePacks(block).some((p) => packCountOf(p) > 0)
+            ? totalsBySize(block)
+            : [];
 
           return (
             <div
@@ -397,6 +554,120 @@ export function OrderForm({
                 </div>
               </div>
 
+              {/* Packs: N of a named box, on top of the loose pairs below. */}
+              {showPacks && (
+                <div className="flex flex-col gap-2 border-b p-3">
+                  <span className="text-xs text-muted-foreground">
+                    {t("packs")}
+                  </span>
+                  {block.packs.map((pack, k) => {
+                    const packErrors = blockErrors?.packs?.[k];
+                    const options = catalogPacks.filter(
+                      (p) => p.id === pack.sizePackId || !takenPacks.has(p.id),
+                    );
+                    return (
+                      <div key={k} className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                          <div className="min-w-0 flex-1 basis-44">
+                            {pack.orderPackId ? (
+                              // Already on the order: it keeps the name and curve
+                              // it was sold with, so it isn't re-pickable — remove
+                              // it and add another pack to change it.
+                              <span className="flex h-11 min-w-0 items-center gap-1.5 ps-3 font-medium md:h-9">
+                                <Package className="size-4 shrink-0 text-muted-foreground" />
+                                <span className="truncate">{pack.packName}</span>
+                              </span>
+                            ) : (
+                              <Select
+                                value={pack.sizePackId}
+                                onValueChange={(v) => choosePack(index, k, v)}
+                              >
+                                <SelectTrigger
+                                  className="h-11 w-full md:h-9"
+                                  aria-label={t("pack")}
+                                  aria-invalid={!!packErrors?.sizePackId}
+                                >
+                                  <SelectValue placeholder={t("selectPack")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {options.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span aria-hidden className="text-muted-foreground">
+                              ×
+                            </span>
+                            <Input
+                              type="number"
+                              min="1"
+                              max={MAX_PACK_COUNT}
+                              inputMode="numeric"
+                              dir="ltr"
+                              className="h-11 w-20 px-1 text-center font-medium md:h-9"
+                              aria-label={t("packCount")}
+                              aria-invalid={!!packErrors?.count}
+                              {...form.register(`blocks.${index}.packs.${k}.count`, {
+                                // Same as a pairs cell: the "no pairs" root error
+                                // must drop once a count is typed.
+                                onChange: () =>
+                                  form.clearErrors(`blocks.${index}.rows`),
+                              })}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              {t("packsUnit")}
+                            </span>
+                            {/* Fixed width so the remove buttons line up across rows. */}
+                            <span className="w-24 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+                              ={" "}
+                              {t("pairsCount", {
+                                count:
+                                  Math.max(0, packCountOf(pack)) *
+                                  curvePairs(pack.curve),
+                              })}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePack(index, k)}
+                              aria-label={t("removePack", { name: pack.packName })}
+                              className="size-11 md:size-9"
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {pack.curve.length > 0 && (
+                          <span className="ps-3 text-xs text-muted-foreground">
+                            <span dir="ltr" className="tabular-nums">
+                              <CurveText curve={pack.curve} />
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {catalogPacks.some((p) => !takenPacks.has(p.id)) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-11 self-start md:h-8"
+                      onClick={() => addPack(index)}
+                    >
+                      <Plus className="size-4" />
+                      {t("addPack")}
+                    </Button>
+                  )}
+                </div>
+              )}
+
               {/* Size run. Scrolls inside itself so the page never scrolls sideways. */}
               <div className="overflow-x-auto p-3">
                 <div className="flex items-start gap-2">
@@ -405,7 +676,7 @@ export function OrderForm({
                       {t("size")}
                     </span>
                     <span className="flex h-11 items-center md:h-9">
-                      {t("pairs")}
+                      {showPacks ? t("extraPairs") : t("pairs")}
                     </span>
                   </div>
 
@@ -485,6 +756,23 @@ export function OrderForm({
                 </div>
               </div>
 
+              {sizeTotals.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 px-3 pb-3 text-xs">
+                  <span className="text-muted-foreground">
+                    {t("totalPerSize")}
+                  </span>
+                  {sizeTotals.map(([size, quantity]) => (
+                    <span
+                      key={size}
+                      dir="ltr"
+                      className="rounded-md bg-muted px-1.5 py-0.5 tabular-nums"
+                    >
+                      <span className="font-semibold">{size}</span>×{quantity}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {(() => {
                 // The resolver also writes per-cell errors at rows.j.size /
                 // rows.j.pairs. Those only painted a red border before, leaving
@@ -495,9 +783,15 @@ export function OrderForm({
                   | undefined)
                   ?.flatMap?.((r) => [r?.size?.message, r?.pairs?.message])
                   .find(Boolean);
+                const packCell = (blockErrors?.packs as
+                  | Array<{ sizePackId?: { message?: string }; count?: { message?: string } }>
+                  | undefined)
+                  ?.flatMap?.((p) => [p?.sizePackId?.message, p?.count?.message])
+                  .find(Boolean);
                 const message =
                   blockErrors?.shoeModelId?.message ??
                   blockErrors?.customDescription?.message ??
+                  packCell ??
                   cell ??
                   blockErrors?.rows?.root?.message;
                 return message ? (
@@ -515,7 +809,7 @@ export function OrderForm({
           variant="outline"
           size="sm"
           className="h-11 self-start md:h-8"
-          onClick={() => append({ ...EMPTY_BLOCK, rows: [] })}
+          onClick={() => append({ ...EMPTY_BLOCK, packs: [], rows: [] })}
         >
           <Plus className="size-4" />
           {t("addModel")}
