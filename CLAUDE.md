@@ -69,6 +69,14 @@ package extends `@repo/typescript-config`):
 reset) — redirecting to login instead of crashing. The login page does the same check to avoid a
 redirect loop.
 
+**Settings** (`/settings`): a real route, plus an intercepting `(app)/@modal/(.)settings` that
+shows the same `SettingsPanel` as a dialog when it's followed from inside the app. Don't add a
+`@modal/[...catchAll]` — it makes every unknown URL match and turns 404s into 200s. A language
+change from the dialog uses a full `window.location` load: a client navigation to the other locale
+out of the intercepted route keeps the old tree (`dir`, strings). The user's `locale`/`theme` live
+on `User`: login redirects to the saved locale, `ThemeSync` applies the saved theme on each load,
+and the account menu's switches save too.
+
 **i18n / RTL**: next-intl, locale in the URL (`/he`, `/en`). Root layout is
 `app/[locale]/layout.tsx` (no `app/layout.tsx`); it sets `<html dir>` and the sidebar's side flips
 by locale. Server components translate via `getTranslations({ locale, namespace })`; client via

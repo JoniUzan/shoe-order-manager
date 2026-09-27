@@ -12,6 +12,7 @@ list; see `CLAUDE.md` for the technical architecture.
 | Area | What you can do |
 |---|---|
 | **Login** | Secure email + password sign-in (one account for now) |
+| **Settings** | Your profile, password, saved language/theme, and the business details printed on orders |
 | **Customers** | Add/edit/delete the stores you sell to; see each one's order history and balance |
 | **Catalog** | Keep a list of shoe models (with a default price, size run and packs) to reuse in orders |
 | **Orders** | Create orders with catalog or custom items, sizes, colors, quantities, prices |
@@ -26,7 +27,19 @@ list; see `CLAUDE.md` for the technical architecture.
 
 ## Login
 - Sign in with email + password. Sign out from the sidebar (bottom-left user menu).
-- Dev account: `admin@example.com` / `changeme123` (change before real use).
+- Dev account: `admin@example.com` / `changeme123` — change it under **Settings → Password** before real use.
+- After signing in you land in your saved language (see Settings), whichever login page you used.
+
+## Settings
+Open **Settings** from the account menu (click your name at the bottom of the sidebar). It opens as a
+dialog over the page you're on; the address `/settings` (e.g. `/he/settings?tab=business`) also opens
+it as a full page.
+- **Profile** — your name and the email you sign in with (changing the email asks for your password).
+- **Password** — change it (current password, new one of 8+ characters, confirm).
+- **Preferences** — language and appearance (light / dark / system), saved to your account so every
+  device opens the same way. The account menu's switches save here too.
+- **Business** — business name, phone, address and tax ID (ח.פ / ע.מ), printed at the top of every
+  order you print or send, and the business name opens the WhatsApp message.
 
 ## Customers (the stores you sell to)
 - **List** — name, contact, phone, number of orders, and outstanding balance.
@@ -71,7 +84,7 @@ list; see `CLAUDE.md` for the technical architecture.
 
 ## Languages & appearance
 - **Hebrew (right-to-left)** and **English**, switchable from the account menu (click your name at the bottom of the sidebar); the whole layout (including which side the sidebar is on) flips for Hebrew.
-- **Dark mode** — pick light / dark / system from the account menu's Theme submenu.
+- **Dark mode** — pick light / dark / system from the account menu's Theme submenu or Settings → Preferences.
 - Money is shown in shekels (₪); the app stores it exactly (in agorot) so totals are always precise.
 
 ---
