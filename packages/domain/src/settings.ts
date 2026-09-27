@@ -9,14 +9,19 @@ export type ThemeCode = (typeof THEMES)[number];
 /** Minimum length for a new password. */
 export const PASSWORD_MIN = 8;
 
-export const profileSchema = z.object({
+export const nameSchema = z.object({
   name: z.string().trim().min(1, { message: "required" }).max(100),
-  email: z.string().trim().toLowerCase().email({ message: "email" }).max(200),
-  // Required by the action only when the email changes.
-  currentPassword: z.string().max(200).optional().or(z.literal("")),
 });
 
-export type ProfileInput = z.infer<typeof profileSchema>;
+export type NameInput = z.infer<typeof nameSchema>;
+
+/** The email is the login, so changing it asks for the current password. */
+export const emailChangeSchema = z.object({
+  email: z.string().trim().toLowerCase().email({ message: "email" }).max(200),
+  currentPassword: z.string().min(1, { message: "required" }).max(200),
+});
+
+export type EmailChangeInput = z.infer<typeof emailChangeSchema>;
 
 export const passwordChangeSchema = z
   .object({

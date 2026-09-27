@@ -3,13 +3,15 @@
 import { Prisma, prisma } from "@repo/db";
 import {
   businessSchema,
+  emailChangeSchema,
+  nameSchema,
   passwordChangeSchema,
   preferencesSchema,
-  profileSchema,
   type BusinessInput,
+  type EmailChangeInput,
+  type NameInput,
   type PasswordChangeInput,
   type PreferencesInput,
-  type ProfileInput,
 } from "@repo/domain";
 import { revalidatePath } from "next/cache";
 
@@ -39,33 +41,52 @@ export type SettingsActionResult =
         | "email_taken";
     };
 
-export async function updateProfile(
-  input: ProfileInput,
+/** Checks the user's current password — for changes to how they sign in. */
+async function passwordMatches(userId: string, password: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true },
+  });
+  if (!user) return null;
+  return (
+    !!user.passwordHash && (await verifyPassword(password, user.passwordHash))
+  );
+}
+
+export async function updateName(
+  input: NameInput,
 ): Promise<SettingsActionResult> {
   const userId = await requireUserId();
-  const parsed = profileSchema.safeParse(input);
+  const parsed = nameSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+
+  const result = await prisma.user.updateMany({
+    where: { id: userId },
+    data: { name: parsed.data.name },
+  });
+  if (result.count === 0) return { ok: false, error: "not_found" };
+
+  // The name shows in the sidebar on every page.
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function changeEmail(
+  input: EmailChangeInput,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = emailChangeSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const data = parsed.data;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true, passwordHash: true },
-  });
-  if (!user) return { ok: false, error: "not_found" };
-
-  // The email is the login, so changing it asks for the password first.
-  if (data.email !== user.email) {
-    const valid =
-      !!user.passwordHash &&
-      !!data.currentPassword &&
-      (await verifyPassword(data.currentPassword, user.passwordHash));
-    if (!valid) return { ok: false, error: "wrong_password" };
-  }
+  const valid = await passwordMatches(userId, data.currentPassword);
+  if (valid === null) return { ok: false, error: "not_found" };
+  if (!valid) return { ok: false, error: "wrong_password" };
 
   try {
     await prisma.user.update({
       where: { id: userId },
-      data: { name: data.name, email: data.email },
+      data: { email: data.email },
     });
   } catch (e) {
     if (
@@ -77,7 +98,6 @@ export async function updateProfile(
     throw e;
   }
 
-  // The name and email show in the sidebar on every page.
   revalidatePath("/", "layout");
   return { ok: true };
 }
@@ -90,15 +110,8 @@ export async function changePassword(
   if (!parsed.success) return { ok: false, error: "invalid" };
   const data = parsed.data;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { passwordHash: true },
-  });
-  if (!user) return { ok: false, error: "not_found" };
-
-  const valid =
-    !!user.passwordHash &&
-    (await verifyPassword(data.currentPassword, user.passwordHash));
+  const valid = await passwordMatches(userId, data.currentPassword);
+  if (valid === null) return { ok: false, error: "not_found" };
   if (!valid) return { ok: false, error: "wrong_password" };
 
   await prisma.user.update({
@@ -130,26 +143,29 @@ export async function updatePreferences(
   return { ok: true };
 }
 
+/**
+ * Saves whichever business fields it's given — the settings save each field
+ * on its own as the user leaves it.
+ */
 export async function updateBusiness(
-  input: BusinessInput,
+  input: Partial<BusinessInput>,
 ): Promise<SettingsActionResult> {
   const userId = await requireUserId();
-  const parsed = businessSchema.safeParse(input);
+  const parsed = businessSchema.partial().safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
-  const data = parsed.data;
+
+  const data: Record<string, string | null> = {};
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (value !== undefined) data[key] = nullify(value);
+  }
 
   const result = await prisma.user.updateMany({
     where: { id: userId },
-    data: {
-      businessName: nullify(data.businessName),
-      businessPhone: nullify(data.businessPhone),
-      businessAddress: nullify(data.businessAddress),
-      businessTaxId: nullify(data.businessTaxId),
-    },
+    data,
   });
   if (result.count === 0) return { ok: false, error: "not_found" };
 
-  // Printed on every order's invoice page.
-  revalidatePath("/print", "layout");
+  // Printed on every order's invoice page; shown in the settings menu.
+  revalidatePath("/", "layout");
   return { ok: true };
 }
