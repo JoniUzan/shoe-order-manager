@@ -28,7 +28,6 @@ export function AutosaveInput({
   validate?: (value: string) => string | undefined;
 }) {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const phone = useSettingsPhone();
   const rtl = useLocale() === "he";
   const [value, setValue] = useState(defaultValue);
@@ -65,8 +64,6 @@ export function AutosaveInput({
 
   const input = (
     <Input
-      // On a phone the field has no border, so an empty one says "Add".
-      placeholder={phone ? tc("add") : undefined}
       {...props}
       dir={dir}
       value={value}
@@ -79,7 +76,7 @@ export function AutosaveInput({
       className={cn(
         phone
           ? "h-12 flex-1 rounded-none border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
-          : "h-10 w-[300px] rounded-xl text-[15px]",
+          : "w-[300px]",
         phone ? (rtl ? "text-left" : "text-right") : ltrInRtl && "text-right",
         className,
       )}

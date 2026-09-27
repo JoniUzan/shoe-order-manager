@@ -436,6 +436,13 @@
     "close": "Close",
     "cancel": "Cancel",
     "errorGeneric": "Couldn't save. Please try again.",
+    "placeholders": {
+      "name": "Your name",
+      "businessName": "As it appears on orders",
+      "businessPhone": "050-0000000",
+      "businessAddress": "Street, number, city",
+      "businessTaxId": "9 digits"
+    },
     "errors": {
       "required": "This field is required",
       "email": "Enter a valid email",

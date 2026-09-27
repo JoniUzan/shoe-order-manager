@@ -436,6 +436,13 @@
     "close": "סגירה",
     "cancel": "ביטול",
     "errorGeneric": "השמירה נכשלה. נסו שוב.",
+    "placeholders": {
+      "name": "השם שלך",
+      "businessName": "כפי שיופיע בהזמנות",
+      "businessPhone": "050-0000000",
+      "businessAddress": "רחוב, מספר, עיר",
+      "businessTaxId": "9 ספרות"
+    },
     "errors": {
       "required": "שדה חובה",
       "email": "הזינו אימייל תקין",

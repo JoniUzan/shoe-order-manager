@@ -38,6 +38,7 @@ export function BusinessSection({ business }: { business: BusinessInput }) {
             type={"type" in field ? field.type : undefined}
             dir={"dir" in field ? field.dir : undefined}
             inputMode={"inputMode" in field ? field.inputMode : undefined}
+            placeholder={t(`placeholders.${field.key}`)}
             defaultValue={business[field.key] ?? ""}
             onSave={async (v) =>
               (await updateBusiness({ [field.key]: v })).ok

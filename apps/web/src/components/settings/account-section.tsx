@@ -32,6 +32,7 @@ export function AccountSection({
           <AutosaveInput
             id="settings-name"
             autoComplete="name"
+            placeholder={t("placeholders.name")}
             defaultValue={name}
             validate={(v) => (v ? undefined : "required")}
             onSave={async (v) => (await updateName({ name: v })).ok}
