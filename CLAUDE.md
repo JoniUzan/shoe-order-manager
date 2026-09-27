@@ -69,6 +69,20 @@ package extends `@repo/typescript-config`):
 reset) — redirecting to login instead of crashing. The login page does the same check to avoid a
 redirect loop.
 
+**Settings** is a dialog opened by the **URL hash** of the current page, like claude.ai's
+`/new#settings/account`: `#settings` or `#settings/<general|account|business>`. `SettingsHost`
+(mounted in the `(app)` layout, which loads its data) reads it; `settings-hash.ts` opens with
+`history.pushState`, switches sections with `replaceState`, closes with `history.back()`. Reload keeps
+the page underneath and the dialog open; the page never navigates, so its header, sidebar highlight
+and scroll stay put. Change the hash **only through `pushState`/`replaceState`**, never
+`location.hash =`: Next keeps its router state in history entries it knows, and reloads the page when
+Back lands on one the browser made for a bare hash change. Near-full-screen dialog on a computer,
+bottom drawer on a phone (`useIsPhone`). Old `/settings/<section>` URLs redirect to `/#settings/<section>`.
+Rows are `SettingSection`/`SettingRow`; text fields are `AutosaveInput` (saves on blur). A language
+change uses a full `window.location` load to the same page + hash. The user's `locale`/`theme` live
+on `User`: login redirects to the saved locale, `ThemeSync` applies the saved theme once per load,
+and the account menu's switches save too.
+
 **i18n / RTL**: next-intl, locale in the URL (`/he`, `/en`). Root layout is
 `app/[locale]/layout.tsx` (no `app/layout.tsx`); it sets `<html dir>` and the sidebar's side flips
 by locale. Server components translate via `getTranslations({ locale, namespace })`; client via

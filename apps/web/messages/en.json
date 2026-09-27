@@ -10,7 +10,8 @@
     "catalog": "Catalog",
     "reports": "Reports",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "settings": "Settings"
   },
   "theme": {
     "label": "Theme",
@@ -170,7 +171,8 @@
     "noPhone": "No phone number for this customer",
     "generating": "Preparing PDF…",
     "pdfFallback": "PDF downloaded — attach it in the WhatsApp chat that opened.",
-    "shareError": "Couldn't prepare the PDF. Please try Print instead."
+    "shareError": "Couldn't prepare the PDF. Please try Print instead.",
+    "taxId": "Tax ID"
   },
   "payments": {
     "title": "Payments",
@@ -378,5 +380,77 @@
     "search": "Search",
     "actions": "Actions",
     "none": "None"
+  },
+  "settings": {
+    "title": "Settings",
+    "nav": {
+      "general": "General",
+      "account": "Account",
+      "business": "Business"
+    },
+    "mobileTitle": {
+      "general": "Preferences",
+      "account": "Account",
+      "business": "Business details"
+    },
+    "groupAccount": "Account",
+    "groupPreferences": "Preferences",
+    "groupBusiness": "Business",
+    "profileRow": "Profile",
+    "passwordRow": "Password",
+    "themeRow": "Theme",
+    "languageRow": "Language",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeHelp": "Saved to your account, so every device looks the same",
+    "languageSection": "Language",
+    "language": "App language",
+    "languageHelp": "Also the language the app opens in after you sign in, on any device",
+    "profile": "Profile",
+    "name": "Full name",
+    "email": "Email",
+    "emailHelp": "The email you sign in with",
+    "change": "Change",
+    "security": "Security",
+    "password": "Password",
+    "signOut": "Sign out",
+    "signOutHelp": "Sign out of your account on this device",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "emailSaved": "Email updated",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordHelp": "At least 8 characters",
+    "passwordSaved": "Password changed",
+    "businessDetails": "Business details",
+    "businessHelp": "Printed at the top of every order you print or send on WhatsApp. Saved automatically.",
+    "businessName": "Business name",
+    "businessPhone": "Phone",
+    "businessAddress": "Address",
+    "businessTaxId": "Tax ID",
+    "saved": "Saved",
+    "savedAuto": "Saved automatically",
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "errorGeneric": "Couldn't save. Please try again.",
+    "placeholders": {
+      "name": "Your name",
+      "businessName": "As it appears on orders",
+      "businessPhone": "050-0000000",
+      "businessAddress": "Street, number, city",
+      "businessTaxId": "9 digits"
+    },
+    "errors": {
+      "required": "This field is required",
+      "email": "Enter a valid email",
+      "emailTaken": "Another account already uses this email",
+      "wrongPassword": "The current password is incorrect",
+      "passwordTooShort": "At least 8 characters",
+      "passwordMismatch": "The passwords don't match",
+      "invalid": "This value isn't valid"
+    }
   }
 }

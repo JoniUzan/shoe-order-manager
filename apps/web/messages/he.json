@@ -10,7 +10,8 @@
     "catalog": "קטלוג",
     "reports": "דוחות",
     "signOut": "התנתקות",
-    "language": "שפה"
+    "language": "שפה",
+    "settings": "הגדרות"
   },
   "theme": {
     "label": "ערכת נושא",
@@ -170,7 +171,8 @@
     "noPhone": "אין מספר טלפון ללקוח זה",
     "generating": "מכין PDF…",
     "pdfFallback": "ה-PDF הורד — צרפו אותו לצ׳אט הוואטסאפ שנפתח.",
-    "shareError": "לא ניתן היה להכין את ה-PDF. נסו להדפיס במקום."
+    "shareError": "לא ניתן היה להכין את ה-PDF. נסו להדפיס במקום.",
+    "taxId": "ח.פ / ע.מ"
   },
   "payments": {
     "title": "תשלומים",
@@ -378,5 +380,77 @@
     "search": "חיפוש",
     "actions": "פעולות",
     "none": "ללא"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "nav": {
+      "general": "כללי",
+      "account": "חשבון",
+      "business": "עסק"
+    },
+    "mobileTitle": {
+      "general": "העדפות",
+      "account": "חשבון",
+      "business": "פרטי העסק"
+    },
+    "groupAccount": "חשבון",
+    "groupPreferences": "העדפות",
+    "groupBusiness": "עסק",
+    "profileRow": "פרופיל",
+    "passwordRow": "סיסמה",
+    "themeRow": "ערכת נושא",
+    "languageRow": "שפה",
+    "appearance": "מראה",
+    "theme": "ערכת נושא",
+    "themeHelp": "נשמרת בחשבון, כך שכל המכשירים נראים אותו דבר",
+    "languageSection": "שפה",
+    "language": "שפת האפליקציה",
+    "languageHelp": "גם השפה שבה האפליקציה נפתחת אחרי התחברות, בכל מכשיר",
+    "profile": "פרופיל",
+    "name": "שם מלא",
+    "email": "אימייל",
+    "emailHelp": "האימייל שאיתו מתחברים",
+    "change": "שינוי",
+    "security": "אבטחה",
+    "password": "סיסמה",
+    "signOut": "התנתקות",
+    "signOutHelp": "יציאה מהחשבון במכשיר הזה",
+    "changeEmail": "שינוי אימייל",
+    "newEmail": "אימייל חדש",
+    "emailSaved": "האימייל עודכן",
+    "changePassword": "שינוי סיסמה",
+    "currentPassword": "סיסמה נוכחית",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אימות הסיסמה החדשה",
+    "passwordHelp": "לפחות 8 תווים",
+    "passwordSaved": "הסיסמה שונתה",
+    "businessDetails": "פרטי העסק",
+    "businessHelp": "מופיעים בראש כל הזמנה שמדפיסים או שולחים בוואטסאפ. נשמרים אוטומטית.",
+    "businessName": "שם העסק",
+    "businessPhone": "טלפון",
+    "businessAddress": "כתובת",
+    "businessTaxId": "ח.פ / ע.מ",
+    "saved": "נשמר",
+    "savedAuto": "נשמר אוטומטית",
+    "back": "חזרה",
+    "close": "סגירה",
+    "cancel": "ביטול",
+    "errorGeneric": "השמירה נכשלה. נסו שוב.",
+    "placeholders": {
+      "name": "השם שלך",
+      "businessName": "כפי שיופיע בהזמנות",
+      "businessPhone": "050-0000000",
+      "businessAddress": "רחוב, מספר, עיר",
+      "businessTaxId": "9 ספרות"
+    },
+    "errors": {
+      "required": "שדה חובה",
+      "email": "הזינו אימייל תקין",
+      "emailTaken": "חשבון אחר כבר משתמש באימייל הזה",
+      "wrongPassword": "הסיסמה הנוכחית שגויה",
+      "passwordTooShort": "לפחות 8 תווים",
+      "passwordMismatch": "הסיסמאות לא תואמות",
+      "invalid": "הערך לא תקין"
+    }
   }
 }

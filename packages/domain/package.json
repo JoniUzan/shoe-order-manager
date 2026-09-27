@@ -10,7 +10,8 @@
     "./catalog": "./src/catalog.ts",
     "./order": "./src/order.ts",
     "./status": "./src/status.ts",
-    "./phone": "./src/phone.ts"
+    "./phone": "./src/phone.ts",
+    "./settings": "./src/settings.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
