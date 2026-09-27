@@ -10,7 +10,8 @@
     "catalog": "Catalog",
     "reports": "Reports",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "settings": "Settings"
   },
   "theme": {
     "label": "Theme",
@@ -378,5 +379,25 @@
     "search": "Search",
     "actions": "Actions",
     "none": "None"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Your account, preferences and business details",
+    "tabProfile": "Profile",
+    "name": "Name",
+    "email": "Email",
+    "currentPassword": "Current password",
+    "currentPasswordForEmail": "Needed to change the email you sign in with",
+    "profileSaved": "Profile saved",
+    "errorGeneric": "Couldn't save. Please try again.",
+    "errors": {
+      "required": "This field is required",
+      "email": "Enter a valid email",
+      "emailTaken": "Another account already uses this email",
+      "wrongPassword": "The current password is incorrect",
+      "passwordTooShort": "At least 8 characters",
+      "passwordMismatch": "The passwords don't match",
+      "invalid": "This value isn't valid"
+    }
   }
 }

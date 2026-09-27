@@ -12,6 +12,7 @@ function titleKeyForPath(pathname: string): string {
   if (pathname.startsWith("/customers")) return "customers";
   if (pathname.startsWith("/catalog")) return "catalog";
   if (pathname.startsWith("/reports")) return "reports";
+  if (pathname.startsWith("/settings")) return "settings";
   return "dashboard";
 }
 

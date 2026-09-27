@@ -7,9 +7,12 @@ import { requireUser } from "@/lib/session";
 
 export default async function AppLayout({
   children,
+  modal,
   params,
 }: {
   children: ReactNode;
+  /** `@modal` — the settings dialog when `/settings` is opened in-app. */
+  modal: ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
@@ -27,6 +30,7 @@ export default async function AppLayout({
         <SiteHeader />
         <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
       </SidebarInset>
+      {modal}
     </SidebarProvider>
   );
 }

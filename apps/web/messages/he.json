@@ -10,7 +10,8 @@
     "catalog": "קטלוג",
     "reports": "דוחות",
     "signOut": "התנתקות",
-    "language": "שפה"
+    "language": "שפה",
+    "settings": "הגדרות"
   },
   "theme": {
     "label": "ערכת נושא",
@@ -378,5 +379,25 @@
     "search": "חיפוש",
     "actions": "פעולות",
     "none": "ללא"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "subtitle": "החשבון, ההעדפות ופרטי העסק",
+    "tabProfile": "פרופיל",
+    "name": "שם",
+    "email": "אימייל",
+    "currentPassword": "סיסמה נוכחית",
+    "currentPasswordForEmail": "נדרשת כדי לשנות את האימייל שאיתו מתחברים",
+    "profileSaved": "הפרופיל נשמר",
+    "errorGeneric": "השמירה נכשלה. נסו שוב.",
+    "errors": {
+      "required": "שדה חובה",
+      "email": "הזינו אימייל תקין",
+      "emailTaken": "חשבון אחר כבר משתמש באימייל הזה",
+      "wrongPassword": "הסיסמה הנוכחית שגויה",
+      "passwordTooShort": "לפחות 8 תווים",
+      "passwordMismatch": "הסיסמאות לא תואמות",
+      "invalid": "הערך לא תקין"
+    }
   }
 }

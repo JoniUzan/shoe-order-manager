@@ -22,13 +22,21 @@ import {
   useSidebar,
 } from "@repo/ui/components/sidebar";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronsUpDown, Languages, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import {
+  ChevronsUpDown,
+  Languages,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTransition } from "react";
 
 import { orbSrc } from "@/components/ui/orb";
 import { routing } from "@/i18n/routing";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/actions/auth-actions";
 
 const LOCALE_LABELS: Record<string, string> = {
@@ -121,6 +129,12 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings className="size-4" />
+                {t("settings")}
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Languages className="size-4" />
