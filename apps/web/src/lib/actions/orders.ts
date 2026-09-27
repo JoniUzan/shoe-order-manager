@@ -3,6 +3,7 @@
 import { Prisma, prisma } from "@repo/db";
 import {
   expandPack,
+  MAX_AGOROT,
   MAX_LINE_PAIRS,
   orderSchema,
   parseCurve,
@@ -48,7 +49,7 @@ function isForeignKeyViolation(e: unknown): boolean {
 
 export type OrderActionResult =
   | { ok: true; id: string }
-  | { ok: false; error: "invalid" | "not_found" };
+  | { ok: false; error: "invalid" | "not_found" | "total_too_large" };
 
 /** Ensure every referenced shoe model belongs to this owner. */
 async function modelsAreValid(
@@ -235,6 +236,10 @@ export async function createOrder(
     [...data.items, ...packs.flatMap((p) => p.items)],
     0,
   );
+  // Quantities are capped but prices aren't, so the sum can still pass the Int
+  // column; fail here with a result rather than have the insert throw.
+  if (totals.totalAgorot > MAX_AGOROT)
+    return { ok: false, error: "total_too_large" };
   const isCustomOrder = data.items.some((i) => !i.shoeModelId);
 
   const create = () =>
@@ -334,6 +339,8 @@ export async function updateOrder(
         [...data.items, ...packs.flatMap((p) => p.items)],
         existingOrder.depositAgorot,
       );
+      // Same guard as createOrder; nothing has been deleted yet.
+      if (totals.totalAgorot > MAX_AGOROT) return "total_too_large" as const;
 
       // Pack items cascade with their pack; the loose ones go with the first
       // delete. Both are rebuilt below.

@@ -406,7 +406,11 @@ export function OrderForm({
       toast.success(orderId ? t("updated") : t("created"));
       router.push(`/orders/${res.id}`);
     } else {
-      toast.error(t("errorGeneric"));
+      toast.error(
+        res.error === "total_too_large"
+          ? t("errorTotalTooLarge")
+          : t("errorGeneric"),
+      );
       setPending(false);
     }
   }

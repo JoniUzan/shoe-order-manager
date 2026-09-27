@@ -5,6 +5,13 @@
 
 export const AGOROT_PER_SHEKEL = 100;
 
+/**
+ * Money columns are Postgres `Int` (32-bit), so no stored amount — an order
+ * total above all — may exceed this. Writes check it and fail with a result
+ * instead of letting the insert throw.
+ */
+export const MAX_AGOROT = 2_147_483_647;
+
 /** Convert integer agorot to a shekel number (e.g. 12345 -> 123.45). */
 export function agorotToShekels(agorot: number): number {
   return agorot / AGOROT_PER_SHEKEL;

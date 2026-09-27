@@ -346,6 +346,7 @@
     "errorNoCustomer": "Choose a customer",
     "errorItemIncomplete": "Each line needs a model or description, a size, and a quantity",
     "errorFixFields": "Check the highlighted fields",
+    "errorTotalTooLarge": "The order total is too large. Check the prices and quantities.",
     "errorNoModel": "Choose a model",
     "errorNoDescription": "Describe the item",
     "errorNoSize": "This column needs a size",

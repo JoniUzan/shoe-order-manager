@@ -346,6 +346,7 @@
     "errorNoCustomer": "בחרו לקוח",
     "errorItemIncomplete": "כל שורה צריכה דגם או תיאור, מידה וכמות",
     "errorFixFields": "בדקו את השדות המסומנים",
+    "errorTotalTooLarge": "סכום ההזמנה גבוה מדי. בדקו את המחירים והכמויות.",
     "errorNoModel": "בחרו דגם",
     "errorNoDescription": "כתבו תיאור לפריט",
     "errorNoSize": "העמודה הזו צריכה מידה",
