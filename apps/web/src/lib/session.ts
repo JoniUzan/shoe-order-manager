@@ -1,5 +1,6 @@
 import { prisma } from "@repo/db";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { auth } from "./auth";
 
@@ -10,8 +11,14 @@ import { auth } from "./auth";
  * the row it references — e.g. after a DB reset), so a stale session redirects
  * to login instead of causing a foreign-key crash downstream. Returns the
  * fresh user for ownerId scoping.
+ *
+ * Wrapped in React `cache()` so the `(app)` layout and the page it wraps share
+ * one session + user read per server request instead of each doing its own.
+ * A redirect (which throws) is cached too and re-thrown to later callers, so
+ * they redirect the same way. Outside a React render the cache is a no-op, so
+ * nothing relies on a second call within one request seeing fresher data.
  */
-export async function requireUser(locale: string) {
+export const requireUser = cache(async function requireUser(locale: string) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect(`/${locale}/login`);
@@ -39,7 +46,7 @@ export async function requireUser(locale: string) {
   }
 
   return user;
-}
+});
 
 export async function getCurrentUser() {
   const session = await auth();
