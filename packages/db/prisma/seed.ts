@@ -27,7 +27,8 @@ async function main() {
   await prisma.user.upsert({
     where: { email },
     update: {},
-    create: { email, name, passwordHash, locale: "he" },
+    // Already onboarded: the admin never sees the welcome dialog.
+    create: { email, name, passwordHash, locale: "he", onboardedAt: new Date() },
   });
   console.log(`✓ Admin user ready: ${email}`);
   if (!process.env.ADMIN_PASSWORD) {
