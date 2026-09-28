@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+// For running it with plain `tsx` too (`prisma db seed` loads .env itself).
+import "dotenv/config";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "../src/client";
 
 async function main() {
   // --- Order statuses (v1: not_done / done; extend later by adding rows) ---

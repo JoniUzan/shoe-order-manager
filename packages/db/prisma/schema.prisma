@@ -5,18 +5,19 @@
 // other Postgres host is a pg_dump + a new DATABASE_URL. Money is stored as
 // INTEGER agorot.
 
+// Generated into src/generated/prisma (gitignored); `@repo/db` re-exports it.
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
+// Connection URLs live outside the schema since Prisma 7:
+// - the CLI (migrate, studio, db seed) uses DIRECT_URL, set in prisma.config.ts —
+//   migrations can't run through a transaction-mode pooler;
+// - the app connects with DATABASE_URL through the pg driver adapter
+//   (src/client.ts) — on Supabase, the transaction pooler (port 6543).
 datasource db {
-  provider  = "postgresql"
-  // Runtime connection. On Supabase this is the pooled (transaction-mode,
-  // port 6543) URL, which serverless hosting needs.
-  url       = env("DATABASE_URL")
-  // Direct (session, port 5432) connection for `prisma migrate` — migrations
-  // can't run through a transaction-mode pooler. Locally, the same URL twice.
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // ---------------------------------------------------------------------------
