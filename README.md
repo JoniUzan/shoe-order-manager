@@ -34,6 +34,10 @@ Copy `packages/db/.env.example` → `packages/db/.env` and `apps/web/.env.exampl
 `apps/web/.env.local` (the local `DATABASE_URL` / `DIRECT_URL` are already filled in), and
 set `AUTH_SECRET` (`openssl rand -base64 33`).
 
+To browse the local database, `docker compose --profile studio up -d` also starts pgAdmin on
+http://localhost:5050 with no login screen and the local database already registered
+(`pnpm db:studio` works too).
+
 ### Supabase (production database)
 
 Supabase is used as **plain Postgres** — no Supabase Auth, RLS or storage — so moving to

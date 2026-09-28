@@ -21,5 +21,37 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  # Optional DB browser: `docker compose --profile studio up -d`, then
+  # http://localhost:5050. The profile keeps a plain `up -d` to Postgres only.
+  pgadmin:
+    image: dpage/pgadmin4:9
+    profiles: [studio]
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      # Desktop mode: no login screen and no master password, fine because the
+      # port below is bound to this machine only.
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      # Required for the container to boot, but unused in desktop mode.
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: unused-in-desktop-mode
+      # Default is `::`, which fails to boot where Docker has IPv6 off; the
+      # published port is IPv4 localhost anyway.
+      PGADMIN_LISTEN_ADDRESS: 0.0.0.0
+    ports:
+      - "127.0.0.1:5050:80"
+    volumes:
+      # Pre-registers the `db` service. Imported only when the pgadmin volume
+      # is new: after editing it, `docker compose rm -sf pgadmin` and
+      # `docker volume rm` the pgadmin volume. pgAdmin asks for a password on
+      # connect unless the server has a passfile, so it gets one; trust auth
+      # never checks the password in it.
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass:ro
+      - pgadmin:/var/lib/pgadmin
+
 volumes:
   pgdata:
+  pgadmin:
