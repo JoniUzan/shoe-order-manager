@@ -50,52 +50,15 @@ export function avatarSrc(code: AvatarCode, size: "sm" | "md" | "full" = "sm") {
 }
 
 /**
- * The ambient layer, for the two screens that would otherwise be blank.
+ * The ambient layer for an empty list's card, so it isn't a blank rectangle.
  *
- * `panel` sits inside a clipping card: each orb is masked so it fades to nothing
+ * It sits inside a clipping card: each orb is masked so it fades to nothing
  * *before* it reaches the card's edge. Without that the overhang ends in a hard
  * straight cut and reads as a broken image — the source site gets away with it
  * only because its spheres run off a 1440px page where the cut is never seen.
- *
- * `page` fills the viewport, where an orb may bleed off the edge honestly.
  */
-export function OrbField({
-  variant = "panel",
-  className,
-}: {
-  variant?: "panel" | "page";
-  className?: string;
-}) {
+export function OrbField({ className }: { className?: string }) {
   const common = "pointer-events-none absolute select-none";
-
-  if (variant === "page") {
-    return (
-      <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)} aria-hidden>
-        <Image
-          src="/orbs/crimson.webp"
-          alt=""
-          width={520}
-          height={520}
-          priority={false}
-          className={cn(common, "-top-44 -start-48 size-[520px] rounded-full opacity-55")}
-        />
-        <Image
-          src="/orbs/abyss.webp"
-          alt=""
-          width={300}
-          height={300}
-          className={cn(common, "-bottom-28 -end-20 size-[300px] rounded-full opacity-45")}
-        />
-        <Image
-          src="/orbs/amber.webp"
-          alt=""
-          width={128}
-          height={128}
-          className={cn(common, "top-[16%] end-[14%] hidden size-32 rounded-full opacity-70 sm:block")}
-        />
-      </div>
-    );
-  }
 
   // The mask clears at 62% of the radius, so every edge sits further out than
   // that: 150px radius → transparent past 93px → a 30/40px overhang is safe.
