@@ -34,16 +34,22 @@ async function clientIp() {
  * Counts this attempt against the IP and says whether it's over the limit.
  * In Postgres, since serverless instances share no memory; rows past the
  * window are cleared here, in app code (no DB job or trigger).
+ *
+ * Insert first, then count including this attempt — not count, then insert.
+ * Counting first let a burst of parallel requests all read "under the limit"
+ * before any of them had inserted. This way each request's count holds every
+ * attempt committed before it plus its own, so the (MAX + 1)th and later
+ * always see more than MAX, however the requests interleave, with no lock.
+ * A burst may turn away a few more than strictly needed; never fewer.
  */
 async function overLimit(ip: string): Promise<boolean> {
   const since = new Date(Date.now() - WINDOW_MS);
-  const [, recent] = await prisma.$transaction([
-    prisma.signupAttempt.deleteMany({ where: { createdAt: { lt: since } } }),
-    prisma.signupAttempt.count({ where: { ip, createdAt: { gte: since } } }),
-  ]);
-  if (recent >= MAX_ATTEMPTS) return true;
+  await prisma.signupAttempt.deleteMany({ where: { createdAt: { lt: since } } });
   await prisma.signupAttempt.create({ data: { ip } });
-  return false;
+  const recent = await prisma.signupAttempt.count({
+    where: { ip, createdAt: { gte: since } },
+  });
+  return recent > MAX_ATTEMPTS;
 }
 
 /**
