@@ -342,6 +342,15 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
   );
 }
 
+/**
+ * Not selectable, like an app screen rather than a page: a drag or a
+ * select-all would otherwise paint the headings and orbs blue. The fields
+ * stay selectable, so what's typed can still be selected and edited.
+ */
 function Frame({ children }: { children: ReactNode }) {
-  return <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>;
+  return (
+    <div className="relative flex min-h-0 flex-1 flex-col select-none [&_input]:select-text">
+      {children}
+    </div>
+  );
 }

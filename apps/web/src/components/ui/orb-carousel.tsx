@@ -131,9 +131,10 @@ export function OrbCarousel({
 
   return (
     // Clipped: the far slots sit past the edges, and would otherwise make
-    // whatever holds the carousel scroll sideways.
+    // whatever holds the carousel scroll sideways. Not selectable: a drag
+    // or a select-all would paint the orbs as blue squares.
     <div
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden select-none [-webkit-tap-highlight-color:transparent]"
       style={{
         height: base + 48,
         maskImage: edgeFade,
