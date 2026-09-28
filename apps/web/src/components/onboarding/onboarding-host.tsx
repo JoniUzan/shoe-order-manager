@@ -1,6 +1,6 @@
 "use client";
 
-import type { AvatarCode, LocaleCode, ThemeCode } from "@repo/domain";
+import type { LocaleCode, ThemeCode } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/components/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@repo/ui/components/drawer";
@@ -16,7 +16,6 @@ import { useIsPhone } from "@/components/settings/use-is-phone";
 import { NoiseWash } from "@/components/ui/noise-wash";
 import { finishOnboarding } from "@/lib/actions/onboarding";
 import {
-  updateAvatar,
   updateBusiness,
   updateName,
   updatePreferences,
@@ -71,7 +70,6 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
   const [nameMissing, setNameMissing] = useState(false);
   const businessNameRef = useRef<HTMLInputElement>(null);
   const themeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const avatarTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Arriving without a step (straight from Sign-up, or the hash was cleared)
   // starts at the first one. Read from `location`, not `hashStep`, which is
@@ -82,13 +80,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
     }
   }, [hashStep, finished]);
 
-  useEffect(
-    () => () => {
-      clearTimeout(themeTimer.current);
-      clearTimeout(avatarTimer.current);
-    },
-    [],
-  );
+  useEffect(() => () => clearTimeout(themeTimer.current), []);
 
   const step: WelcomeStep = hashStep ?? "language";
   const index = WELCOME_STEPS.indexOf(step);
@@ -115,16 +107,6 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
     const res = await updateName({ name: next });
     if (res.ok) savedName.current = next;
     else toast.error(t("errorGeneric"));
-  }
-
-  function pickAvatar(next: AvatarCode) {
-    setAvatar(next);
-    // Arrow keys fly through the orbs; save only the one they stop on.
-    clearTimeout(avatarTimer.current);
-    avatarTimer.current = setTimeout(async () => {
-      const res = await updateAvatar({ avatar: next });
-      if (!res.ok) toast.error(t("errorGeneric"));
-    }, 400);
   }
 
   async function pickTheme(next: ThemeCode) {
@@ -281,7 +263,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
             onNameChange={setName}
             onNameBlur={saveName}
             avatar={avatar}
-            onAvatarChange={pickAvatar}
+            onAvatarChange={setAvatar}
             phone={phone}
           />
         )}

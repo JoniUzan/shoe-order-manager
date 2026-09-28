@@ -25,7 +25,11 @@ export default async function AppLayout({
     <SidebarProvider>
       <AppSidebar
         side={side}
-        user={{ name: user.name ?? "", email: user.email ?? "" }}
+        user={{
+          name: user.name ?? "",
+          email: user.email ?? "",
+          avatar: settings.avatar,
+        }}
         variant="inset"
       />
       <SidebarInset>

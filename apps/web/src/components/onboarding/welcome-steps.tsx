@@ -13,11 +13,10 @@ import { Check } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Ref } from "react";
 
+import { AvatarPicker } from "@/components/settings/avatar-picker";
 import { FieldError } from "@/components/settings/field-error";
 import { avatarSrc } from "@/components/ui/orb";
 import { LOCALE_LABELS, routing } from "@/i18n/routing";
-
-import { OrbCarousel } from "./orb-carousel";
 
 /* ----------------------------- 1 · Language ----------------------------- */
 
@@ -134,7 +133,7 @@ export function YoursStep({
         </label>
       </div>
 
-      <OrbCarousel value={avatar} onChange={onAvatarChange} phone={phone} />
+      <AvatarPicker defaultValue={avatar} onChange={onAvatarChange} compact={phone} />
     </>
   );
 }

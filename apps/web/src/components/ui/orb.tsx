@@ -30,17 +30,6 @@ function pickOrb(seed: string) {
 }
 
 /**
- * The avatar orb, as a URL rather than a component: it is handed to Radix's
- * `AvatarImage`, which keeps the initial underneath as a real fallback if the
- * image never loads.
- *
- * @param seed stable per identity — an id or email, never a display name.
- */
-export function orbSrc(seed: string) {
-  return `/orbs/${pickOrb(seed)}-sm.jpg`;
-}
-
-/**
  * A User's Avatar: the orb they picked (`image` holds `orb:<code>`), or, if
  * they never picked one, the one generated from their email.
  */
@@ -51,7 +40,11 @@ export function avatarOf(user: { image: string | null; email: string }): AvatarC
     : pickOrb(user.email);
 }
 
-/** An avatar orb's image: `sm` for avatars, `full` for the large picker. */
+/**
+ * An avatar orb's image — a URL rather than a component: it is handed to
+ * Radix's `AvatarImage`, which keeps the initial underneath as a real
+ * fallback if the image never loads. `full` is for the picker's large orbs.
+ */
 export function avatarSrc(code: AvatarCode, size: "sm" | "full" = "sm") {
   return size === "sm" ? `/orbs/${code}-sm.jpg` : `/orbs/${code}.jpg`;
 }

@@ -15,7 +15,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 
-import { orbSrc } from "@/components/ui/orb";
+import { avatarSrc } from "@/components/ui/orb";
 import { LOCALE_LABELS } from "@/i18n/routing";
 import { signOutAction } from "@/lib/actions/auth-actions";
 import type { SettingsData } from "@/lib/settings-query";
@@ -40,7 +40,7 @@ export function SettingsMenu({ data }: { data: SettingsData }) {
           className="flex items-center gap-3 px-4 py-3.5"
         >
           <Avatar className="size-11 rounded-full">
-            <AvatarImage src={orbSrc(data.email || data.name)} alt="" />
+            <AvatarImage src={avatarSrc(data.avatar)} alt="" />
             <AvatarFallback className="rounded-full">
               {(data.name || data.email).charAt(0).toUpperCase()}
             </AvatarFallback>

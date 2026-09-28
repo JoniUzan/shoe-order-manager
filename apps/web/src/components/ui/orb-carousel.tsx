@@ -8,10 +8,10 @@ import type { KeyboardEvent } from "react";
 import { avatarSrc } from "@/components/ui/orb";
 
 // Diameter by distance from the pick: it is enlarged and centred, the rest
-// shrink away on either side.
+// shrink away on either side. `compact` is for a phone and the Settings.
 const SIZES = {
-  desk: [210, 148, 112, 92, 80, 72],
-  phone: [124, 80, 58, 48, 42, 38],
+  large: [210, 148, 112, 92, 80, 72],
+  compact: [124, 80, 58, 48, 42, 38],
 };
 
 const n = AVATARS.length;
@@ -25,17 +25,17 @@ const HALF = Math.floor(n / 2);
 export function OrbCarousel({
   value,
   onChange,
-  phone,
+  compact,
 }: {
   value: AvatarCode;
   onChange: (value: AvatarCode) => void;
-  phone: boolean;
+  compact: boolean;
 }) {
   const t = useTranslations("onboarding");
   const tAvatar = useTranslations("avatars");
   const rtl = useLocale() === "he";
   const selected = AVATARS.indexOf(value);
-  const sizes = phone ? SIZES.phone : SIZES.desk;
+  const sizes = compact ? SIZES.compact : SIZES.large;
 
   const at = (offset: number) => AVATARS[(((selected + offset) % n) + n) % n]!;
 
@@ -54,13 +54,13 @@ export function OrbCarousel({
   }
 
   return (
-    // Wider than a phone on purpose: the far orbs run off both edges.
+    // Wider than its box on purpose: the far orbs run off both edges.
     <div className="flex w-full justify-center overflow-hidden py-6">
       <div
         role="radiogroup"
         aria-label={t("avatarLabel")}
         onKeyDown={onKeyDown}
-        className={cn("flex shrink-0 items-center", phone ? "gap-2.5" : "gap-5")}
+        className={cn("flex shrink-0 items-center", compact ? "gap-2.5" : "gap-5")}
       >
         {Array.from({ length: n }, (_, i) => i - HALF).map((offset) => {
           const code = at(offset);
@@ -98,12 +98,12 @@ export function OrbCarousel({
                   <span
                     className={cn(
                       "grid place-items-center rounded-full border border-white/75 text-xs tabular-nums",
-                      phone ? "size-7" : "size-9",
+                      compact ? "size-7" : "size-9",
                     )}
                   >
                     {number}
                   </span>
-                  <span className={phone ? "text-sm" : "text-lg"}>
+                  <span className={compact ? "text-sm" : "text-lg"}>
                     {tAvatar(code)}
                   </span>
                 </span>
