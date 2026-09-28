@@ -1,5 +1,7 @@
 import type { LocaleCode, ThemeCode } from "@repo/domain";
 
+import { avatarOf } from "@/components/ui/orb";
+
 import { SETTINGS_SECTIONS, type SettingsSection } from "./settings-sections";
 
 export { SETTINGS_SECTIONS, type SettingsSection };
@@ -21,6 +23,7 @@ export function parseSettingsSection(
 type SettingsUser = {
   name: string | null;
   email: string;
+  image: string | null;
   locale: string;
   theme: string;
   businessName: string | null;
@@ -34,6 +37,7 @@ export function toSettingsData(user: SettingsUser) {
   return {
     name: user.name ?? "",
     email: user.email,
+    avatar: avatarOf(user),
     locale: user.locale as LocaleCode,
     theme: user.theme as ThemeCode,
     business: {

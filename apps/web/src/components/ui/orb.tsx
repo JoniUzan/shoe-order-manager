@@ -1,3 +1,4 @@
+import { AVATARS, type AvatarCode } from "@repo/domain";
 import Image from "next/image";
 
 import { cn } from "@repo/ui/lib/utils";
@@ -14,6 +15,8 @@ import { cn } from "@repo/ui/lib/utils";
  * transparent PNG — film grain is the worst case for PNG, and the JPEG is 6 KB
  * against 600.
  */
+// The first six, which generated avatars keep drawing from so nobody's orb
+// changed when the rest were added for the picker (`AVATARS`).
 const ORBS = ["abyss", "amber", "bronze", "crimson", "lunar", "ochre"] as const;
 
 /** FNV-1a, so the same person always gets the same orb, on every device. */
@@ -35,6 +38,22 @@ function pickOrb(seed: string) {
  */
 export function orbSrc(seed: string) {
   return `/orbs/${pickOrb(seed)}-sm.jpg`;
+}
+
+/**
+ * A User's Avatar: the orb they picked (`image` holds `orb:<code>`), or, if
+ * they never picked one, the one generated from their email.
+ */
+export function avatarOf(user: { image: string | null; email: string }): AvatarCode {
+  const picked = user.image?.startsWith("orb:") ? user.image.slice(4) : null;
+  return (AVATARS as readonly string[]).includes(picked ?? "")
+    ? (picked as AvatarCode)
+    : pickOrb(user.email);
+}
+
+/** An avatar orb's image: `sm` for avatars, `full` for the large picker. */
+export function avatarSrc(code: AvatarCode, size: "sm" | "full" = "sm") {
+  return size === "sm" ? `/orbs/${code}-sm.jpg` : `/orbs/${code}.jpg`;
 }
 
 /**

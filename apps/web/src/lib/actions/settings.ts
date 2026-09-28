@@ -2,11 +2,13 @@
 
 import { Prisma, prisma } from "@repo/db";
 import {
+  avatarSchema,
   businessSchema,
   emailChangeSchema,
   nameSchema,
   passwordChangeSchema,
   preferencesSchema,
+  type AvatarInput,
   type BusinessInput,
   type EmailChangeInput,
   type NameInput,
@@ -119,6 +121,25 @@ export async function changePassword(
     data: { passwordHash: await hashPassword(data.newPassword) },
   });
 
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Saves the picked Avatar as its token (`orb:onyx`) in `User.image`. */
+export async function updateAvatar(
+  input: AvatarInput,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = avatarSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+
+  const result = await prisma.user.updateMany({
+    where: { id: userId },
+    data: { image: `orb:${parsed.data.avatar}` },
+  });
+  if (result.count === 0) return { ok: false, error: "not_found" };
+
+  // The avatar shows in the sidebar on every page.
   revalidatePath("/", "layout");
   return { ok: true };
 }
