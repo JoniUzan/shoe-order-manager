@@ -49,6 +49,7 @@ import {
 export function OnboardingHost({ data }: { data: SettingsData }) {
   const t = useTranslations("onboarding");
   const tTheme = useTranslations("theme");
+  const tApp = useTranslations("app");
   const hashStep = useWelcomeStep();
   const phone = useIsPhone();
   const { setTheme } = useTheme();
@@ -208,7 +209,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
         )}
       >
         <span className="text-[15px] font-medium tracking-tight">
-          {t("appName")}
+          {tApp("name")}
         </span>
         <div className="flex items-center gap-2.5">
           <span className="text-[13px] text-muted-foreground tabular-nums">
