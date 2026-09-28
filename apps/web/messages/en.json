@@ -496,10 +496,6 @@
       "businessAddress": "Street, number, city",
       "businessTaxId": "9 digits"
     },
-    "previewLabel": "How it looks on an order",
-    "previewNamePlaceholder": "Business name",
-    "previewTaxId": "Tax ID {id}",
-    "previewOrder": "Order #1001",
     "back": "Back",
     "continue": "Continue",
     "finish": "Finish",
@@ -517,5 +513,11 @@
     "lunar": "Lunar",
     "ember": "Ember",
     "amber": "Amber"
+  },
+  "businessPreview": {
+    "label": "How it looks on an order",
+    "namePlaceholder": "Business name",
+    "taxId": "Tax ID {id}",
+    "order": "Order #1001"
   }
 }

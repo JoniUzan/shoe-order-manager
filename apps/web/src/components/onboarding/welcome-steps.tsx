@@ -3,16 +3,19 @@
 import {
   businessSchema,
   type AvatarCode,
-  type BusinessInput,
   type LocaleCode,
 } from "@repo/domain";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { cn } from "@repo/ui/lib/utils";
 import { Check } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { Ref } from "react";
 
+import {
+  OrderHeaderPreview,
+  type BusinessValues,
+} from "@/components/business/order-header-preview";
 import { AvatarPicker } from "@/components/settings/avatar-picker";
 import { FieldError } from "@/components/settings/field-error";
 import { avatarSrc } from "@/components/ui/orb";
@@ -140,9 +143,7 @@ export function YoursStep({
 
 /* ------------------------------ 3 · Business ------------------------------ */
 
-export type BusinessValues = Required<{
-  [K in keyof BusinessInput]: string;
-}>;
+export type { BusinessValues };
 
 const FIELDS = [
   { key: "businessName", autoComplete: "organization" },
@@ -177,7 +178,11 @@ export function BusinessStep({
         phone ? "w-full flex-col gap-4.5" : "items-start gap-10",
       )}
     >
-      <OrderHeaderPreview values={values} phone={phone} />
+      <OrderHeaderPreview
+        values={values}
+        compact={phone}
+        className={phone ? "w-full" : "w-[380px]"}
+      />
 
       <div className={cn("flex flex-col", phone ? "w-full gap-3" : "w-[340px] gap-3.5")}>
         {FIELDS.map((field) => {
@@ -224,85 +229,6 @@ export function BusinessStep({
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-/**
- * The top of a printed order, drawn as it will come out: always on paper
- * (light), whatever the app's theme.
- */
-function OrderHeaderPreview({
-  values,
-  phone,
-}: {
-  values: BusinessValues;
-  phone: boolean;
-}) {
-  const t = useTranslations("onboarding");
-  const locale = useLocale();
-  const name = values.businessName.trim();
-  const contact = [values.businessPhone, values.businessAddress]
-    .map((v) => v.trim())
-    .filter(Boolean);
-  const today = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date());
-
-  return (
-    <div className={cn("flex flex-col gap-2", phone ? "w-full" : "w-[380px]")}>
-      <span className="text-[13px] text-muted-foreground">{t("previewLabel")}</span>
-      <div
-        aria-hidden
-        className={cn(
-          "flex flex-col gap-2.5 rounded-[18px] border border-[#091717]/10 bg-[#fbfaf4] text-[#091717] shadow-[0_4px_12px_rgba(0,0,0,.08),0_18px_40px_rgba(0,0,0,.06)]",
-          phone ? "px-4.5 py-4" : "px-6.5 py-6",
-        )}
-      >
-        <div className="flex min-w-0 flex-col gap-1">
-          <span
-            className={cn(
-              "truncate font-semibold tracking-tight",
-              phone ? "text-[19px]" : "text-2xl",
-              !name && "text-[#091717]/30",
-            )}
-          >
-            {name || t("previewNamePlaceholder")}
-          </span>
-          <span className="truncate text-[13px] text-[#091717]/65">
-            {contact.length ? contact.join(" · ") : "—"}
-          </span>
-          {!phone && values.businessTaxId.trim() && (
-            <span className="text-[13px] text-[#091717]/65">
-              {t("previewTaxId", { id: values.businessTaxId.trim() })}
-            </span>
-          )}
-        </div>
-        {!phone && (
-          <>
-            <div className="my-1.5 h-px bg-[#091717]/10" />
-            <div className="flex justify-between text-sm">
-              <span className="font-semibold">{t("previewOrder")}</span>
-              <span className="text-[#091717]/65 tabular-nums">{today}</span>
-            </div>
-            <div className="h-2 w-[55%] rounded bg-[#091717]/7" />
-            <div className="mt-2 mb-0.5 h-px bg-[#091717]/10" />
-            <div className="grid grid-cols-4 gap-2.5">
-              {Array.from({ length: 12 }, (_, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "h-2 rounded",
-                    i < 4 ? "bg-[#091717]/12" : "bg-[#091717]/6",
-                  )}
-                />
-              ))}
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

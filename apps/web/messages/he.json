@@ -496,10 +496,6 @@
       "businessAddress": "רחוב, מספר, עיר",
       "businessTaxId": "9 ספרות"
     },
-    "previewLabel": "כך זה ייראה בהזמנה",
-    "previewNamePlaceholder": "שם העסק",
-    "previewTaxId": "ח.פ {id}",
-    "previewOrder": "הזמנה #1001",
     "back": "חזרה",
     "continue": "המשך",
     "finish": "סיום",
@@ -517,5 +513,11 @@
     "lunar": "ירח",
     "ember": "גחלת",
     "amber": "ענבר"
+  },
+  "businessPreview": {
+    "label": "כך זה ייראה בהזמנה",
+    "namePlaceholder": "שם העסק",
+    "taxId": "ח.פ {id}",
+    "order": "הזמנה #1001"
   }
 }
