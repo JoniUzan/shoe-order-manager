@@ -21,6 +21,7 @@ pnpm --filter @repo/db typecheck   # typecheck a single package
 
 # Database (Postgres via Prisma, in packages/db)
 docker compose up -d         # local Postgres 17 on localhost:5432 (matches the .env.example files)
+docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login, db pre-registered)
 pnpm db:migrate              # prisma migrate dev (create/apply migrations; since Prisma 7 it neither generates nor seeds)
 pnpm db:seed                 # seed OrderStatus rows + admin user
 pnpm db:studio               # browse data
