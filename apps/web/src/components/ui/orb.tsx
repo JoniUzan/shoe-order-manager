@@ -12,8 +12,8 @@ import { cn } from "@repo/ui/lib/utils";
  *
  * The art is the sphere alone on a transparent square, served as WebP (which
  * keeps the transparency at a fraction of a PNG's size): 640px for large uses,
- * 192px (`-sm`) for avatars, sharp up to 96px on a retina screen. The
- * `rounded-full` on each image only matters as the shape of its shadow.
+ * 384px (`-md`) for the carousel, 192px (`-sm`) for avatars — each sharp at
+ * half its width on a retina screen.
  */
 // The first six, which generated avatars keep drawing from so nobody's orb
 // changed when the rest were added for the picker (`AVATARS`).
@@ -43,10 +43,10 @@ export function avatarOf(user: { image: string | null; email: string }): AvatarC
 /**
  * An avatar orb's image — a URL rather than a component: it is handed to
  * Radix's `AvatarImage`, which keeps the initial underneath as a real
- * fallback if the image never loads. `full` is for the picker's large orbs.
+ * fallback if the image never loads.
  */
-export function avatarSrc(code: AvatarCode, size: "sm" | "full" = "sm") {
-  return size === "sm" ? `/orbs/${code}-sm.webp` : `/orbs/${code}.webp`;
+export function avatarSrc(code: AvatarCode, size: "sm" | "md" | "full" = "sm") {
+  return size === "full" ? `/orbs/${code}.webp` : `/orbs/${code}-${size}.webp`;
 }
 
 /**
