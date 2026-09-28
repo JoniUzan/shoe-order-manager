@@ -23,7 +23,7 @@ export async function GetStarted({
 
   return (
     <Card className="items-center gap-3.5 px-6 py-7 text-center">
-      {/* eslint-disable-next-line @next/next/no-img-element -- a small local JPEG */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- a small local image */}
       <img src={avatarSrc(avatar)} alt="" className="size-18 rounded-full" />
       <h2 className="text-[22px] font-medium">
         {name ? t("getStartedTitleNamed", { name }) : t("getStartedTitle")}

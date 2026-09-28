@@ -10,10 +10,10 @@ import { cn } from "@repo/ui/lib/utils";
  * lost by a viewer who cannot tell them apart. They exist so the product has a
  * face, and so the two screens with nothing in them are not empty rectangles.
  *
- * The art is a square with the sphere inscribed and the corners flattened, which
- * is why every orb is clipped with `rounded-full` rather than served as a
- * transparent PNG — film grain is the worst case for PNG, and the JPEG is 6 KB
- * against 600.
+ * The art is the sphere alone on a transparent square, served as WebP (which
+ * keeps the transparency at a fraction of a PNG's size): 640px for large uses,
+ * 192px (`-sm`) for avatars, sharp up to 96px on a retina screen. The
+ * `rounded-full` on each image only matters as the shape of its shadow.
  */
 // The first six, which generated avatars keep drawing from so nobody's orb
 // changed when the rest were added for the picker (`AVATARS`).
@@ -46,7 +46,7 @@ export function avatarOf(user: { image: string | null; email: string }): AvatarC
  * fallback if the image never loads. `full` is for the picker's large orbs.
  */
 export function avatarSrc(code: AvatarCode, size: "sm" | "full" = "sm") {
-  return size === "sm" ? `/orbs/${code}-sm.jpg` : `/orbs/${code}.jpg`;
+  return size === "sm" ? `/orbs/${code}-sm.webp` : `/orbs/${code}.webp`;
 }
 
 /**
@@ -72,7 +72,7 @@ export function OrbField({
     return (
       <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)} aria-hidden>
         <Image
-          src="/orbs/crimson.jpg"
+          src="/orbs/crimson.webp"
           alt=""
           width={520}
           height={520}
@@ -80,14 +80,14 @@ export function OrbField({
           className={cn(common, "-top-44 -start-48 size-[520px] rounded-full opacity-55")}
         />
         <Image
-          src="/orbs/abyss.jpg"
+          src="/orbs/abyss.webp"
           alt=""
           width={300}
           height={300}
           className={cn(common, "-bottom-28 -end-20 size-[300px] rounded-full opacity-45")}
         />
         <Image
-          src="/orbs/amber.jpg"
+          src="/orbs/amber.webp"
           alt=""
           width={128}
           height={128}
@@ -107,7 +107,7 @@ export function OrbField({
   return (
     <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)} aria-hidden>
       <Image
-        src="/orbs/ochre.jpg"
+        src="/orbs/ochre.webp"
         alt=""
         width={300}
         height={300}
@@ -115,7 +115,7 @@ export function OrbField({
         className={cn(common, "-top-8 -end-10 size-[300px] rounded-full opacity-40")}
       />
       <Image
-        src="/orbs/bronze.jpg"
+        src="/orbs/bronze.webp"
         alt=""
         width={190}
         height={190}

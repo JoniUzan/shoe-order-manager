@@ -86,7 +86,7 @@ export function OrbCarousel({
                 Math.abs(offset) >= 3 && "opacity-80",
               )}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- a fixed set of small local JPEGs */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- a fixed set of small local images */}
               <img
                 src={avatarSrc(code, size > 96 ? "full" : "sm")}
                 alt=""

@@ -109,7 +109,7 @@ export function YoursStep({
         )}
       >
         <label className="flex h-15 items-center gap-3 rounded-full border bg-card ps-2 pe-5">
-          {/* eslint-disable-next-line @next/next/no-img-element -- a small local JPEG */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- a small local image */}
           <img
             src={avatarSrc(avatar)}
             alt=""
