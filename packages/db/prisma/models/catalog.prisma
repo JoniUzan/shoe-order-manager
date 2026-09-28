@@ -1,0 +1,50 @@
+// ---------------------------------------------------------------------------
+// Catalog — shoe models and the packs they are sold in
+// ---------------------------------------------------------------------------
+
+model ShoeModel {
+  id                String   @id @default(cuid())
+  ownerId           String
+  name              String
+  sku               String?
+  description       String?
+  defaultPriceAgorot Int?
+  // The size run this model is ordered in, as a comma-separated list ordered
+  // ascending ("36,37,38"). A String rather than an array column: it predates
+  // the Postgres move, and a scalar keeps the schema portable.
+  sizes             String?
+  // Which sizing system those numbers belong to: "eu" | "us" | "uk". A label
+  // only — every supported system is numeric, so it never changes what is a
+  // valid size. Kept as a String rather than an enum to stay portable.
+  sizeFormat        String   @default("eu")
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  owner User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+  packs SizePack[]
+
+  @@index([ownerId])
+}
+
+// A pack (Hebrew: סדרה) a model is sold in: a fixed number of pairs per size,
+// e.g. 38×3, 39×2, 40×3. No ownerId of its own — always reached through its
+// owned ShoeModel (`shoeModel: { ownerId }`), never loaded by id alone.
+model SizePack {
+  id          String   @id @default(cuid())
+  shoeModelId String
+  name        String
+  // Pairs per size, "38:3,39:2,40:3" — canonical form from serializeCurve in
+  // @repo/domain. A string for the same reason as ShoeModel.sizes: it is only
+  // ever read and written whole, and never searched by size.
+  curve       String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shoeModel ShoeModel   @relation(fields: [shoeModelId], references: [id], onDelete: Cascade)
+  packs     OrderPack[]
+
+  @@index([shoeModelId])
+}

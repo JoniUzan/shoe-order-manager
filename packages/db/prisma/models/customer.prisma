@@ -1,0 +1,20 @@
+// ---------------------------------------------------------------------------
+// Customers — the retail stores the owner sells to
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String
+  contactName String?
+  phone       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner  User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([ownerId])
+}
