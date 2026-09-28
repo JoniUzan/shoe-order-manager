@@ -51,6 +51,14 @@ jobs:
             full review, even when an earlier commit on this PR was already reviewed. Don't repeat
             an issue from an earlier review that the new commits have fixed.
 
+            HOW TO RUN — this is a one-shot CI job, not a chat:
+            - Run every agent (Task) in the foreground and use its result in the same turn. Never
+              start one in the background: nothing wakes you when it finishes, so the job ends
+              with no review posted.
+            - Never end your turn before the verdict comment below is posted.
+            - One command per Bash call: no `&&`, `;`, pipes or redirects. A combined command is
+              refused. To see the diff, run `gh pr diff` on its own.
+
             STEP 8 (output) — replaces step 8 entirely:
             - Write like a colleague reviewing a teammate's PR: plain words, no headings, no emoji,
               no boilerplate footer.
