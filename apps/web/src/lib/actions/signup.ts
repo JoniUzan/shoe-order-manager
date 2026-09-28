@@ -21,11 +21,18 @@ export type SignupState =
     }
   | undefined;
 
+/**
+ * The client's IP, for the rate limit — from headers the host sets, not
+ * ones the client can: Vercel writes `x-real-ip` itself. Failing that, the
+ * last `x-forwarded-for` entry, the one our own proxy appended; the first
+ * is whatever the client sent. With neither (local dev, no proxy),
+ * everyone shares one bucket.
+ */
 async function clientIp() {
   const h = await headers();
   return (
-    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    h.get("x-real-ip") ||
+    h.get("x-real-ip")?.trim() ||
+    h.get("x-forwarded-for")?.split(",").at(-1)?.trim() ||
     "unknown"
   );
 }
