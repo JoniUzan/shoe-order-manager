@@ -80,9 +80,7 @@ export function OrbCarousel({
               className={cn(
                 "relative shrink-0 rounded-full outline-offset-4 transition-[width,height,opacity,box-shadow] duration-300 ease-out-quint motion-reduce:transition-none",
                 "focus-visible:outline-2 focus-visible:outline-ring",
-                picked
-                  ? "shadow-[0_24px_50px_rgba(0,0,0,.28)]"
-                  : "shadow-[0_8px_18px_rgba(0,0,0,.12)]",
+                !picked && "shadow-[0_8px_18px_rgba(0,0,0,.12)]",
                 Math.abs(offset) >= 3 && "opacity-80",
               )}
             >
