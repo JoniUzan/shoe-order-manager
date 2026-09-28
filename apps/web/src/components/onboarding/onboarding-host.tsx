@@ -72,14 +72,17 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
   const businessNameRef = useRef<HTMLInputElement>(null);
   const themeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Arriving without a step (straight from Sign-up, or the hash was cleared)
-  // starts at the first one. Read from `location`, not `hashStep`, which is
-  // still the server's `null` during hydration.
+  // Arriving without a step (straight from Sign-up) starts at the first one;
+  // losing it (a navigation behind the dialog drops the hash) resumes the
+  // last. Read from `location`, not `hashStep`, which is still the server's
+  // `null` during hydration.
+  const [lastStep, setLastStep] = useState<WelcomeStep>("language");
+  if (hashStep && hashStep !== lastStep) setLastStep(hashStep);
   useEffect(() => {
     if (!finished && !parseWelcomeHash(window.location.hash)) {
-      showWelcomeStep("language");
+      showWelcomeStep(lastStep);
     }
-  }, [hashStep, finished]);
+  }, [hashStep, lastStep, finished]);
 
   useEffect(() => () => clearTimeout(themeTimer.current), []);
 
@@ -197,6 +200,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
     </Button>
   );
 
+  const Title = phone ? DrawerTitle : DialogTitle;
   const content = (
     <>
       <NoiseWash />
@@ -237,14 +241,17 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
         )}
       >
         <div className="flex flex-col items-center gap-2.5 text-center">
-          <h1
+          {/* The dialog's (or drawer's) accessible title, not a copy of it. */}
+          {/* The classes go on the Title, whose own defaults they override. */}
+          <Title
+            asChild
             className={cn(
-              "leading-[1.05] font-light",
+              "text-foreground leading-[1.05] font-light",
               phone ? "text-[34px] tracking-[-0.8px]" : "text-[60px] tracking-[-1.6px]",
             )}
           >
-            {title}
-          </h1>
+            <h1>{title}</h1>
+          </Title>
           <p className={cn("text-muted-foreground", phone ? "text-[15px]" : "text-[17px]")}>
             {subtitle}
           </p>
@@ -308,7 +315,6 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
           aria-describedby={undefined}
           className="mt-0 h-[calc(100dvh-2.75rem)] max-h-none overflow-hidden rounded-t-[28px] bg-background data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:max-h-none data-[vaul-drawer-direction=bottom]:rounded-t-[28px]"
         >
-          <DrawerTitle className="sr-only">{title}</DrawerTitle>
           <Frame>{content}</Frame>
         </DrawerContent>
       </Drawer>
@@ -329,7 +335,6 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
         }}
         className="inset-5 flex w-auto max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-[28px] bg-background p-0 sm:max-w-none"
       >
-        <DialogTitle className="sr-only">{title}</DialogTitle>
         <Frame>{content}</Frame>
       </DialogContent>
     </Dialog>

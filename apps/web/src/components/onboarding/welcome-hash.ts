@@ -6,8 +6,11 @@ import { useSyncExternalStore } from "react";
  * The welcome dialog's step lives in the URL hash — `#welcome/yours` — so a
  * reload, or the full load a language change makes, reopens it on the same
  * step. Changed only through `history.replaceState`, never `location.hash =`
- * (see `settings-hash.ts` for why Next needs that). Steps replace each other
- * rather than stacking up history: Back is the dialog's own button.
+ * (see `settings-hash.ts` for why Next needs that), and with `null` state:
+ * Next only takes the new URL into its router when the state isn't its own,
+ * and otherwise writes its stale one back after the next server action.
+ * Steps replace each other rather than stacking up history: Back is the
+ * dialog's own button.
  */
 
 export const WELCOME_STEPS = ["language", "yours", "business"] as const;
@@ -28,7 +31,7 @@ export function parseWelcomeHash(hash: string): WelcomeStep | null {
 
 function replaceHash(hash: string) {
   const { pathname, search } = window.location;
-  window.history.replaceState(window.history.state, "", `${pathname}${search}${hash}`);
+  window.history.replaceState(null, "", `${pathname}${search}${hash}`);
   window.dispatchEvent(new Event(EVENT));
 }
 
