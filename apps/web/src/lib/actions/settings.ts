@@ -85,6 +85,18 @@ export async function changeEmail(
   if (valid === null) return { ok: false, error: "not_found" };
   if (!valid) return { ok: false, error: "wrong_password" };
 
+  // Login matches emails in any case, so a differently-cased copy of
+  // another account's email is taken too — the unique index alone
+  // (case-sensitive) would let two rows answer the same login.
+  const taken = await prisma.user.findFirst({
+    where: {
+      email: { equals: data.email, mode: "insensitive" },
+      id: { not: userId },
+    },
+    select: { id: true },
+  });
+  if (taken) return { ok: false, error: "email_taken" };
+
   try {
     await prisma.user.update({
       where: { id: userId },
