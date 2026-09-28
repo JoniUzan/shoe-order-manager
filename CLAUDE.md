@@ -57,7 +57,11 @@ package extends `@repo/typescript-config`):
 - `packages/db` — Prisma 7 schema + client singleton + seed. Exports `prisma`, `Prisma`, `PrismaClient`
   and model types; import them from `@repo/db`, never from `@prisma/client` (it no longer holds the
   generated client). Layout: `prisma.config.ts` (CLI config: schema/migrations paths, seed, `DIRECT_URL`),
-  `prisma/schema.prisma` (`prisma-client` generator), client generated to `src/generated/prisma`
+  a multi-file schema — `schema` points at the `prisma/` folder: `prisma/schema.prisma` holds only the
+  `prisma-client` generator + datasource, models live in `prisma/models/<domain>.prisma` (`auth`,
+  `customer`, `catalog`, `order`, `payment`; enums go with the models that use them). Put a new model in
+  the matching file (or a new one there); `prisma/migrations` must stay next to `schema.prisma`.
+  Client generated to `src/generated/prisma`
   (gitignored; by `pnpm install`, `db:generate`, and the package's `build`, which turbo runs before
   the web app's). `src/browser.ts` is the `browser` export condition: client components that import
   constants from server query modules get a throwing stub instead of the pg driver.
