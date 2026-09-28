@@ -130,8 +130,10 @@ export function OrbCarousel({
     "linear-gradient(to right, transparent, #000 14%, #000 86%, transparent)";
 
   return (
+    // Clipped: the far slots sit past the edges, and would otherwise make
+    // whatever holds the carousel scroll sideways.
     <div
-      className="relative w-full"
+      className="relative w-full overflow-hidden"
       style={{
         height: base + 48,
         maskImage: edgeFade,
