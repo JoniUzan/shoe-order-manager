@@ -54,3 +54,18 @@ export const businessSchema = z.object({
 });
 
 export type BusinessInput = z.infer<typeof businessSchema>;
+
+/** A new account. The email is stored lower-cased; login matches it either way. */
+export const signupSchema = z.object({
+  name: z.string().trim().min(1, { message: "required" }).max(100),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, { message: "required" })
+    .email({ message: "email" })
+    .max(200),
+  password: z.string().min(PASSWORD_MIN, { message: "passwordTooShort" }).max(200),
+});
+
+export type SignupInput = z.infer<typeof signupSchema>;

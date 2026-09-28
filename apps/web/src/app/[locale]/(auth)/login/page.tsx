@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { OrbField } from "@/components/ui/orb";
+import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 
 export default async function LoginPage({
@@ -45,6 +46,12 @@ export default async function LoginPage({
         </CardHeader>
         <CardContent>
           <LoginForm locale={locale} />
+          <p className="mt-5 text-center text-sm text-muted-foreground">
+            {t("noAccount")}{" "}
+            <Link href="/signup" className="font-medium text-primary hover:underline">
+              {t("signUp")}
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </main>
