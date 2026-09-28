@@ -38,7 +38,7 @@ export function LanguageStep({
       <div
         role="radiogroup"
         aria-label={t("languageLabel")}
-        className={cn("flex gap-4", phone ? "w-full flex-col" : "w-[560px] max-w-full")}
+        className={cn("flex gap-4", phone ? "w-full flex-col" : "w-[520px] max-w-full")}
       >
         {routing.locales.map((code) => {
           const picked = code === value;
@@ -53,7 +53,7 @@ export function LanguageStep({
               className={cn(
                 "relative flex flex-1 flex-col items-start justify-end gap-1 rounded-[22px] border bg-card px-5.5 py-5 text-start transition-shadow",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                phone ? "h-24" : "h-42",
+                phone ? "h-24" : "h-36",
                 picked ? "surface-raised ring-2 ring-primary" : "hover:border-foreground/20",
               )}
             >
@@ -105,7 +105,7 @@ export function YoursStep({
       <div
         className={cn(
           "rounded-full p-1.5 shadow-[0_0_0_1px_var(--border),0_0_0_8px_color-mix(in_oklch,var(--foreground)_4%,transparent),0_0_0_9px_var(--border)]",
-          phone ? "w-full" : "w-[440px] max-w-full",
+          phone ? "w-full" : "w-[400px] max-w-full",
         )}
       >
         <label className="flex h-15 items-center gap-3 rounded-full border bg-card ps-2 pe-5">
@@ -174,12 +174,12 @@ export function BusinessStep({
     <div
       className={cn(
         "flex",
-        phone ? "w-full flex-col gap-4.5" : "items-start gap-14",
+        phone ? "w-full flex-col gap-4.5" : "items-start gap-10",
       )}
     >
       <OrderHeaderPreview values={values} phone={phone} />
 
-      <div className={cn("flex flex-col", phone ? "w-full gap-3" : "w-[380px] gap-4")}>
+      <div className={cn("flex flex-col", phone ? "w-full gap-3" : "w-[340px] gap-3.5")}>
         {FIELDS.map((field) => {
           const isName = field.key === "businessName";
           const error = isName
@@ -253,7 +253,7 @@ function OrderHeaderPreview({
   }).format(new Date());
 
   return (
-    <div className={cn("flex flex-col gap-2", phone ? "w-full" : "w-[440px]")}>
+    <div className={cn("flex flex-col gap-2", phone ? "w-full" : "w-[380px]")}>
       <span className="text-[13px] text-muted-foreground">{t("previewLabel")}</span>
       <div
         aria-hidden

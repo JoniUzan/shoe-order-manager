@@ -10,7 +10,7 @@ import { avatarSrc } from "@/components/ui/orb";
 // Diameter by distance from the pick: it is enlarged and centred, the rest
 // shrink away on either side. `compact` is for a phone and the Settings.
 const SIZES = {
-  large: [210, 148, 112, 92, 80, 72],
+  large: [176, 124, 96, 80, 70, 64],
   compact: [124, 80, 58, 48, 42, 38],
 };
 

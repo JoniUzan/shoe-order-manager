@@ -237,7 +237,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
       <div
         className={cn(
           "relative flex min-h-0 flex-1 flex-col items-center overflow-y-auto",
-          phone ? "justify-start gap-6 px-4 pt-6" : "justify-center gap-10 px-8",
+          phone ? "justify-start gap-6 px-4 pt-6" : "justify-center gap-8 px-8",
         )}
       >
         <div className="flex flex-col items-center gap-2.5 text-center">
@@ -247,7 +247,7 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
             asChild
             className={cn(
               "text-foreground leading-[1.05] font-light",
-              phone ? "text-[34px] tracking-[-0.8px]" : "text-[60px] tracking-[-1.6px]",
+              phone ? "text-[34px] tracking-[-0.8px]" : "text-[48px] tracking-[-1.2px]",
             )}
           >
             <h1>{title}</h1>
@@ -333,7 +333,8 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
           e.preventDefault();
           (e.currentTarget as HTMLElement).focus();
         }}
-        className="inset-5 flex w-auto max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-[28px] bg-background p-0 sm:max-w-none"
+        // A mid-size window, centred: up to 960×680, never past the viewport.
+        className="flex h-[min(680px,calc(100dvh-2.5rem))] w-[calc(100vw-2.5rem)] max-w-[960px] flex-col gap-0 overflow-hidden rounded-[28px] bg-background p-0 sm:max-w-[960px]"
       >
         <Frame>{content}</Frame>
       </DialogContent>
