@@ -1,0 +1,3 @@
+# Only here so pgAdmin skips its password prompt: the db uses trust auth, so
+# the password field is never checked.
+db:5432:*:postgres:unused
