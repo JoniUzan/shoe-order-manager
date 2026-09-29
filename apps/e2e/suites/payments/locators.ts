@@ -27,7 +27,10 @@ export class PaymentsCard {
     return this.page.getByRole("button", { name: this.t("payments.markFullyPaid") });
   }
 
-  /** The remove button of each payment in the history, newest first. */
+  /**
+   * The remove button of each payment in the history. Its accessible name is
+   * the toast text ("Payment removed"), as the app labels it today.
+   */
   removeButtons() {
     return this.page.getByRole("button", { name: this.t("payments.removed") });
   }

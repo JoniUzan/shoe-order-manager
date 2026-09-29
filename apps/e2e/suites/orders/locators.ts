@@ -91,4 +91,47 @@ export class OrderPage {
   async edit() {
     await this.page.getByRole("link", { name: this.t("orders.edit") }).click();
   }
+
+  markDone() {
+    return this.page.getByRole("button", { name: this.t("orders.markDone") });
+  }
+
+  reopen() {
+    return this.page.getByRole("button", { name: this.t("orders.markNotDone") });
+  }
+}
+
+/** The orders list, with row selection and the bulk bar. */
+export class OrdersList {
+  constructor(
+    private page: Page,
+    private t: T,
+  ) {}
+
+  async goto(locale: string) {
+    await this.page.goto(`/${locale}/orders`);
+  }
+
+  async select(orderNumber: number) {
+    await this.page
+      .getByRole("checkbox", { name: this.t("dashboard.selectRow", { number: orderNumber }) })
+      .click();
+  }
+
+  async bulkMarkDone() {
+    await this.page.getByRole("button", { name: this.t("orders.markDone") }).click();
+  }
+
+  /** Delete the selected orders, and confirm. */
+  async bulkDelete() {
+    await this.page.getByRole("button", { name: this.t("common.delete") }).click();
+    await this.page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: this.t("common.delete") })
+      .click();
+  }
+
+  selection(count: number) {
+    return this.page.getByText(this.t("dashboard.nSelected", { count }));
+  }
 }
