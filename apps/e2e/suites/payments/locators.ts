@@ -29,7 +29,7 @@ export class PaymentsCard {
 
   /**
    * The remove button of each payment in the history. Its accessible name is
-   * the toast text ("Payment removed"), as the app labels it today.
+   * the toast text ("Payment removed"), as the app labels it today (#40).
    */
   removeButtons() {
     return this.page.getByRole("button", { name: this.t("payments.removed") });

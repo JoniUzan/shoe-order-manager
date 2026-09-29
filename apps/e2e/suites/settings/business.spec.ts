@@ -16,11 +16,11 @@ test("Business details save from the settings dialog", async ({ page, t, appLoca
   await expect(settings.businessField("businessName")).toHaveValue("Shoes & Co");
 });
 
-// ADR 0005: a link or a reload opens the dialog from the hash. Next's router
-// never adopts that hash (only pushState/replaceState(null) URLs), so after the
-// next Server Action it writes back its own hash-less URL: the first save
-// closes the dialog, and a reload after a save often lands without it.
-test.fixme("a save in settings opened by link keeps the dialog open", async ({ page, t, appLocale, user }) => {
+// #39: on the Dashboard, settings opened by link or reload closes after the
+// first save. Next never adopted the hash that was there at load, and the
+// refresh from revalidatePath("/", "layout") writes back its hash-less URL.
+// Other pages, and settings opened from the menu, are fine.
+test.fixme("a save in settings opened by link on the Dashboard keeps the dialog open", async ({ page, t, appLocale, user }) => {
   const settings = new SettingsDialog(page, t);
   await settings.openByLink(appLocale, "business");
   await settings.fillAndLeave("businessName", "Shoes & Co");

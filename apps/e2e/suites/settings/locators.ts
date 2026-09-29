@@ -33,7 +33,7 @@ export class SettingsDialog {
 
   /**
    * Open it by a link that carries the hash (`/he/orders#settings/business`).
-   * Reading works; a save made this way closes it (see the fixme spec).
+   * Reading works; on the Dashboard a save made this way closes it (#39).
    */
   async openByLink(locale: string, section: Section, path = "") {
     await this.page.goto(`/${locale}${path}#settings/${section}`);
