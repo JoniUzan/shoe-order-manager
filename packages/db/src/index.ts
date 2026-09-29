@@ -1,5 +1,5 @@
 export { prisma } from "./client";
-export { PrismaClient, Prisma } from "@prisma/client";
+export { PrismaClient, Prisma } from "./generated/prisma/client";
 export type {
   User,
   SignupAttempt,
@@ -13,4 +13,4 @@ export type {
   OrderItem,
   OrderPack,
   Payment,
-} from "@prisma/client";
+} from "./generated/prisma/client";

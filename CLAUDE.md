@@ -11,7 +11,7 @@ Postgres: Supabase in production (used as plain Postgres), Docker locally.
 ## Commands
 
 ```bash
-pnpm install                 # install (root); postinstall build scripts are allow-listed in package.json#pnpm.onlyBuiltDependencies
+pnpm install                 # install (root); also generates the Prisma client (packages/db postinstall). Dependency build scripts are allow-listed in package.json#pnpm.onlyBuiltDependencies
 pnpm dev                     # run the web app (turbo) — http://localhost:3000
 pnpm --filter web dev        # run only the web app
 pnpm build                   # build all packages (turbo)
@@ -22,7 +22,7 @@ pnpm --filter @repo/db typecheck   # typecheck a single package
 # Database (Postgres via Prisma, in packages/db)
 docker compose up -d         # local Postgres 17 on localhost:5432 (matches the .env.example files)
 docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login, db pre-registered)
-pnpm db:migrate              # prisma migrate dev (create/apply migrations)
+pnpm db:migrate              # prisma migrate dev (create/apply migrations; since Prisma 7 it neither generates nor seeds)
 pnpm db:seed                 # seed OrderStatus rows + admin user
 pnpm db:studio               # browse data
 pnpm db:generate             # regenerate the Prisma client after schema edits
@@ -36,11 +36,18 @@ do **not** catch client-navigation or hydration bugs — drive the actual form.
 ## Environment
 
 - `apps/web/.env.local` and `packages/db/.env` (copy the `.env.example` next to each):
-  `DATABASE_URL` + `DIRECT_URL`. Locally both are the Docker Postgres URL. On Supabase,
-  `DATABASE_URL` is the **transaction pooler** (port 6543, `?pgbouncer=true&connection_limit=1`)
-  and `DIRECT_URL` the **session pooler** (5432) — migrations can't run through the
-  transaction pooler. The web app also needs `AUTH_SECRET` (`openssl rand -base64 33`) and
-  `AUTH_TRUST_HOST=true`.
+  `DATABASE_URL` + `DIRECT_URL`. Locally both are the Docker Postgres URL. The **app** connects with
+  `DATABASE_URL` through the pg driver adapter (`packages/db/src/client.ts`); the **Prisma CLI**
+  (migrate, studio, db seed) uses `DIRECT_URL`, set in `packages/db/prisma.config.ts`, which also
+  loads `packages/db/.env` (Prisma 7 doesn't read `.env` by itself). On Supabase, `DATABASE_URL` is
+  the **transaction pooler** (port 6543) and `DIRECT_URL` the **session pooler** (5432) —
+  migrations can't run through the transaction pooler.
+- `DATABASE_URL` is parsed by node-postgres, not Prisma: the Prisma 6 params `pgbouncer=true` /
+  `connection_limit` are ignored. The adapter sends unnamed statements, so a transaction-mode pooler
+  needs no flag. TLS is off unless the URL asks for it — Supabase uses `?sslmode=no-verify`
+  (encrypted, like Prisma 6's default; pg treats `require` as `verify-full`). Pool size is pg's
+  (default 10 per process): serverless hosts set `DATABASE_POOL_MAX=1`.
+- The web app also needs `AUTH_SECRET` (`openssl rand -base64 33`) and `AUTH_TRUST_HOST=true`.
 - Default dev login: `admin@example.com` / `changeme123` (override with `ADMIN_EMAIL`/`ADMIN_PASSWORD` before `db:seed`).
 
 ## Architecture
@@ -48,7 +55,17 @@ do **not** catch client-navigation or hydration bugs — drive the actual form.
 **Packages** (`@repo/*`, all private; follows Turborepo conventions — no root tsconfig, each
 package extends `@repo/typescript-config`):
 - `apps/web` — the only deployable. Next.js 16 App Router, React 19.
-- `packages/db` — Prisma schema + client singleton + seed. Exports `prisma` and model types.
+- `packages/db` — Prisma 7 schema + client singleton + seed. Exports `prisma`, `Prisma`, `PrismaClient`
+  and model types; import them from `@repo/db`, never from `@prisma/client` (it no longer holds the
+  generated client). Layout: `prisma.config.ts` (CLI config: schema/migrations paths, seed, `DIRECT_URL`),
+  a multi-file schema — `schema` points at the `prisma/` folder: `prisma/schema.prisma` holds only the
+  `prisma-client` generator + datasource, models live in `prisma/models/<domain>.prisma` (`auth`,
+  `customer`, `catalog`, `order`, `payment`; enums go with the models that use them). Put a new model in
+  the matching file (or a new one there); `prisma/migrations` must stay next to `schema.prisma`.
+  Client generated to `src/generated/prisma`
+  (gitignored; by `pnpm install`, `db:generate`, and the package's `build`, which turbo runs before
+  the web app's). `src/browser.ts` is the `browser` export condition: client components that import
+  constants from server query modules get a throwing stub instead of the pg driver.
 - `packages/domain` — framework-free: Zod schemas, money helpers, `recalculateOrderTotals`,
   phone normalization, status constants. Split from `db` so it's importable without the client.
 - `packages/ui` — shadcn/ui (new-york) + the theme. Owns `src/styles/globals.css` (the app's

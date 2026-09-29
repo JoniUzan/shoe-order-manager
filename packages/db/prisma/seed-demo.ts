@@ -11,9 +11,9 @@
  *
  * Deterministic: same seed, same data, so screenshots are reproducible.
  */
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+// Loads packages/db/.env: `tsx` runs this directly, not through the Prisma CLI.
+import "dotenv/config";
+import { prisma } from "../src/client";
 
 /** Marker written into notes so demo records stay removable. */
 const TAG = "[demo]";

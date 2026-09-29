@@ -1,0 +1,19 @@
+// ---------------------------------------------------------------------------
+// Payments against an order
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id           String   @id @default(cuid())
+  ownerId      String
+  orderId      String
+  amountAgorot Int
+  paidAt       DateTime @default(now())
+  method       String?
+  note         String?
+
+  owner User  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([ownerId])
+}

@@ -1,0 +1,93 @@
+// ---------------------------------------------------------------------------
+// Orders — statuses, orders, their line items and packs
+// ---------------------------------------------------------------------------
+
+// Extensible status lookup — add stages (new / in_production / ready / delivered)
+// later by inserting rows, never by altering an enum.
+model OrderStatus {
+  code       String  @id
+  labelEn    String
+  labelHe    String
+  sortOrder  Int     @default(0)
+  isTerminal Boolean @default(false)
+
+  orders Order[]
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  ownerId       String
+  customerId    String
+  // Human-friendly running number, assigned per-owner in the create action
+  // (a per-owner sequence isn't expressible as autoincrement; app assignment
+  // is portable). Concurrent creates are retried on the unique constraint.
+  orderNumber   Int
+  statusCode    String   @default("not_done")
+  isCustomOrder Boolean  @default(false)
+  notes         String?
+  // Money in agorot (integer minor units). balance = totalAgorot - depositAgorot
+  // is computed in app code, not stored.
+  totalAgorot   Int      @default(0)
+  depositAgorot Int      @default(0)
+  paymentStatus String   @default("unpaid") // "unpaid" | "partial" | "paid"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner    User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status   OrderStatus @relation(fields: [statusCode], references: [code])
+  items    OrderItem[]
+  packs    OrderPack[]
+  payments Payment[]
+
+  @@unique([ownerId, orderNumber])
+  @@index([ownerId])
+  @@index([customerId])
+  @@index([statusCode])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                String  @id @default(cuid())
+  orderId           String
+  // Catalog reference XOR free-text custom item — invariant enforced in the
+  // Zod schema + Server Action (Prisma can't declare a cross-column CHECK).
+  shoeModelId       String?
+  customDescription String?
+  size              String // text: supports "42", "42.5", "US 9"
+  color             String?
+  quantity          Int
+  unitPriceAgorot   Int     @default(0)
+  // Set when this size row is part of a pack taken on the order; null for
+  // loose (extra) pairs. The row still carries its own quantity, so totals and
+  // reports keep summing items and never need to know about packs.
+  packId            String?
+
+  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shoeModel ShoeModel? @relation(fields: [shoeModelId], references: [id], onDelete: SetNull)
+  pack      OrderPack? @relation(fields: [packId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([packId])
+}
+
+// N packs taken on an order. Its pairs are ordinary OrderItem rows (one per
+// size, quantity = count × pairs in the curve) pointing back here via packId.
+// Name and curve are snapshots, so editing or deleting the catalog pack later
+// never changes what an existing order says was sold.
+model OrderPack {
+  id         String  @id @default(cuid())
+  orderId    String
+  // The catalog pack it came from; SetNull if that pack is deleted later.
+  sizePackId String?
+  packName   String
+  curve      String // pairs per pack, "38:3,39:2,40:3"
+  count      Int // 1..999
+
+  order    Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sizePack SizePack?   @relation(fields: [sizePackId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+
+  @@index([orderId])
+}
