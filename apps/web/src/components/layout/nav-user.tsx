@@ -1,5 +1,6 @@
 "use client";
 
+import type { AvatarCode } from "@repo/domain";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
 import {
   DropdownMenu,
@@ -34,7 +35,7 @@ import {
 import { useTheme } from "next-themes";
 import { useTransition } from "react";
 
-import { orbSrc } from "@/components/ui/orb";
+import { avatarSrc } from "@/components/ui/orb";
 import { LOCALE_LABELS, routing, type Locale } from "@/i18n/routing";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/actions/auth-actions";
@@ -50,7 +51,7 @@ const THEMES = [
 export function NavUser({
   user,
 }: {
-  user: { name: string; email: string };
+  user: { name: string; email: string; avatar: AvatarCode };
 }) {
   const t = useTranslations("nav");
   const tTheme = useTranslations("theme");
@@ -64,7 +65,7 @@ export function NavUser({
 
   const initials =
     (user.name || user.email).trim().charAt(0).toUpperCase() || "?";
-  const orb = orbSrc(user.email || user.name);
+  const orb = avatarSrc(user.avatar);
 
   // The quick switches also save to the account (fire-and-forget: the switch
   // itself already happened on this device), so they match the settings.

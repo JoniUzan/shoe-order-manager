@@ -23,8 +23,8 @@ export async function authenticate(
   // sign-in follows it, so it tells a failed attempt nothing.
   const saved =
     typeof email === "string" && email
-      ? await prisma.user.findUnique({
-          where: { email },
+      ? await prisma.user.findFirst({
+          where: { email: { equals: email.trim(), mode: "insensitive" } },
           select: { locale: true },
         })
       : null;

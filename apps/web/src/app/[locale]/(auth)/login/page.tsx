@@ -1,16 +1,11 @@
 import { prisma } from "@repo/db";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/components/card";
+import { Card } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
-import { OrbField } from "@/components/ui/orb";
+import { NoiseWash } from "@/components/ui/noise-wash";
+import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
 
 export default async function LoginPage({
@@ -33,19 +28,32 @@ export default async function LoginPage({
     }
   }
 
-  const t = await getTranslations({ locale, namespace: "auth" });
+  const [t, tApp] = await Promise.all([
+    getTranslations({ locale, namespace: "auth" }),
+    getTranslations({ locale, namespace: "app" }),
+  ]);
 
+  // The same page as sign-up: the wash, the app's name, one card.
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden p-4">
-      <OrbField variant="page" />
-      <Card className="relative w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>{t("loginTitle")}</CardTitle>
-          <CardDescription>{t("loginSubtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm locale={locale} />
-        </CardContent>
+      <NoiseWash />
+      <div className="absolute start-8 top-7 text-base font-medium tracking-tight">
+        {tApp("name")}
+      </div>
+      <Card className="relative w-full max-w-sm gap-5 rounded-3xl px-6 pt-7 pb-6">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-medium tracking-tight">
+            {t("loginTitle")}
+          </h1>
+          <p className="text-sm text-muted-foreground">{t("loginSubtitle")}</p>
+        </div>
+        <LoginForm locale={locale} />
+        <p className="text-center text-sm text-muted-foreground">
+          {t("noAccount")}{" "}
+          <Link href="/signup" className="font-medium text-primary hover:underline">
+            {t("signUp")}
+          </Link>
+        </p>
       </Card>
     </main>
   );

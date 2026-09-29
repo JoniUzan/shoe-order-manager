@@ -1,5 +1,6 @@
 "use client";
 
+import type { AvatarCode } from "@repo/domain";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +22,7 @@ export function AppSidebar({
   user,
   ...props
 }: ComponentProps<typeof Sidebar> & {
-  user: { name: string; email: string };
+  user: { name: string; email: string; avatar: AvatarCode };
 }) {
   const t = useTranslations("app");
 

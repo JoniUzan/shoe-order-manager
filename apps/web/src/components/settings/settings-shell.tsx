@@ -39,7 +39,7 @@ function SectionContent({
     case "general":
       return <GeneralSection locale={data.locale} theme={data.theme} />;
     case "account":
-      return <AccountSection name={data.name} email={data.email} />;
+      return <AccountSection name={data.name} email={data.email} avatar={data.avatar} />;
     case "business":
       return <BusinessSection business={data.business} />;
   }

@@ -54,3 +54,49 @@ export const businessSchema = z.object({
 });
 
 export type BusinessInput = z.infer<typeof businessSchema>;
+
+/** A new account. The email is stored lower-cased; login matches it either way. */
+export const signupSchema = z.object({
+  name: z.string().trim().min(1, { message: "required" }).max(100),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, { message: "required" })
+    .email({ message: "email" })
+    .max(200),
+  password: z.string().min(PASSWORD_MIN, { message: "passwordTooShort" }).max(200),
+});
+
+export type SignupInput = z.infer<typeof signupSchema>;
+
+/**
+ * The preset orbs a User can pick as their Avatar, in the picker's order
+ * (its "01 · Peach" numbering). Stored on the User as `orb:<code>`.
+ */
+export const AVATARS = [
+  "peach",
+  "abyss",
+  "rust",
+  "onyx",
+  "moss",
+  "crimson",
+  "bronze",
+  "ochre",
+  "lunar",
+  "ember",
+  "amber",
+] as const;
+
+export type AvatarCode = (typeof AVATARS)[number];
+
+export const avatarSchema = z.object({ avatar: z.enum(AVATARS) });
+
+export type AvatarInput = z.infer<typeof avatarSchema>;
+
+/** Finishing onboarding needs a business name; the rest stays optional. */
+export const finishOnboardingSchema = businessSchema.extend({
+  businessName: z.string().trim().min(1, { message: "required" }).max(200),
+});
+
+export type FinishOnboardingInput = z.infer<typeof finishOnboardingSchema>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { nameSchema } from "@repo/domain";
+import { nameSchema, type AvatarCode } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { signOutAction } from "@/lib/actions/auth-actions";
 import { updateName } from "@/lib/actions/settings";
 
 import { AutosaveInput } from "./autosave-input";
+import { AvatarPicker } from "./avatar-picker";
 import { EmailDialog } from "./email-dialog";
 import { PasswordDialog } from "./password-dialog";
 import { SettingRow, SettingSection, useSettingsPhone } from "./setting-row";
@@ -16,9 +17,11 @@ import { SettingRow, SettingSection, useSettingsPhone } from "./setting-row";
 export function AccountSection({
   name,
   email,
+  avatar,
 }: {
   name: string;
   email: string;
+  avatar: AvatarCode;
 }) {
   const t = useTranslations("settings");
   const locale = useLocale();
@@ -55,6 +58,10 @@ export function AccountSection({
             {t("change")}
           </Button>
         </SettingRow>
+      </SettingSection>
+
+      <SettingSection title={t("avatar")} description={t("avatarHelp")}>
+        <AvatarPicker defaultValue={avatar} compact />
       </SettingSection>
 
       <SettingSection title={t("security")}>

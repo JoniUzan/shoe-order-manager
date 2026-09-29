@@ -2,11 +2,13 @@
 
 import { Prisma, prisma } from "@repo/db";
 import {
+  avatarSchema,
   businessSchema,
   emailChangeSchema,
   nameSchema,
   passwordChangeSchema,
   preferencesSchema,
+  type AvatarInput,
   type BusinessInput,
   type EmailChangeInput,
   type NameInput,
@@ -83,6 +85,18 @@ export async function changeEmail(
   if (valid === null) return { ok: false, error: "not_found" };
   if (!valid) return { ok: false, error: "wrong_password" };
 
+  // Login matches emails in any case, so a differently-cased copy of
+  // another account's email is taken too — the unique index alone
+  // (case-sensitive) would let two rows answer the same login.
+  const taken = await prisma.user.findFirst({
+    where: {
+      email: { equals: data.email, mode: "insensitive" },
+      id: { not: userId },
+    },
+    select: { id: true },
+  });
+  if (taken) return { ok: false, error: "email_taken" };
+
   try {
     await prisma.user.update({
       where: { id: userId },
@@ -119,6 +133,25 @@ export async function changePassword(
     data: { passwordHash: await hashPassword(data.newPassword) },
   });
 
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Saves the picked Avatar as its token (`orb:onyx`) in `User.image`. */
+export async function updateAvatar(
+  input: AvatarInput,
+): Promise<SettingsActionResult> {
+  const userId = await requireUserId();
+  const parsed = avatarSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+
+  const result = await prisma.user.updateMany({
+    where: { id: userId },
+    data: { image: `orb:${parsed.data.avatar}` },
+  });
+  if (result.count === 0) return { ok: false, error: "not_found" };
+
+  // The avatar shows in the sidebar on every page.
   revalidatePath("/", "layout");
   return { ok: true };
 }

@@ -9,11 +9,13 @@ import {
 } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
 
+import { GetStarted } from "@/components/dashboard/get-started";
 import {
   SalesChart,
   type SalesPoint,
 } from "@/components/dashboard/sales-chart";
 import { OrdersTable } from "@/components/orders/orders-table";
+import { avatarOf } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
@@ -44,6 +46,7 @@ export default async function DashboardPage({
     orderList,
     totalOrders,
     customerCount,
+    modelCount,
     windowOrders,
     windowPayments,
   ] = await Promise.all([
@@ -64,6 +67,7 @@ export default async function DashboardPage({
     listOrders(user.id, listParams),
     prisma.order.count({ where: { ownerId: user.id } }),
     prisma.customer.count({ where: { ownerId: user.id } }),
+    prisma.shoeModel.count({ where: { ownerId: user.id } }),
     prisma.order.findMany({
       where: { ownerId: user.id, createdAt: { gte: windowStart } },
       select: { createdAt: true, totalAgorot: true },
@@ -136,6 +140,14 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-6">
+      {customerCount === 0 && modelCount === 0 && (
+        <GetStarted
+          locale={locale}
+          name={user.name ?? ""}
+          avatar={avatarOf(user)}
+        />
+      )}
+
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
