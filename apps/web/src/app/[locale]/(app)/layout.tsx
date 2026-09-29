@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider } from "@repo/ui/components/sidebar";
 import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { HashSync } from "@/components/layout/hash-sync";
 import { SiteHeader } from "@/components/layout/site-header";
 import { OnboardingHost } from "@/components/onboarding/onboarding-host";
 import { SettingsHost } from "@/components/settings/settings-host";
@@ -41,6 +42,8 @@ export default async function AppLayout({
       {/* A new User's welcome dialog, until they finish it. */}
       {!user.onboardedAt && <OnboardingHost data={settings} />}
       <ThemeSync theme={user.theme} />
+      {/* Hands a hash the browser changed by itself to Next's router. */}
+      <HashSync />
     </SidebarProvider>
   );
 }

@@ -1,3 +1,5 @@
 # Settings is a dialog addressed by the URL hash, not a page
 
 Settings opens as a dialog over whatever page the User is on, addressed by `#settings/<section>` (the way claude.ai does `/new#settings/account`), so the page underneath never navigates and keeps its header, sidebar highlight and scroll. The hash is changed only with `history.pushState` / `replaceState`: Next.js keeps its router state in history entries it created, and a bare `location.hash =` makes an entry it doesn't know, so pressing Back onto it reloads the whole page. Old `/settings/<section>` URLs redirect to `/#settings/<section>`.
+
+A hash the browser changes by itself (a link or typed URL that differs from the current one only in the hash) is a fragment navigation Next never sees: its router keeps the old URL and writes it back on the next refresh, such as the one a Server Action's `revalidatePath` triggers. `HashSync` in the app layout hands every such hash change to Next with `replaceState(null, …)`, the same way the helpers do.
