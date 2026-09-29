@@ -45,11 +45,16 @@ export class PaymentsCard {
     return this.page.getByRole("alertdialog", { name: this.t("payments.removeTitle") });
   }
 
-  /** Press the × on a payment, then Delete or Cancel in the dialog. */
-  async remove(amount: string, answer: "confirm" | "cancel" = "confirm") {
-    await this.removeButtons(amount).click();
+  /** Delete or Cancel in the open "Remove payment?" dialog. */
+  async answerRemove(answer: "confirm" | "cancel") {
     const key = answer === "confirm" ? "common.delete" : "common.cancel";
     await this.confirmDialog().getByRole("button", { name: this.t(key) }).click();
+  }
+
+  /** Press the × on a payment and confirm. */
+  async remove(amount: string) {
+    await this.removeButtons(amount).click();
+    await this.answerRemove("confirm");
   }
 
   tooMuchError() {
