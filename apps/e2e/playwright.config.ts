@@ -1,14 +1,14 @@
 import { defineConfig } from "@playwright/test";
 
-import type { Options } from "./e2e/fixtures.mjs";
+import type { Options } from "./fixtures/index.ts";
 
-// E2E runs against a production build (`pnpm build` first) served on its own
-// port, with the same test database as the integration tests.
+// Runs against web's production build (`pnpm --filter web build` first; turbo
+// does it for `pnpm test:e2e`), served on its own port with the test database.
 const PORT = 3100;
 const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
   "postgresql://postgres@localhost:5432/shoe_test";
-// The fixtures write Users straight to the database.
+// The suites' setup writes straight to the database.
 process.env.DATABASE_URL = TEST_DATABASE_URL;
 
 const desktop = { viewport: { width: 1280, height: 900 } };
@@ -20,8 +20,8 @@ const phone = {
 };
 
 export default defineConfig<Options>({
-  testDir: "e2e",
-  globalSetup: "./test/global-setup.ts",
+  testDir: "suites",
+  globalSetup: "./global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -40,7 +40,7 @@ export default defineConfig<Options>({
     { name: "en-phone", use: { ...phone, appLocale: "en" } },
   ],
   webServer: {
-    command: `pnpm exec next start -p ${PORT}`,
+    command: `pnpm --filter web exec next start -p ${PORT}`,
     url: `http://localhost:${PORT}/he/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

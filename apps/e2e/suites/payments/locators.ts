@@ -1,0 +1,42 @@
+import type { Page } from "@playwright/test";
+
+import type { T } from "../../fixtures/index.ts";
+
+/** The Payments card on an order's page, and its record dialog. */
+export class PaymentsCard {
+  constructor(
+    private page: Page,
+    private t: T,
+  ) {}
+
+  async goto(locale: string, orderId: string) {
+    await this.page.goto(`/${locale}/orders/${orderId}`);
+  }
+
+  dialog() {
+    return this.page.getByRole("dialog");
+  }
+
+  async record(shekels: number) {
+    await this.page.getByRole("button", { name: this.t("payments.record") }).click();
+    await this.dialog().locator("#pay-amount").fill(String(shekels));
+    await this.dialog().getByRole("button", { name: this.t("payments.record") }).click();
+  }
+
+  markFullyPaid() {
+    return this.page.getByRole("button", { name: this.t("payments.markFullyPaid") });
+  }
+
+  /** The remove button of each payment in the history, newest first. */
+  removeButtons() {
+    return this.page.getByRole("button", { name: this.t("payments.removed") });
+  }
+
+  tooMuchError() {
+    return this.page.getByText(this.t("payments.errorTooMuch"));
+  }
+
+  paymentBadge(status: "unpaid" | "partial" | "paid") {
+    return this.page.getByText(this.t(`payment.${status}`), { exact: true }).first();
+  }
+}

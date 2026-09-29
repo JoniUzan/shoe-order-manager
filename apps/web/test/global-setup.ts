@@ -5,9 +5,6 @@ import { execSync } from "node:child_process";
  * statuses, admin). `migrate deploy` creates the database if it's missing.
  * Nothing is wiped between runs: every test makes its own User, and all data
  * is scoped by ownerId, so old rows never get in the way.
- *
- * Shared by Vitest and Playwright; the latter loads it as CommonJS, so no
- * `import.meta` here.
  */
 export default function setup() {
   const url =

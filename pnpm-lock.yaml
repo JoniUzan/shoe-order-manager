@@ -21,6 +21,36 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  apps/e2e:
+    devDependencies:
+      '@playwright/test':
+        specifier: 1.62.1
+        version: 1.62.1
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@repo/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config/typescript-config
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      web:
+        specifier: workspace:*
+        version: link:../web
+
   apps/web:
     dependencies:
       '@auth/prisma-adapter':
@@ -84,9 +114,6 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
     devDependencies:
-      '@playwright/test':
-        specifier: 1.62.1
-        version: 1.62.1
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config/eslint-config
