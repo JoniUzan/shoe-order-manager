@@ -33,7 +33,8 @@ export class SettingsDialog {
 
   /**
    * Open it by a link that carries the hash (`/he/orders#settings/business`).
-   * Reading works; on the Dashboard a save made this way closes it (#39).
+   * From the same page (the Dashboard, where login lands) only the hash
+   * changes: a fragment navigation, not a page load.
    */
   async openByLink(locale: string, section: Section, path = "") {
     await this.page.goto(`/${locale}${path}#settings/${section}`);
@@ -42,6 +43,14 @@ export class SettingsDialog {
   /** Account → name. Saves on leaving the field. */
   nameField() {
     return this.page.locator("#settings-name");
+  }
+
+  /**
+   * The Dashboard's greeting behind the dialog (a User with no customers or
+   * models yet), redrawn by the refresh after a save.
+   */
+  dashboardGreeting(name: string) {
+    return this.page.getByText(this.t("dashboard.getStartedTitleNamed", { name }));
   }
 
   /**

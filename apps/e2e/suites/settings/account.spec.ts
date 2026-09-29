@@ -17,6 +17,27 @@ test("name and avatar save from Account", async ({ page, t, appLocale, user }) =
   await expect.poll(async () => (await storedUser(user.id)).image).toBe("orb:onyx");
 });
 
+// #39: the `user` fixture lands on the Dashboard, so this goto only changes
+// the hash, a fragment navigation the browser makes without Next. Next's
+// router kept the hash-less URL, and the refresh after the save wrote it back,
+// closing the dialog.
+test("a save in settings opened by link on the Dashboard keeps the dialog open", async ({ page, t, appLocale, user }) => {
+  const settings = new SettingsDialog(page, t);
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}$`));
+  await settings.openByLink(appLocale, "account");
+
+  await settings.nameField().fill("Dana Levi");
+  await settings.nameField().press("Enter");
+  // The Dashboard's greeting behind the dialog shows the new name once the
+  // refresh from the save has landed.
+  await expect(settings.dashboardGreeting("Dana Levi")).toBeVisible();
+  await expect(page).toHaveURL(/#settings\/account$/);
+  await expect(settings.nameField()).toBeVisible();
+
+  await page.reload();
+  await expect(settings.nameField()).toHaveValue("Dana Levi");
+});
+
 test("theme applies at once and is kept on the account", async ({ page, t, appLocale, user }) => {
   const settings = new SettingsDialog(page, t);
   await settings.open(appLocale, user.email, "general");
