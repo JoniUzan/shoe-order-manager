@@ -15,6 +15,7 @@ server code alike.
   the Server Action re-validates the same schema. A new field or limit goes in the schema
   first. Cross-field rules Prisma can't express live here as `.refine`, e.g. a line item
   is a catalog `shoeModelId` **XOR** a `customDescription`.
+- Every rule has a unit test in `src/<area>.test.ts` (Vitest). Coverage fails below 90%.
 - One file per area, each with its own subpath export in `package.json` (`@repo/domain/money`
   and so on) plus a re-export in `src/index.ts`. A new file needs both.
 

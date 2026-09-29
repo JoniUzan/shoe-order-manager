@@ -16,6 +16,9 @@ pnpm dev                     # the web app on http://localhost:3000
 pnpm typecheck               # tsc --noEmit across the workspace
 pnpm lint                    # eslint (web)
 pnpm build                   # build everything
+pnpm test                    # unit + integration tests (integration needs Docker Postgres)
+pnpm test:coverage           # the same, failing below the coverage floors
+pnpm test:e2e                # build, then Playwright on :3100 in he/en × desktop/phone
 
 docker compose up -d         # local Postgres 17 on localhost:5432
 docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login)
@@ -24,9 +27,15 @@ pnpm db:seed                 # order statuses + admin user; db:seed:demo adds de
 pnpm db:generate             # regenerate the Prisma client after schema edits
 ```
 
-There is no test runner. Flows are verified in a real browser with the `browser-check` skill;
-typecheck, build and curl miss client-navigation and hydration bugs. For a new feature from
-schema to screen, follow the `new-feature` skill.
+Tests come in three layers (ADR 0006), and a change adds tests at the layer it touches:
+- **Unit:** `packages/domain/src/*.test.ts`, for domain rules.
+- **Integration:** `apps/web/src/lib/actions/*.test.ts`, for Server Actions. They run against a
+  separate `shoe_test` database that the tests create and migrate themselves.
+- **E2E:** `apps/web/e2e/*.spec.mts`, for screens and flows.
+
+CI (`.github/workflows/test.yml`) runs all three on every push. The `browser-check` skill stays
+for looking at a change by hand. For a new feature from schema to screen, follow the
+`new-feature` skill.
 
 ## Environment
 
