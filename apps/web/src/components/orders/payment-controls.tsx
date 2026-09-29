@@ -221,7 +221,9 @@ export function PaymentControls({
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => onDelete(p.id)}
-                    aria-label={t("removed")}
+                    aria-label={t("remove", {
+                      amount: formatMoney(p.amountAgorot, locale),
+                    })}
                   >
                     <X className="size-4" />
                   </Button>

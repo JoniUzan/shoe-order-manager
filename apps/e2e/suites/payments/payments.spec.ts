@@ -42,7 +42,7 @@ test("removing a Payment recomputes Paid and the Balance", async ({ page, t, app
   await expect(card.removeButtons()).toHaveCount(2);
 
   // The ₪400 one.
-  await page.getByRole("listitem").filter({ hasText: "400.00" }).getByRole("button").click();
+  await card.removeButtons("400.00").click();
   await expect(card.removeButtons()).toHaveCount(1);
   await expect
     .poll(async () => (await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).depositAgorot)

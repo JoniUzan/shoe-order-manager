@@ -28,11 +28,16 @@ export class PaymentsCard {
   }
 
   /**
-   * The remove button of each payment in the history. Its accessible name is
-   * the toast text ("Payment removed"), as the app labels it today (#40).
+   * The remove button of each payment in the history, named "Remove payment
+   * of ₪400.00". With `amount` (as the user reads it, e.g. "400.00"), only
+   * that payment's button.
    */
-  removeButtons() {
-    return this.page.getByRole("button", { name: this.t("payments.removed") });
+  removeButtons(amount?: string) {
+    const [before, after] = this.t("payments.remove", { amount: "\u0000" }).split("\u0000");
+    const middle = amount ? `.*${escapeRegExp(amount)}.*` : ".+";
+    return this.page.getByRole("button", {
+      name: new RegExp(`^${escapeRegExp(before!)}${middle}${escapeRegExp(after!)}$`),
+    });
   }
 
   tooMuchError() {
@@ -42,4 +47,8 @@ export class PaymentsCard {
   paymentBadge(status: "unpaid" | "partial" | "paid") {
     return this.page.getByText(this.t(`payment.${status}`), { exact: true }).first();
   }
+}
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

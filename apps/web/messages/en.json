@@ -206,6 +206,7 @@
     "noPayments": "No payments recorded",
     "date": "Date",
     "recorded": "Payment recorded",
+    "remove": "Remove payment of {amount}",
     "removed": "Payment removed",
     "removeTitle": "Remove payment?",
     "removeDescription": "This removes a payment of {amount} and recalculates the balance.",
