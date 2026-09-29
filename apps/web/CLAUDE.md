@@ -86,12 +86,6 @@ login and the app.
     `signInAs(id)` switches User. Each test makes its own data and never cleans up: `ownerId`
     scoping keeps tests apart.
   - A test that proves a lock fires the calls together with `Promise.all`.
-- **Flows** have a Playwright spec in `e2e/*.spec.mts`, run against a production build.
-  - The `user` fixture logs in a fresh onboarded User.
-  - `t("ns.key")` gives the UI text in the project's language, so one spec runs in he and en.
-  - Wait on URLs, visible text or `expect.poll` on the database, never on fixed timeouts or a
-    toast that goes away on its own.
-  - The files are `.mts`, and imports between them use `.mjs`, because Prisma's client only
-    loads as ESM.
+- **Screens and flows** are covered by the E2E suites in `apps/e2e` (see its `CLAUDE.md`).
 - `pnpm typecheck` and `pnpm lint` catch types, not behavior. The `browser-check` skill is for
   looking at a change by hand. A flow worth checking again later becomes a spec.

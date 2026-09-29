@@ -5,7 +5,7 @@ stores (Customers) and tracks their orders and payments. Hebrew (RTL, the primar
 English. Data lives in Postgres: Supabase in production (used as plain Postgres), Docker locally.
 
 Each package has its own `CLAUDE.md` with the rules for working inside it: `apps/web`,
-`packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
+`apps/e2e`, `packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
 in `docs/adr/`.
 
 ## Commands
@@ -31,7 +31,7 @@ Tests come in three layers (ADR 0006), and a change adds tests at the layer it t
 - **Unit:** `packages/domain/src/*.test.ts`, for domain rules.
 - **Integration:** `apps/web/src/lib/actions/*.test.ts`, for Server Actions. They run against a
   separate `shoe_test` database that the tests create and migrate themselves.
-- **E2E:** `apps/web/e2e/*.spec.mts`, for screens and flows.
+- **E2E:** `apps/e2e/suites/<area>/`, for screens and flows (see `apps/e2e/CLAUDE.md`).
 
 CI (`.github/workflows/test.yml`) runs all three on every push. The `browser-check` skill stays
 for looking at a change by hand. For a new feature from schema to screen, follow the
@@ -48,6 +48,7 @@ for looking at a change by hand. For a new feature from schema to screen, follow
 ## Architecture
 
 - `apps/web`: the only deployable. Next.js 16 App Router, React 19, Auth.js v5, next-intl.
+- `apps/e2e`: the Playwright suites, run against `web`'s production build. Never deployed.
 - `packages/db`: Prisma 7 schema, client, seeds.
 - `packages/domain`: framework-free Zod schemas and business rules (money, totals, sizes,
   packs). Split from `db` so client components can import it.

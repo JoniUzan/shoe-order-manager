@@ -68,5 +68,5 @@ try {
 ## Keeping a check
 
 A check is for looking at a change once. When a flow should keep working, add a spec to
-`apps/web/e2e/` instead of keeping the script (see `apps/web/CLAUDE.md`, "Tests"). The spec
-runs in every project and in CI.
+its area's suite in `apps/e2e/suites/` instead of keeping the script (see `apps/e2e/CLAUDE.md`).
+The spec runs in every project and in CI.

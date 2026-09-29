@@ -15,7 +15,10 @@ Actions are called as they ship, with `vi.mock` standing in for `@/lib/auth`, `n
 `next/headers`. We didn't split each action into a thin wrapper plus an `ownerId`-taking core
 only to make it testable.
 
-E2E specs run against `next build && next start`, the same build that ships, not `next dev`.
+E2E lives in its own app, `apps/e2e`, as suites per area. Each suite has page objects
+(`locators.ts`) and a `setup.ts` that puts its prerequisites straight into the database, so only
+the feature under test goes through the UI. It runs against `next build && next start`, the
+same build that ships, not `next dev`.
 Coverage counts unit and integration tests only: measuring lines through the Next bundle under
 Playwright was too fragile to be worth it. E2E proves flows, not lines. Coverage floors only
 ever go up.

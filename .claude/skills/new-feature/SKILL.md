@@ -49,7 +49,8 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 - Client form: same schema for validation, async submit, `router.push` after the await.
 - Every string in both `messages/en.json` and `messages/he.json`; logical Tailwind utilities
   only.
-- A new screen or flow gets a Playwright spec in `apps/web/e2e/`, in the same commit.
+- A new screen or flow gets a spec in its area's suite, `apps/e2e/suites/<area>/`, in the same
+  commit. Controls it adds go in that suite's page objects (`apps/e2e/CLAUDE.md`).
 
 ## 5. Check and ship
 
