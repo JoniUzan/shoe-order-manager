@@ -51,3 +51,26 @@ export class WelcomeDialog {
     return this.root().getByText(this.t("onboarding.businessNameMissing"));
   }
 }
+
+export class LoginPage {
+  constructor(
+    private page: Page,
+    private t: T,
+  ) {}
+
+  async goto(locale: string) {
+    await this.page.goto(`/${locale}/login`);
+  }
+
+  async login(email: string, password: string) {
+    await this.page.fill("#email", email);
+    await this.page.fill("#password", password);
+    // By type, not text: a spec may use the other language's login page.
+    await this.page.locator('button[type="submit"]').click();
+  }
+
+  invalidCredentials() {
+    return this.page.getByText(this.t("auth.invalidCredentials"));
+  }
+
+}
