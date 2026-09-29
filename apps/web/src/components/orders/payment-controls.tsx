@@ -25,9 +25,10 @@ import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/data-table/confirm-delete-dialog";
 import { useRouter } from "@/i18n/navigation";
 import {
   deletePayment,
@@ -61,6 +62,11 @@ export function PaymentControls({
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [pending, setPending] = useState(false);
+  // The Payment the × was pressed on. It outlives `confirming` so the dialog
+  // keeps its amount while it animates closed.
+  const [toRemove, setToRemove] = useState<PaymentRow | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [removing, startRemoving] = useTransition();
 
   const remaining = computeBalanceAgorot(totalAgorot, paidAgorot);
   const dateFmt = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-US", {
@@ -101,14 +107,18 @@ export function PaymentControls({
     }
   }
 
-  async function onDelete(id: string) {
-    const res = await deletePayment(id);
-    if (res.ok) {
-      toast.success(t("removed"));
-      router.refresh();
-    } else {
-      toast.error(t("errorGeneric"));
-    }
+  function confirmRemove() {
+    if (!toRemove) return;
+    startRemoving(async () => {
+      const res = await deletePayment(toRemove.id);
+      if (res.ok) {
+        toast.success(t("removed"));
+        setConfirming(false);
+        router.refresh();
+      } else {
+        toast.error(t("errorGeneric"));
+      }
+    });
   }
 
   return (
@@ -220,7 +230,10 @@ export function PaymentControls({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => onDelete(p.id)}
+                    onClick={() => {
+                      setToRemove(p);
+                      setConfirming(true);
+                    }}
                     aria-label={t("remove", {
                       amount: formatMoney(p.amountAgorot, locale),
                     })}
@@ -232,6 +245,17 @@ export function PaymentControls({
             </ul>
           </div>
         )}
+
+        <ConfirmDeleteDialog
+          open={confirming}
+          onOpenChange={setConfirming}
+          title={t("removeTitle")}
+          description={t("removeDescription", {
+            amount: formatMoney(toRemove?.amountAgorot ?? 0, locale),
+          })}
+          pending={removing}
+          onConfirm={confirmRemove}
+        />
       </CardContent>
     </Card>
   );
