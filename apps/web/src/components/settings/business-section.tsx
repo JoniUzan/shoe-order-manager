@@ -2,6 +2,12 @@
 
 import { businessSchema, type BusinessInput } from "@repo/domain";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import {
+  OrderHeaderPreview,
+  type BusinessValues,
+} from "@/components/business/order-header-preview";
 
 import { updateBusiness } from "@/lib/actions/settings";
 
@@ -12,19 +18,40 @@ const FIELDS = [
   { key: "businessName", autoComplete: "organization" },
   { key: "businessPhone", autoComplete: "tel", type: "tel", dir: "ltr" },
   { key: "businessAddress", autoComplete: "street-address" },
-  { key: "businessTaxId", autoComplete: "off", dir: "ltr", inputMode: "numeric" },
+  {
+    key: "businessTaxId",
+    autoComplete: "off",
+    dir: "ltr",
+    inputMode: "numeric",
+  },
 ] as const;
 
-/** Printed on every order; each field saves on its own as it's left. */
+/**
+ * Printed on every order; each field saves on its own as it's left. Above
+ * them, the top of a printed order follows what's typed.
+ */
 export function BusinessSection({ business }: { business: BusinessInput }) {
   const t = useTranslations("settings");
   const phone = useSettingsPhone();
+  const [values, setValues] = useState<BusinessValues>({
+    businessName: business.businessName ?? "",
+    businessPhone: business.businessPhone ?? "",
+    businessAddress: business.businessAddress ?? "",
+    businessTaxId: business.businessTaxId ?? "",
+  });
 
   return (
     <SettingSection
       // On a phone the sheet is already titled "Business details".
       title={phone ? undefined : t("businessDetails")}
       description={t("businessHelp")}
+      lead={
+        <OrderHeaderPreview
+          values={values}
+          compact={phone}
+          className={phone ? "w-full" : "w-full max-w-[440px]"}
+        />
+      }
     >
       {FIELDS.map((field) => (
         <SettingRow
@@ -44,9 +71,10 @@ export function BusinessSection({ business }: { business: BusinessInput }) {
               businessSchema.shape[field.key].safeParse(v).error?.issues[0]
                 ?.message
             }
-            onSave={async (v) =>
-              (await updateBusiness({ [field.key]: v })).ok
+            onValueChange={(v) =>
+              setValues((prev) => ({ ...prev, [field.key]: v }))
             }
+            onSave={async (v) => (await updateBusiness({ [field.key]: v })).ok}
           />
         </SettingRow>
       ))}

@@ -19,6 +19,7 @@ export function AutosaveInput({
   defaultValue,
   onSave,
   validate,
+  onValueChange,
   dir,
   className,
   ...props
@@ -26,6 +27,8 @@ export function AutosaveInput({
   defaultValue: string;
   onSave: (value: string) => Promise<boolean>;
   validate?: (value: string) => string | undefined;
+  /** Every keystroke, for something that follows the field live. */
+  onValueChange?: (value: string) => void;
 }) {
   const t = useTranslations("settings");
   const phone = useSettingsPhone();
@@ -68,7 +71,10 @@ export function AutosaveInput({
       dir={dir}
       value={value}
       aria-invalid={!!error}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={(e) => {
+        setValue(e.target.value);
+        onValueChange?.(e.target.value);
+      }}
       onBlur={save}
       onKeyDown={(e) => {
         if (e.key === "Enter") e.currentTarget.blur();

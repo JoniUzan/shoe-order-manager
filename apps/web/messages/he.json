@@ -27,7 +27,20 @@
     "signIn": "התחברות",
     "signingIn": "מתחבר…",
     "invalidCredentials": "אימייל או סיסמה שגויים",
-    "genericError": "משהו השתבש. נסו שוב."
+    "genericError": "משהו השתבש. נסו שוב.",
+    "noAccount": "אין לכם חשבון?",
+    "signUp": "הרשמה",
+    "signupTitle": "יצירת חשבון",
+    "signupSubtitle": "כמה פרטים, ומתחילים לנהל הזמנות",
+    "fullName": "שם מלא",
+    "namePlaceholder": "השם שלכם",
+    "showPassword": "הצגת הסיסמה",
+    "hidePassword": "הסתרת הסיסמה",
+    "passwordHint": "לפחות 8 תווים",
+    "createAccount": "יצירת חשבון",
+    "creatingAccount": "יוצרים חשבון…",
+    "haveAccount": "כבר יש לכם חשבון?",
+    "rateLimited": "יותר מדי הרשמות מהרשת הזו. נסו שוב בעוד שעה."
   },
   "dashboard": {
     "title": "לוח בקרה",
@@ -70,7 +83,12 @@
     "bulkUpdated": "{count, plural, one {הזמנה אחת עודכנה} two {שתי הזמנות עודכנו} other {# הזמנות עודכנו}}",
     "bulkDeleted": "{count, plural, one {הזמנה אחת נמחקה} two {שתי הזמנות נמחקו} other {# הזמנות נמחקו}}",
     "bulkDeleteTitle": "למחוק את ההזמנות שנבחרו?",
-    "bulkDeleteDescription": "{count, plural, one {הפעולה תמחק לצמיתות הזמנה אחת ואת התשלומים שלה.} two {הפעולה תמחק לצמיתות שתי הזמנות ואת התשלומים שלהן.} other {הפעולה תמחק לצמיתות # הזמנות ואת התשלומים שלהן.}}"
+    "bulkDeleteDescription": "{count, plural, one {הפעולה תמחק לצמיתות הזמנה אחת ואת התשלומים שלה.} two {הפעולה תמחק לצמיתות שתי הזמנות ואת התשלומים שלהן.} other {הפעולה תמחק לצמיתות # הזמנות ואת התשלומים שלהן.}}",
+    "getStartedTitle": "הכל מוכן",
+    "getStartedTitleNamed": "הכל מוכן, {name}",
+    "getStartedSubtitle": "מה נוסיף קודם?",
+    "addCustomer": "הוספת לקוח",
+    "addShoeModel": "הוספת דגם"
   },
   "list": {
     "columns": "עמודות",
@@ -451,6 +469,55 @@
       "passwordTooShort": "לפחות 8 תווים",
       "passwordMismatch": "הסיסמאות לא תואמות",
       "invalid": "הערך לא תקין"
-    }
+    },
+    "avatar": "אווטאר",
+    "avatarHelp": "מוצג לצד השם שלכם באפליקציה"
+  },
+  "onboarding": {
+    "stepOf": "שלב {step} מתוך {total}",
+    "languageTitle": "ברוכים הבאים",
+    "languageSubtitle": "באיזו שפה נעבוד?",
+    "languageLabel": "שפה",
+    "rightToLeft": "מימין לשמאל",
+    "leftToRight": "משמאל לימין",
+    "changeLater": "אפשר לשנות בכל עת בהגדרות",
+    "yoursTitle": "שיהיה שלכם",
+    "yoursSubtitle": "בחרו שם, אווטאר ומראה",
+    "nameLabel": "השם שלכם",
+    "namePlaceholder": "השם שלכם",
+    "avatarLabel": "אווטאר",
+    "themeLabel": "ערכת נושא",
+    "businessTitle": "העסק שלכם",
+    "businessSubtitle": "מופיע בראש כל הזמנה שמדפיסים או שולחים בוואטסאפ",
+    "required": "(חובה)",
+    "businessNameMissing": "צריך שם עסק כדי לסיים",
+    "placeholders": {
+      "businessName": "כפי שיופיע בהזמנות",
+      "businessAddress": "רחוב, מספר, עיר",
+      "businessTaxId": "9 ספרות"
+    },
+    "back": "חזרה",
+    "continue": "המשך",
+    "finish": "סיום",
+    "errorGeneric": "השמירה נכשלה. נסו שוב."
+  },
+  "avatars": {
+    "peach": "אפרסק",
+    "abyss": "תהום",
+    "rust": "חלודה",
+    "onyx": "אוניקס",
+    "moss": "טחב",
+    "crimson": "ארגמן",
+    "bronze": "ברונזה",
+    "ochre": "אוכרה",
+    "lunar": "ירח",
+    "ember": "גחלת",
+    "amber": "ענבר"
+  },
+  "businessPreview": {
+    "label": "כך זה ייראה בהזמנה",
+    "namePlaceholder": "שם העסק",
+    "taxId": "ח.פ {id}",
+    "order": "הזמנה #1001"
   }
 }

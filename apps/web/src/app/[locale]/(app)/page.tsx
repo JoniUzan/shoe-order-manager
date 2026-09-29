@@ -1,5 +1,5 @@
 import { prisma } from "@repo/db";
-import { computeBalanceAgorot, formatMoney } from "@repo/domain";
+import { formatMoney } from "@repo/domain";
 import {
   Card,
   CardContent,
@@ -9,11 +9,13 @@ import {
 } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
 
+import { GetStarted } from "@/components/dashboard/get-started";
 import {
   SalesChart,
   type SalesPoint,
 } from "@/components/dashboard/sales-chart";
 import { OrdersTable } from "@/components/orders/orders-table";
+import { avatarOf } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
@@ -36,26 +38,36 @@ export default async function DashboardPage({
   windowStart.setHours(0, 0, 0, 0);
   windowStart.setDate(windowStart.getDate() - 89);
 
+  const openWhere = { ownerId: user.id, paymentStatus: { not: "paid" } };
+
   const [
-    openOrders,
+    openOrderCount,
+    owedGroups,
     orderList,
     totalOrders,
     customerCount,
+    modelCount,
     windowOrders,
     windowPayments,
   ] = await Promise.all([
-    prisma.order.findMany({
-      where: { ownerId: user.id, paymentStatus: { not: "paid" } },
-      select: {
-        totalAgorot: true,
-        depositAgorot: true,
-        customerId: true,
-        customer: { select: { name: true } },
+    prisma.order.count({ where: openWhere }),
+    // What each customer owes, summed in the database. Only orders that still
+    // owe something (total > deposit) are summed: an overpaid or zero order is
+    // settled, not a credit against the customer's other orders. That filter
+    // is the per-order clamp, so within it sum(total) - sum(deposit) equals
+    // the sum of the orders' balances.
+    prisma.order.groupBy({
+      by: ["customerId"],
+      where: {
+        ...openWhere,
+        totalAgorot: { gt: prisma.order.fields.depositAgorot },
       },
+      _sum: { totalAgorot: true, depositAgorot: true },
     }),
     listOrders(user.id, listParams),
     prisma.order.count({ where: { ownerId: user.id } }),
     prisma.customer.count({ where: { ownerId: user.id } }),
+    prisma.shoeModel.count({ where: { ownerId: user.id } }),
     prisma.order.findMany({
       where: { ownerId: user.id, createdAt: { gte: windowStart } },
       select: { createdAt: true, totalAgorot: true },
@@ -95,34 +107,47 @@ export default async function DashboardPage({
     };
   });
 
-  // Aggregate outstanding balance per customer.
-  const owedMap = new Map<string, { name: string; owed: number }>();
-  let totalOutstanding = 0;
-  for (const o of openOrders) {
-    const balance = computeBalanceAgorot(o.totalAgorot, o.depositAgorot);
-    if (balance <= 0) continue;
-    totalOutstanding += balance;
-    const entry = owedMap.get(o.customerId) ?? {
-      name: o.customer.name,
-      owed: 0,
-    };
-    entry.owed += balance;
-    owedMap.set(o.customerId, entry);
-  }
-  const owedList = [...owedMap.entries()]
-    .map(([customerId, v]) => ({ customerId, ...v }))
-    .sort((a, b) => b.owed - a.owed)
+  // One row per owing customer — bounded by customers, not orders. The sort
+  // key is a difference of two sums, which groupBy's orderBy can't express,
+  // so the rows are ranked here and names are read for the shown rows only.
+  const owedByCustomer = owedGroups.map((g) => ({
+    customerId: g.customerId,
+    owed: (g._sum.totalAgorot ?? 0) - (g._sum.depositAgorot ?? 0),
+  }));
+  const totalOutstanding = owedByCustomer.reduce((sum, c) => sum + c.owed, 0);
+  const owedTop = owedByCustomer
+    .sort((a, b) => b.owed - a.owed || a.customerId.localeCompare(b.customerId))
     .slice(0, 8);
+  const owedNames = new Map(
+    (
+      await prisma.customer.findMany({
+        where: { id: { in: owedTop.map((c) => c.customerId) }, ownerId: user.id },
+        select: { id: true, name: true },
+      })
+    ).map((c) => [c.id, c.name]),
+  );
+  const owedList = owedTop.map((c) => ({
+    ...c,
+    name: owedNames.get(c.customerId) ?? "",
+  }));
 
   const stats = [
     { label: t("statOutstanding"), value: formatMoney(totalOutstanding, locale) },
-    { label: t("statOpenOrders"), value: String(openOrders.length) },
+    { label: t("statOpenOrders"), value: String(openOrderCount) },
     { label: t("statTotalOrders"), value: String(totalOrders) },
     { label: t("statCustomers"), value: String(customerCount) },
   ];
 
   return (
     <div className="flex flex-col gap-6">
+      {customerCount === 0 && modelCount === 0 && (
+        <GetStarted
+          locale={locale}
+          name={user.name ?? ""}
+          avatar={avatarOf(user)}
+        />
+      )}
+
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (

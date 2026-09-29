@@ -17,12 +17,17 @@ export function Segmented<T extends string>({
   value,
   onChange,
   options,
+  labelled = false,
+  className,
 }: {
   name: string;
   label: string;
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string; icon?: ReactNode }[];
+  /** Show each option's label beside its icon, not only as its tooltip. */
+  labelled?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ x: number; w: number } | null>(null);
@@ -64,7 +69,10 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={label}
       data-sliding={sliding || undefined}
-      className="group/seg relative inline-flex gap-0.5 rounded-lg border bg-muted p-0.75"
+      className={cn(
+        "group/seg relative inline-flex gap-0.5 rounded-lg border bg-muted p-0.75",
+        className,
+      )}
     >
       {sliding && (
         <span
@@ -80,9 +88,9 @@ export function Segmented<T extends string>({
       {options.map((option) => (
         <label
           key={option.value}
-          title={option.label}
+          title={labelled ? undefined : option.label}
           data-value={option.value}
-          className="relative flex"
+          className={cn("relative flex", labelled && "flex-1")}
         >
           <input
             type="radio"
@@ -90,12 +98,12 @@ export function Segmented<T extends string>({
             value={option.value}
             checked={value === option.value}
             onChange={() => onChange(option.value)}
-            aria-label={option.icon ? option.label : undefined}
+            aria-label={option.icon && !labelled ? option.label : undefined}
             className="peer sr-only"
           />
           <span
             className={cn(
-              "flex h-8 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors duration-150",
+              "flex h-8 min-w-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors duration-150",
               "hover:text-foreground peer-checked:text-foreground",
               // Until the sliding pill is measured (SSR, first paint) the
               // checked option draws its own; after that the pill does.
@@ -105,7 +113,14 @@ export function Segmented<T extends string>({
               "[&_svg]:size-4.5",
             )}
           >
-            {option.icon ?? option.label}
+            {labelled ? (
+              <>
+                {option.icon}
+                {option.label}
+              </>
+            ) : (
+              (option.icon ?? option.label)
+            )}
           </span>
         </label>
       ))}

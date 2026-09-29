@@ -27,7 +27,20 @@
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "invalidCredentials": "Incorrect email or password",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "noAccount": "Don’t have an account?",
+    "signUp": "Sign up",
+    "signupTitle": "Create your account",
+    "signupSubtitle": "A few details and you’re managing orders",
+    "fullName": "Full name",
+    "namePlaceholder": "Your name",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHint": "At least 8 characters",
+    "createAccount": "Create account",
+    "creatingAccount": "Creating account…",
+    "haveAccount": "Already have an account?",
+    "rateLimited": "Too many sign-ups from this network. Try again in an hour."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -70,7 +83,12 @@
     "bulkUpdated": "{count, plural, one {# order updated} other {# orders updated}}",
     "bulkDeleted": "{count, plural, one {# order deleted} other {# orders deleted}}",
     "bulkDeleteTitle": "Delete selected orders?",
-    "bulkDeleteDescription": "{count, plural, one {This permanently removes # order and its payments.} other {This permanently removes # orders and their payments.}}"
+    "bulkDeleteDescription": "{count, plural, one {This permanently removes # order and its payments.} other {This permanently removes # orders and their payments.}}",
+    "getStartedTitle": "You’re all set",
+    "getStartedTitleNamed": "You’re all set, {name}",
+    "getStartedSubtitle": "What should we add first?",
+    "addCustomer": "Add a customer",
+    "addShoeModel": "Add a shoe model"
   },
   "list": {
     "columns": "Columns",
@@ -451,6 +469,55 @@
       "passwordTooShort": "At least 8 characters",
       "passwordMismatch": "The passwords don't match",
       "invalid": "This value isn't valid"
-    }
+    },
+    "avatar": "Avatar",
+    "avatarHelp": "Shown beside your name in the app"
+  },
+  "onboarding": {
+    "stepOf": "Step {step} of {total}",
+    "languageTitle": "Welcome",
+    "languageSubtitle": "Which language should we use?",
+    "languageLabel": "Language",
+    "rightToLeft": "Right to left",
+    "leftToRight": "Left to right",
+    "changeLater": "You can change this anytime in Settings",
+    "yoursTitle": "Make it yours",
+    "yoursSubtitle": "Choose a name, avatar and look",
+    "nameLabel": "Your name",
+    "namePlaceholder": "Your name",
+    "avatarLabel": "Avatar",
+    "themeLabel": "Theme",
+    "businessTitle": "Your business",
+    "businessSubtitle": "Printed at the top of every order you print or send on WhatsApp",
+    "required": "(required)",
+    "businessNameMissing": "Add a business name to finish",
+    "placeholders": {
+      "businessName": "As it appears on orders",
+      "businessAddress": "Street, number, city",
+      "businessTaxId": "9 digits"
+    },
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish",
+    "errorGeneric": "Couldn’t save. Please try again."
+  },
+  "avatars": {
+    "peach": "Peach",
+    "abyss": "Abyss",
+    "rust": "Rust",
+    "onyx": "Onyx",
+    "moss": "Moss",
+    "crimson": "Crimson",
+    "bronze": "Bronze",
+    "ochre": "Ochre",
+    "lunar": "Lunar",
+    "ember": "Ember",
+    "amber": "Amber"
+  },
+  "businessPreview": {
+    "label": "How it looks on an order",
+    "namePlaceholder": "Business name",
+    "taxId": "Tax ID {id}",
+    "order": "Order #1001"
   }
 }

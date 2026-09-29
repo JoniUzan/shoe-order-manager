@@ -19,11 +19,14 @@ export function useSettingsPhone() {
 export function SettingSection({
   title,
   description,
+  lead,
   children,
 }: {
   /** Left out on a phone when the sheet's title already names it. */
   title?: string;
   description?: string;
+  /** Shown before the rows, outside their card (e.g. a live preview). */
+  lead?: ReactNode;
   children: ReactNode;
 }) {
   const phone = useSettingsPhone();
@@ -34,6 +37,7 @@ export function SettingSection({
         {title && (
           <h3 className="px-4 text-[13px] text-muted-foreground">{title}</h3>
         )}
+        {lead && <div className="mb-3">{lead}</div>}
         <div className="overflow-hidden rounded-2xl border bg-background dark:bg-muted">
           {children}
         </div>
@@ -52,6 +56,7 @@ export function SettingSection({
       {description && (
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       )}
+      {lead && <div className="mt-5 mb-3">{lead}</div>}
       <div className="mt-2 flex flex-col">{children}</div>
     </section>
   );
@@ -85,7 +90,10 @@ export function SettingRow({
       )}
     >
       <div className={cn("min-w-0", phone && "w-24 shrink-0")}>
-        <Label htmlFor={htmlFor} className={phone ? "text-base" : "text-[15px]"}>
+        <Label
+          htmlFor={htmlFor}
+          className={phone ? "text-base" : "text-[15px]"}
+        >
           {label}
         </Label>
         {description && (

@@ -7,10 +7,15 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
+  // The chosen avatar as a token (`orb:onyx`); null → the orb generated
+  // from the email. The Auth.js adapter's column, reused.
   image         String?
   passwordHash  String?
   locale        String    @default("he") // "he" | "en"
   theme         String    @default("system") // "light" | "dark" | "system"
+  // When the welcome dialog was finished. Set explicitly, not derived from the
+  // business name, so clearing the name later doesn't reopen onboarding.
+  onboardedAt   DateTime?
 
   // Business details, printed on the invoice and the WhatsApp message.
   businessName    String?
@@ -62,4 +67,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// One row per sign-up attempt, for the per-IP rate limit. In Postgres, not in
+// memory: serverless instances don't share memory. Old rows are deleted in
+// app code (`actions/signup.ts`), not by a DB job.
+model SignupAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
 }
