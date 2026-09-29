@@ -1,1 +1,83 @@
 @AGENTS.md
+
+# web (Next.js 16 app)
+
+The only deployable: App Router, React 19, Auth.js v5, next-intl.
+
+## Layout
+
+- `src/app/[locale]/` is the root (there is no `app/layout.tsx`). `(app)/` is everything behind
+  login, and its layout loads the user and mounts the sidebar and `SettingsHost`. `(auth)/` holds
+  login and sign-up. `print/` holds the printable order (no app shell).
+- `src/lib/actions/*.ts`: Server Actions, one file per area. `src/lib/*-query.ts`: server-only
+  reads, one definition per list or report. `src/components/<area>/`: app components (shared
+  primitives come from `@repo/ui`).
+- `src/proxy.ts` is the middleware (Next 16 renamed the convention). `params` and
+  `searchParams` are Promises: `await` them.
+
+## Reads
+
+Server Components call `prisma` directly, filtered by `ownerId` (ADR 0003). A page starts with
+`requireUser(locale)` from `lib/session.ts`: it redirects to login when there's no session **or**
+when the session's user row is gone (a JWT can outlive a DB reset). List state (search, filter,
+sort, page) lives in the URL; `lib/list-params.ts` whitelists every value before it reaches
+Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
+`contains` with `mode: "insensitive"`.
+
+## Writes: Server Actions
+
+Every action follows the same shape:
+
+1. Get the owner id from `auth()` (the `requireOwnerId` helper at the top of each file).
+2. Re-validate the input with the `@repo/domain` schema.
+3. Scope every query by `ownerId`; reach `OrderItem` / `OrderPack` / `SizePack` through an
+   owned parent.
+4. Return `{ ok: true } | { ok: false, error: "<code>" }` for expected failures (not found,
+   invalid, still referenced). Throw only for bugs. Deleting a record that's still used (a
+   customer with orders, a model on an order item) is refused here and shown as a toast.
+5. `revalidatePath` every view that shows the data.
+
+Derived money (totals, paid, payment status) is recomputed on write. A transaction that reads an
+order's payments and writes back a derived value first locks the order row (`lockOrder` in
+`actions/payments.ts`) and runs its checks on values read after the lock (Postgres is
+READ COMMITTED). `createOrder` assigns the next `orderNumber` in its transaction and retries on
+P2002.
+
+## Client forms
+
+Validate on the client with the same domain schema the action uses (react-hook-form +
+`zodResolver` in the simple forms). Submit with a plain `async` handler and a
+`useState` pending flag, then call `router.push(...)` **after** the awaited action.
+`router.push` after an `await` inside `startTransition` is dropped in production builds, and a
+`router.refresh()` right after a push is redundant. `router` comes from `@/i18n/navigation`
+(locale-aware).
+
+## i18n and RTL
+
+Locale is in the URL (`/he`, `/en`); `[locale]/layout.tsx` sets `<html dir>`. Server components
+use `getTranslations({ locale, namespace })`, client components `useTranslations`. Every new
+string goes into **both** `messages/en.json` and `messages/he.json` with the same key; use
+the Terms in the root `CLAUDE.md` for Hebrew wording. Layout uses logical utilities only.
+
+## Settings dialog
+
+Opened by the URL hash, `#settings` or `#settings/<general|account|business>` (ADR 0005).
+`SettingsHost` reads the hash; `components/settings/settings-hash.ts` opens it with
+`pushState`, switches sections with `replaceState` and closes with `history.back()`. Change the
+hash only through those helpers. Near-full-screen dialog on a computer, bottom drawer on a phone
+(`useIsPhone`). Rows are `SettingSection` / `SettingRow`; text fields are `AutosaveInput` (saves
+on blur). A language change does a full `window.location` load to the same page and hash. The
+user's `locale` and `theme` are stored on `User`: login redirects to the saved locale, and
+`ThemeSync` applies the saved theme once per load.
+
+## Auth
+
+Auth.js v5 credentials provider with JWT sessions and the Prisma adapter, configured in
+`lib/auth.ts`. Sign-up is open and rate-limited per IP through the `SignupAttempt` table.
+The login page repeats `requireUser`'s user-exists check so a stale JWT can't loop between
+login and the app.
+
+## Checking a change
+
+`pnpm typecheck` and `pnpm lint` catch types, not behavior. Client navigation, hydration and
+form flows are verified in a real browser with the `browser-check` skill.
