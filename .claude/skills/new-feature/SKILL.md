@@ -29,6 +29,7 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 
 - The input's Zod schema, with limits and cross-field rules in `.refine`.
 - Any derived value (totals, statuses) as a pure function here.
+- Unit tests in `src/<area>.test.ts` for each rule and limit, in the same commit.
 
 ## 3. Server Action (`apps/web/src/lib/actions`)
 
@@ -37,6 +38,9 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 - Derived money: recompute on write, and lock the order row first when reading payments to
   write a derived value.
 - `revalidatePath` for every view that shows the data.
+- An integration test in `<area>.test.ts` next to the action, in the same commit. It covers the
+  success path, each `{ ok: false }` error, and another User getting `not_found` (see
+  `apps/web/CLAUDE.md`, "Tests").
 
 ## 4. Reads and UI (`apps/web`)
 
@@ -45,10 +49,12 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 - Client form: same schema for validation, async submit, `router.push` after the await.
 - Every string in both `messages/en.json` and `messages/he.json`; logical Tailwind utilities
   only.
+- A new screen or flow gets a spec in its area's suite, `apps/e2e/suites/<area>/`, in the same
+  commit. Controls it adds go in that suite's page objects (`apps/e2e/CLAUDE.md`).
 
 ## 5. Check and ship
 
-1. `pnpm typecheck` and `pnpm lint` pass.
+1. `pnpm typecheck`, `pnpm lint`, `pnpm test:coverage` and `pnpm test:e2e` pass.
 2. Run the `browser-check` skill on the new flow in `/he` and `/en` (and a phone viewport for
    dialogs or layout).
 3. Update the `CLAUDE.md` whose rules the feature changed, and add an ADR in `docs/adr/` if you

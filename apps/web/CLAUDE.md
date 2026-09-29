@@ -77,7 +77,15 @@ Auth.js v5 credentials provider with JWT sessions and the Prisma adapter, config
 The login page repeats `requireUser`'s user-exists check so a stale JWT can't loop between
 login and the app.
 
-## Checking a change
+## Tests
 
-`pnpm typecheck` and `pnpm lint` catch types, not behavior. Client navigation, hydration and
-form flows are verified in a real browser with the `browser-check` skill.
+- **Server Actions** have an integration test next to them (`src/lib/actions/<area>.test.ts`),
+  run by Vitest against the real `shoe_test` Postgres.
+  - `test/setup.ts` mocks `@/lib/auth`, `next/cache` and `next/headers`.
+  - `createUser()` from `test/factories.ts` makes a fresh User and signs in as them;
+    `signInAs(id)` switches User. Each test makes its own data and never cleans up: `ownerId`
+    scoping keeps tests apart.
+  - A test that proves a lock fires the calls together with `Promise.all`.
+- **Screens and flows** are covered by the E2E suites in `apps/e2e` (see its `CLAUDE.md`).
+- `pnpm typecheck` and `pnpm lint` catch types, not behavior. The `browser-check` skill is for
+  looking at a change by hand. A flow worth checking again later becomes a spec.

@@ -64,3 +64,9 @@ try {
 2. Read the screenshots with the Read tool and check them against what the change should show.
 3. Delete the script and its screenshots; none of them are committed.
 4. Report which flows ran, in which locales and viewports, and any page errors.
+
+## Keeping a check
+
+A check is for looking at a change once. When a flow should keep working, add a spec to
+its area's suite in `apps/e2e/suites/` instead of keeping the script (see `apps/e2e/CLAUDE.md`).
+The spec runs in every project and in CI.

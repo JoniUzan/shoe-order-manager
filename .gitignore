@@ -29,6 +29,8 @@ packages/db/src/generated/
 .DS_Store
 *.pem
 coverage/
+test-results/
+playwright-report/
 *.log
 .vscode/
 .idea/
