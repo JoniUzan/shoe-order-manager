@@ -11,6 +11,8 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 
 ## 0. Before code
 
+- A plan that is still fuzzy (unclear scope or new words): suggest `/grill-with-docs` first. It
+  settles the plan by questioning the user, and adds new terms to the Terms table and ADRs as it goes.
 - New or redesigned UI: draw it on a Claude Design canvas and wait for the user's approval
   (root `CLAUDE.md`, "Design first for UI").
 - Name things with the root `CLAUDE.md` Terms. A concept that isn't there gets a row added to
