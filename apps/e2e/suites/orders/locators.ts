@@ -57,6 +57,10 @@ export class OrderForm {
     return this.page.getByPlaceholder(this.t("orders.unitPrice"));
   }
 
+  factoryNote() {
+    return this.page.getByLabel(this.t("orders.factoryNote"));
+  }
+
   async save() {
     await this.page.getByRole("button", { name: this.t("common.save") }).click();
   }
@@ -94,6 +98,29 @@ export class OrderPage {
 
   markDone() {
     return this.page.getByRole("button", { name: this.t("orders.markDone") });
+  }
+
+  /** Open the PDF menu (a popover on a computer, a drawer on a phone). */
+  async openPdfMenu() {
+    await this.page.getByRole("button", { name: this.t("pdf.menu") }).click();
+  }
+
+  /** Pick the file's language inside the open PDF menu: a segmented control of radio labels. */
+  async pdfLanguage(label: "עברית" | "English") {
+    await this.page
+      .getByRole("radiogroup", { name: this.t("pdf.language") })
+      .getByText(label, { exact: true })
+      .click();
+  }
+
+  /** Download one of the PDFs from the open menu; resolves to the saved file's path. */
+  async downloadPdf(doc: "summary" | "production") {
+    const download = this.page.waitForEvent("download");
+    await this.page
+      .getByRole("region", { name: this.t(`pdf.${doc}`) })
+      .getByRole("button", { name: this.t("pdf.download") })
+      .click();
+    return (await download).path();
   }
 
   reopen() {

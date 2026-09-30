@@ -1,4 +1,10 @@
 import { prisma } from "@repo/db";
+import {
+  buildOrderSummaryRows,
+  buildWhatsAppUrl,
+  computeOwedAgorot,
+  formatMoney,
+} from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -8,11 +14,12 @@ import {
 } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Pencil, Share2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
 import { OrderItemsTable } from "@/components/orders/order-items-table";
+import { OrderPdfMenu } from "@/components/orders/order-pdf-menu";
 import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
 import { PackingCard } from "@/components/orders/packing-card";
 import { PaymentControls } from "@/components/orders/payment-controls";
@@ -54,25 +61,21 @@ export default async function OrderDetailPage({
   });
   if (!order) notFound();
 
-  // The packing card needs every item, not the paged table's slice — and only
-  // exists at all when the order has a pack, so an order without one costs
-  // nothing extra.
+  // The packing card and the WhatsApp caption need every item, not the paged
+  // table's slice.
+  const allItems = (
+    await prisma.orderItem.findMany({
+      where: { orderId: order.id, order: { ownerId: user.id } },
+      orderBy: { id: "asc" },
+      include: { shoeModel: { select: { name: true, sku: true } } },
+    })
+  ).map((it) => ({
+    ...it,
+    name: it.shoeModel?.name ?? it.customDescription ?? "",
+    sku: it.shoeModel?.sku ?? null,
+  }));
   const packing =
-    order.packs.length > 0
-      ? buildPackingSummary(
-          (
-            await prisma.orderItem.findMany({
-              where: { orderId: order.id, order: { ownerId: user.id } },
-              orderBy: { id: "asc" },
-              include: { shoeModel: { select: { name: true } } },
-            })
-          ).map((it) => ({
-            ...it,
-            name: it.shoeModel?.name ?? it.customDescription ?? "",
-          })),
-          order.packs,
-        )
-      : null;
+    order.packs.length > 0 ? buildPackingSummary(allItems, order.packs) : null;
 
   const itemList = await listOrderItems(
     user.id,
@@ -81,6 +84,26 @@ export default async function OrderDetailPage({
   );
 
   const ts = await getTranslations({ locale, namespace: "share" });
+  const tp = await getTranslations({ locale, namespace: "pdf" });
+
+  // The Order summary's WhatsApp caption: the same rows as the PDF, as text.
+  const owed = computeOwedAgorot(order.totalAgorot, order.depositAgorot);
+  const summaryShareText = [
+    user.businessName,
+    `${ts("messageHeader")} — ${t("orderNumber", { number: order.orderNumber })}`,
+    order.customer.name,
+    "",
+    ...buildOrderSummaryRows(allItems, order.packs).rows.map((row) => {
+      const what = row.color ? `${row.name} — ${row.color}` : row.name;
+      const sizes = row.sizes.map((s) => `${s.size}×${s.pairs}`).join(" · ");
+      return `• ${what}: ${sizes} — ${formatMoney(row.totalAgorot, locale)}`;
+    }),
+    "",
+    `${tp("total")}: ${formatMoney(order.totalAgorot, locale)}`,
+    owed > 0 ? `${tp("remaining")}: ${formatMoney(owed, locale)}` : null,
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
 
   const dateFmt = new Intl.DateTimeFormat(locale === "he" ? "he-IL" : "en-US", {
     dateStyle: "long",
@@ -94,12 +117,15 @@ export default async function OrderDetailPage({
         action={
           <div className="flex flex-wrap gap-2">
             <OrderStatusToggle id={order.id} statusCode={order.statusCode} />
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/print/orders/${order.id}`}>
-                <Share2 className="size-4" />
-                {ts("openInvoice")}
-              </Link>
-            </Button>
+            <OrderPdfMenu
+              orderId={order.id}
+              orderNumber={order.orderNumber}
+              summaryShareText={summaryShareText}
+              customerWhatsAppUrl={buildWhatsAppUrl(
+                order.customer.phone,
+                summaryShareText,
+              )}
+            />
             <Button asChild variant="outline" size="sm">
               <Link href={`/orders/${order.id}/edit`}>
                 <Pencil className="size-4" />
@@ -132,16 +158,33 @@ export default async function OrderDetailPage({
         params={itemList.params}
       />
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        {order.notes && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("notes")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
-            </CardContent>
-          </Card>
+      <div className="grid items-start gap-6 sm:grid-cols-2">
+        {(order.notes || order.factoryNote) && (
+          <div className="flex flex-col gap-6">
+            {order.notes && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("notes")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
+                </CardContent>
+              </Card>
+            )}
+            {order.factoryNote && (
+              <Card>
+                <CardHeader className="flex flex-row items-baseline justify-between gap-3">
+                  <CardTitle>{t("factoryNote")}</CardTitle>
+                  <span className="text-xs text-muted-foreground">
+                    {t("factoryNoteHint")}
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm whitespace-pre-wrap">{order.factoryNote}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
         <div className="sm:col-start-2">
           <PaymentControls

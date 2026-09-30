@@ -17,13 +17,14 @@ import {
   RotateCcw,
   Trash2,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/data-table/confirm-delete-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteOrder, setOrderStatus } from "@/lib/actions/orders";
+import { orderPdfUrl, type PdfLocale } from "@/lib/pdf/urls";
 
 /**
  * Per-row menu on the orders list: act on an order without leaving the list.
@@ -42,6 +43,7 @@ export function OrderRowActions({
   const td = useTranslations("dashboard");
   const tc = useTranslations("common");
   const router = useRouter();
+  const locale = useLocale() as PdfLocale;
   const [pending, startTransition] = useTransition();
   // The dialog is a sibling of the menu, not a child: Radix unmounts menu
   // content on select, which would tear down a trigger nested inside it.
@@ -108,10 +110,11 @@ export function OrderRowActions({
             {isDone ? t("markNotDone") : t("markDone")}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={`/print/orders/${id}`} target="_blank">
+            {/* The Order summary in a new tab, where the browser prints it. */}
+            <a href={orderPdfUrl(id, "summary", locale)} target="_blank" rel="noreferrer">
               <Printer />
               {td("print")}
-            </Link>
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
