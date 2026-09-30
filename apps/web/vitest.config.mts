@@ -12,6 +12,9 @@ export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
+  // tsconfig says "preserve" for Next; the PDF route's components need
+  // transforming here.
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
