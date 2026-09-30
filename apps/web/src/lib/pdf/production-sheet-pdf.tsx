@@ -31,6 +31,8 @@ export function ProductionSheetPdf({
 }) {
   const d = directional(data.locale === "he");
   const { rows, pairs } = buildProductionRows(data.items);
+  // An order where no line has a color doesn't get an empty Color column.
+  const hasColor = rows.some((r) => r.color);
   const title = t("production");
   const orderLabel = t("orderNumber", { number: data.orderNumber });
 
@@ -57,9 +59,11 @@ export function ProductionSheetPdf({
           <Cell width="24%">
             <Text style={[styles.label, d.text]}>{t("model")}</Text>
           </Cell>
-          <Cell width="12%">
-            <Text style={[styles.label, d.text]}>{t("color")}</Text>
-          </Cell>
+          {hasColor && (
+            <Cell width="12%">
+              <Text style={[styles.label, d.text]}>{t("color")}</Text>
+            </Cell>
+          )}
           <Cell>
             <Text style={[styles.label, d.text]}>{t("sizes")}</Text>
           </Cell>
@@ -96,11 +100,13 @@ export function ProductionSheetPdf({
                 )
               )}
             </Cell>
-            <Cell width="12%">
-              <Text style={valueStyle(d, row.color ?? "")}>
-                {row.color ?? "—"}
-              </Text>
-            </Cell>
+            {hasColor && (
+              <Cell width="12%">
+                <Text style={valueStyle(d, row.color ?? "")}>
+                  {row.color ?? ""}
+                </Text>
+              </Cell>
+            )}
             <Cell>
               <SizeBoxes d={d} sizes={row.sizes} />
             </Cell>

@@ -107,7 +107,11 @@ export function Header({
   );
 }
 
-/** Pairs per size, one box each, sizes ascending left to right in both languages. */
+/**
+ * Pairs per size, one box each, smallest size first in the reading direction:
+ * right to left in Hebrew, so a run that wraps carries on under its start
+ * instead of leaving its last box stranded at the far end.
+ */
 export function SizeBoxes({
   d,
   sizes,
@@ -118,10 +122,9 @@ export function SizeBoxes({
   return (
     <View
       style={{
-        flexDirection: "row",
+        flexDirection: d.row,
         flexWrap: "wrap",
         gap: 3,
-        justifyContent: d.start,
       }}
     >
       {sizes.map((s) => (

@@ -37,6 +37,8 @@ export function OrderSummaryPdf({
   const money = (agorot: number) => clean(formatMoney(agorot, data.locale));
   const summary = buildOrderSummaryRows(data.items, data.packs);
   const orderLabel = t("orderNumber", { number: data.orderNumber });
+  // An order where no line has a color doesn't get an empty Color column.
+  const hasColor = summary.rows.some((r) => r.color);
 
   return (
     <Document title={orderLabel} language={data.locale}>
@@ -80,35 +82,44 @@ export function OrderSummaryPdf({
         </View>
 
         <View style={[styles.th, { flexDirection: d.row }]}>
-          <Cell width="19%">
+          <Cell width={COLS.item}>
             <Text style={[styles.label, d.text]}>{t("item")}</Text>
           </Cell>
-          <Cell width="9%">
-            <Text style={[styles.label, d.text]}>{t("color")}</Text>
-          </Cell>
+          {hasColor && (
+            <Cell width={COLS.color}>
+              <Text style={[styles.label, d.text]}>{t("color")}</Text>
+            </Cell>
+          )}
           <Cell>
             <Text style={[styles.label, d.text]}>{t("sizes")}</Text>
           </Cell>
-          <Cell width="7%" align="center">
+          <Cell width={COLS.pairs} align="center">
             <Text style={styles.label}>{t("pairs")}</Text>
           </Cell>
-          <Cell width="12%">
+          <Cell width={COLS.unit}>
             <Text style={[styles.label, d.endText]}>{t("unitPrice")}</Text>
           </Cell>
-          <Cell width="13%">
+          <Cell width={COLS.total}>
             <Text style={[styles.label, d.endText]}>{t("lineTotal")}</Text>
           </Cell>
         </View>
 
         {summary.rows.map((row, i) => (
-          <SummaryLine key={i} d={d} t={t} row={row} money={money} />
+          <SummaryLine
+            key={i}
+            d={d}
+            t={t}
+            row={row}
+            money={money}
+            hasColor={hasColor}
+          />
         ))}
 
         <View
           style={[styles.tr, { flexDirection: d.row, borderBottomWidth: 0 }]}
           wrap={false}
         >
-          <Cell width="28%">
+          <Cell width={hasColor ? COLS.itemAndColor : COLS.item}>
             <Text style={[{ fontWeight: 600 }, d.text]}>{t("total")}</Text>
           </Cell>
           <Cell>
@@ -118,10 +129,10 @@ export function OrderSummaryPdf({
                 : ""}
             </Text>
           </Cell>
-          <Cell width="7%" align="center">
+          <Cell width={COLS.pairs} align="center">
             <Text style={{ fontWeight: 600 }}>{summary.pairs}</Text>
           </Cell>
-          <Cell width="25%">
+          <Cell width={COLS.money}>
             <Text> </Text>
           </Cell>
         </View>
@@ -167,16 +178,33 @@ export function OrderSummaryPdf({
   );
 }
 
+/**
+ * Column widths. The money columns fit "₪ 2,147,483.47" on one line: react-pdf
+ * can't be told not to wrap, and a squeezed amount breaks inside the number
+ * with a hyphen ("21,450.00-" / "₪").
+ */
+const COLS = {
+  item: "18%",
+  color: "9%",
+  itemAndColor: "27%",
+  pairs: "7%",
+  unit: "14%",
+  total: "17%",
+  money: "31%",
+};
+
 function SummaryLine({
   d,
   t,
   row,
   money,
+  hasColor,
 }: {
   d: Directional;
   t: PdfT;
   row: SummaryRow;
   money: (agorot: number) => string;
+  hasColor: boolean;
 }) {
   // "2 cartons × Pack A · 1 carton × Pack B + 3 loose pairs"
   const cartons =
@@ -195,7 +223,7 @@ function SummaryLine({
 
   return (
     <View style={[styles.tr, { flexDirection: d.row }]} wrap={false}>
-      <Cell width="19%">
+      <Cell width={COLS.item}>
         <View
           style={{
             flexDirection: d.row,
@@ -225,9 +253,11 @@ function SummaryLine({
           )}
         </View>
       </Cell>
-      <Cell width="9%">
-        <Text style={valueStyle(d, row.color ?? "")}>{row.color ?? "—"}</Text>
-      </Cell>
+      {hasColor && (
+        <Cell width={COLS.color}>
+          <Text style={valueStyle(d, row.color ?? "")}>{row.color ?? ""}</Text>
+        </Cell>
+      )}
       <Cell>
         <SizeBoxes d={d} sizes={row.sizes} />
         {cartons && (
@@ -236,13 +266,13 @@ function SummaryLine({
           </Text>
         )}
       </Cell>
-      <Cell width="7%" align="center">
+      <Cell width={COLS.pairs} align="center">
         <Text>{row.pairs}</Text>
       </Cell>
-      <Cell width="12%">
+      <Cell width={COLS.unit}>
         <Text style={d.endText}>{money(row.unitPriceAgorot)}</Text>
       </Cell>
-      <Cell width="13%">
+      <Cell width={COLS.total}>
         <Text style={d.endText}>{money(row.totalAgorot)}</Text>
       </Cell>
     </View>
