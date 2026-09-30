@@ -152,4 +152,14 @@ describe("orderSchema", () => {
     });
     expect(r).not.toHaveProperty("depositAgorot");
   });
+
+  it("trims the factory note and caps it at 2000 characters", () => {
+    const base = { customerId: "ccust", items: [catalogItem] };
+    expect(orderSchema.parse({ ...base, factoryNote: "  soft sole " }).factoryNote).toBe(
+      "soft sole",
+    );
+    expect(orderSchema.safeParse({ ...base, factoryNote: "x".repeat(2001) }).success).toBe(
+      false,
+    );
+  });
 });

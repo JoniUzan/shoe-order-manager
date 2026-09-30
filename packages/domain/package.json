@@ -9,6 +9,7 @@
     "./customer": "./src/customer.ts",
     "./catalog": "./src/catalog.ts",
     "./order": "./src/order.ts",
+    "./document": "./src/document.ts",
     "./status": "./src/status.ts",
     "./phone": "./src/phone.ts",
     "./settings": "./src/settings.ts"
