@@ -533,6 +533,7 @@
     "model": "Model",
     "color": "Color",
     "sizes": "Sizes (pairs)",
+    "size": "Size",
     "pairs": "Pairs",
     "unitPrice": "Unit price",
     "lineTotal": "Total",

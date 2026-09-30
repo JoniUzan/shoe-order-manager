@@ -108,29 +108,65 @@ export function Header({
 }
 
 /**
- * Pairs per size, one box each, smallest size first in the reading direction:
- * right to left in Hebrew, so a run that wraps carries on under its start
- * instead of leaving its last box stranded at the far end.
+ * Pairs per size as a small two-row table: the sizes on a shaded band, the
+ * pairs in bold under them, each row labelled once ("Size" / "Pairs"). Sizes
+ * and counts are both two-digit numbers, and "41" over "41" in an unlabelled
+ * box left it to the reader to remember which is which.
+ *
+ * A run longer than `columns` continues in more tables under the first,
+ * smallest size first in the reading direction (right to left in Hebrew).
  */
-export function SizeBoxes({
+export function SizeGrid({
   d,
+  t,
   sizes,
+  columns,
 }: {
   d: Directional;
+  t: PdfT;
   sizes: SizePairs[];
+  /** How many sizes fit across the cell. */
+  columns: number;
 }) {
+  // Each cell's divider sits on the side facing the label.
+  const divider = d.rtl
+    ? { borderRightWidth: 1, borderRightColor: HAIRLINE }
+    : { borderLeftWidth: 1, borderLeftColor: HAIRLINE };
+  // Split evenly: 8 sizes over two lines are 4 + 4, not 7 + 1.
+  const lines = Math.ceil(sizes.length / columns);
+  const perLine = Math.ceil(sizes.length / Math.max(lines, 1));
+  const chunks: SizePairs[][] = [];
+  for (let i = 0; i < sizes.length; i += perLine) {
+    chunks.push(sizes.slice(i, i + perLine));
+  }
   return (
-    <View
-      style={{
-        flexDirection: d.row,
-        flexWrap: "wrap",
-        gap: 3,
-      }}
-    >
-      {sizes.map((s) => (
-        <View key={s.size} style={styles.box}>
-          <Text style={styles.boxSize}>{s.size}</Text>
-          <Text style={styles.boxPairs}>{s.pairs}</Text>
+    <View style={{ gap: 4, alignItems: d.start }}>
+      {chunks.map((chunk, i) => (
+        <View key={i} style={styles.grid}>
+          <View
+            style={[styles.gridRow, styles.gridHead, { flexDirection: d.row }]}
+          >
+            <Text style={[styles.gridLabel, d.text]}>{t("size")}</Text>
+            {chunk.map((s) => (
+              <Text
+                key={s.size}
+                style={[styles.gridCell, divider, styles.gridSize]}
+              >
+                {s.size}
+              </Text>
+            ))}
+          </View>
+          <View style={[styles.gridRow, { flexDirection: d.row }]}>
+            <Text style={[styles.gridLabel, d.text]}>{t("pairs")}</Text>
+            {chunk.map((s) => (
+              <Text
+                key={s.size}
+                style={[styles.gridCell, divider, styles.gridPairs]}
+              >
+                {s.pairs}
+              </Text>
+            ))}
+          </View>
         </View>
       ))}
     </View>

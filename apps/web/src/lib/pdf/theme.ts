@@ -29,6 +29,8 @@ export const MUTED = "#495251";
 export const RULE = "#b5b9b9";
 export const HAIRLINE = "#e1e3e3";
 export const BOX = "#c2c5c5";
+/** The size band: ink at 6% on white. */
+export const SHADE = "#f0f1f1";
 
 /**
  * Direction-aware pieces. react-pdf runs the Unicode bidi algorithm per Text,
@@ -95,17 +97,32 @@ export const styles = StyleSheet.create({
     borderBottomColor: HAIRLINE,
     alignItems: "center",
   },
-  box: {
-    alignItems: "center",
-    minWidth: 26,
-    paddingVertical: 2,
-    paddingHorizontal: 3,
+  grid: {
     borderWidth: 1,
     borderColor: BOX,
-    borderRadius: 6,
+    borderRadius: 4,
+    overflow: "hidden",
   },
-  boxSize: { fontSize: 8, color: MUTED },
-  boxPairs: { fontSize: 11.5, fontWeight: 600 },
+  gridRow: { alignItems: "stretch" },
+  gridHead: {
+    backgroundColor: SHADE,
+    borderBottomWidth: 1,
+    borderBottomColor: BOX,
+  },
+  gridLabel: {
+    width: 28,
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    fontSize: 7.5,
+    color: MUTED,
+  },
+  gridCell: {
+    width: 24,
+    paddingVertical: 3,
+    textAlign: "center",
+  },
+  gridSize: { fontSize: 9, fontWeight: 500, color: MUTED },
+  gridPairs: { fontSize: 11, fontWeight: 600 },
   footer: {
     position: "absolute",
     bottom: 28,

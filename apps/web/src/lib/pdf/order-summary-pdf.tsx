@@ -12,7 +12,7 @@ import {
   Header,
   mark,
   Note,
-  SizeBoxes,
+  SizeGrid,
   valueStyle,
   type PdfT,
 } from "./parts";
@@ -259,7 +259,7 @@ function SummaryLine({
         </Cell>
       )}
       <Cell>
-        <SizeBoxes d={d} sizes={row.sizes} />
+        <SizeGrid d={d} t={t} sizes={row.sizes} columns={hasColor ? 6 : 7} />
         {cartons && (
           <Text style={[{ fontSize: 9, marginTop: 3 }, styles.muted, d.text]}>
             {cartons}

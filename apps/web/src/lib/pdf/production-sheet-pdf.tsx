@@ -7,7 +7,7 @@ import {
   Header,
   mark,
   Note,
-  SizeBoxes,
+  SizeGrid,
   valueStyle,
   type PdfT,
 } from "./parts";
@@ -108,7 +108,12 @@ export function ProductionSheetPdf({
               </Cell>
             )}
             <Cell>
-              <SizeBoxes d={d} sizes={row.sizes} />
+              <SizeGrid
+                d={d}
+                t={t}
+                sizes={row.sizes}
+                columns={hasColor ? 10 : 12}
+              />
             </Cell>
             <Cell width="10%" align="center">
               <Text style={{ fontSize: 12, fontWeight: 600 }}>{row.pairs}</Text>
