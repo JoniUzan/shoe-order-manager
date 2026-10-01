@@ -28,11 +28,33 @@ export class PaymentsCard {
   }
 
   /**
-   * The remove button of each payment in the history. Its accessible name is
-   * the toast text ("Payment removed"), as the app labels it today (#40).
+   * The remove button of each payment in the history, named "Remove payment
+   * of ₪400.00". With `amount` (as the user reads it, e.g. "400.00"), only
+   * that payment's button.
    */
-  removeButtons() {
-    return this.page.getByRole("button", { name: this.t("payments.removed") });
+  removeButtons(amount?: string) {
+    const [before, after] = this.t("payments.remove", { amount: "\u0000" }).split("\u0000");
+    const middle = amount ? `.*${escapeRegExp(amount)}.*` : ".+";
+    return this.page.getByRole("button", {
+      name: new RegExp(`^${escapeRegExp(before!)}${middle}${escapeRegExp(after!)}$`),
+    });
+  }
+
+  /** The "Remove payment?" dialog the × opens. */
+  confirmDialog() {
+    return this.page.getByRole("alertdialog", { name: this.t("payments.removeTitle") });
+  }
+
+  /** Delete or Cancel in the open "Remove payment?" dialog. */
+  async answerRemove(answer: "confirm" | "cancel") {
+    const key = answer === "confirm" ? "common.delete" : "common.cancel";
+    await this.confirmDialog().getByRole("button", { name: this.t(key) }).click();
+  }
+
+  /** Press the × on a payment and confirm. */
+  async remove(amount: string) {
+    await this.removeButtons(amount).click();
+    await this.answerRemove("confirm");
   }
 
   tooMuchError() {
@@ -42,4 +64,8 @@ export class PaymentsCard {
   paymentBadge(status: "unpaid" | "partial" | "paid") {
     return this.page.getByText(this.t(`payment.${status}`), { exact: true }).first();
   }
+}
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

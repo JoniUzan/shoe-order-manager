@@ -35,18 +35,53 @@ test("Payments move Paid, Balance and payment status", async ({ page, t, appLoca
   await expect(card.paymentBadge("paid")).toBeVisible();
 });
 
-test("removing a Payment recomputes Paid and the Balance", async ({ page, t, appLocale, user }) => {
+test("cancelling the remove dialog keeps the Payment", async ({ page, t, appLocale, user }) => {
+  const { order } = await orderWithPayments(user.id);
+  const card = new PaymentsCard(page, t);
+  await card.goto(appLocale, order.id);
+
+  await card.removeButtons("400.00").click();
+  await expect(card.confirmDialog()).toBeVisible();
+  await expect(card.confirmDialog()).toContainText("400.00");
+  await card.answerRemove("cancel");
+  await expect(card.confirmDialog()).toBeHidden();
+
+  await expect(card.removeButtons()).toHaveCount(2);
+  await expect(card.paymentBadge("partial")).toBeVisible();
+  expect(await prisma.payment.count({ where: { orderId: order.id } })).toBe(2);
+  expect(await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).toMatchObject({
+    depositAgorot: 50_000,
+    paymentStatus: "partial",
+  });
+});
+
+test("removing a Payment recomputes Paid, the Balance and payment status", async ({
+  page,
+  t,
+  appLocale,
+  user,
+}) => {
   const { order } = await orderWithPayments(user.id);
   const card = new PaymentsCard(page, t);
   await card.goto(appLocale, order.id);
   await expect(card.removeButtons()).toHaveCount(2);
 
-  // The ₪400 one.
-  await page.getByRole("listitem").filter({ hasText: "400.00" }).getByRole("button").click();
+  // The ₪400 one: ₪100 Paid, ₪900 left.
+  await card.remove("400.00");
+  await expect(card.confirmDialog()).toBeHidden();
   await expect(card.removeButtons()).toHaveCount(1);
   await expect
     .poll(async () => (await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).depositAgorot)
     .toBe(10_000);
   await expect(page.getByText("900.00").first()).toBeVisible();
   await expect(card.paymentBadge("partial")).toBeVisible();
+
+  // The last one: nothing Paid, the order is unpaid again.
+  await card.remove("100.00");
+  await expect(card.removeButtons()).toHaveCount(0);
+  await expect
+    .poll(async () => await prisma.order.findUniqueOrThrow({ where: { id: order.id } }))
+    .toMatchObject({ depositAgorot: 0, paymentStatus: "unpaid" });
+  await expect(card.paymentBadge("unpaid")).toBeVisible();
+  await expect(card.markFullyPaid()).toBeVisible();
 });

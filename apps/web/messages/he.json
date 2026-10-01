@@ -206,6 +206,7 @@
     "noPayments": "לא נרשמו תשלומים",
     "date": "תאריך",
     "recorded": "התשלום נרשם",
+    "remove": "הסרת תשלום בסך {amount}",
     "removed": "התשלום הוסר",
     "removeTitle": "להסיר את התשלום?",
     "removeDescription": "פעולה זו תסיר תשלום בסך {amount} ותחשב מחדש את היתרה.",
