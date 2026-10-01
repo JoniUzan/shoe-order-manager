@@ -86,7 +86,8 @@ Use these words in code, UI copy, commits and conversation. Hebrew is the UI wor
 | **User** | | A person who signs in and runs one business; owns all their data. `ownerId` in code. | owner, account, tenant |
 | **Customer** | לקוח | A retail store that buys from the User. Never signs in. | client, store (as the entity) |
 | **Business details** | פרטי העסק | The User's name, phone, address and tax ID, printed on every order and WhatsApp message. | |
-| **Shoe model** | דגם | A catalog entry: name, SKU, default price, size run. The catalog (קטלוג) is all of them. | product |
+| **Shoe model** | דגם | A catalog entry: name, SKU, default price, size run. The catalog (קטלוג) is all of them. | |
+| **Product image** | תמונת מוצר | The one photo of a Shoe model, shown in the catalog, the order form, the order page and both PDFs. | image (alone: that's the User's avatar) |
 | **Pack** | סדרה | A shoe model's fixed pairs-per-size, e.g. 38×3, 39×2, 40×3 (its **curve**). | series, set |
 | **Cartons** | קרטונים | How many of a pack an order takes. | packs (for the count) |
 | **Loose pairs** | זוגות בודדים | Pairs ordered outside any pack. | extra items |
