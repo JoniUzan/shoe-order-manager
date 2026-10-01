@@ -275,7 +275,15 @@
     "updated": "הדגם נשמר",
     "deleted": "הדגם נמחק",
     "errorInUse": "לא ניתן למחוק דגם שנמצא בשימוש בהזמנות",
-    "errorGeneric": "משהו השתבש. נסו שוב."
+    "errorGeneric": "משהו השתבש. נסו שוב.",
+    "stepDetails": "פרטים",
+    "stepDetailsHint": "שם, מחיר ותיאור",
+    "stepSizes": "מידות",
+    "stepSizesHint": "טווח המידות שבו הדגם מוזמן",
+    "stepPacks": "סדרות",
+    "stepPacksHint": "הקרטונים שבהם הדגם נמכר",
+    "preview": "תצוגה מקדימה",
+    "previewNotSet": "טרם הוגדר"
   },
   "orders": {
     "title": "הזמנות",
@@ -391,7 +399,10 @@
     "back": "חזרה",
     "search": "חיפוש",
     "actions": "פעולות",
-    "none": "ללא"
+    "none": "ללא",
+    "continue": "המשך",
+    "steps": "שלבים",
+    "stepOf": "שלב {current} מתוך {total} · {name}"
   },
   "settings": {
     "title": "הגדרות",
