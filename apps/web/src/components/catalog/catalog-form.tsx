@@ -7,7 +7,6 @@ import {
   type ShoeModelInput,
   type SizeFormat,
 } from "@repo/domain";
-import { Checkbox } from "@repo/ui/components/checkbox";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import {
@@ -17,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
+import { Switch } from "@repo/ui/components/switch";
 import { Textarea } from "@repo/ui/components/textarea";
 import { cn } from "@repo/ui/lib/utils";
 import { ImagePlus } from "lucide-react";
@@ -256,12 +256,12 @@ export function CatalogForm({
               </Field>
 
               <label className="flex min-h-11 items-center gap-3">
-                <Checkbox
+                <Switch
+                  size="lg"
                   checked={values.isActive}
                   onCheckedChange={(v) =>
-                    form.setValue("isActive", v === true, { shouldDirty: true })
+                    form.setValue("isActive", v, { shouldDirty: true })
                   }
-                  className="size-5"
                 />
                 <span className="font-medium">{t("active")}</span>
               </label>
