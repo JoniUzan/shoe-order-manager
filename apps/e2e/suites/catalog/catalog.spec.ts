@@ -11,7 +11,9 @@ test("create a Shoe model with a size run and a Pack", async ({ page, t, appLoca
   const form = new ModelForm(page, t);
   await form.gotoNew(appLocale);
   await form.fill({ name, price: "100" });
+  await form.continue();
   await form.generateSizes(38, 40);
+  await form.continue();
   await form.addPack("Mix", { 38: 3, 39: 2, 40: 3 });
   await form.save();
 
@@ -29,6 +31,8 @@ test("edit a Pack's curve", async ({ page, t, appLocale, user }) => {
   const model = await createModel(user.id);
   const form = new ModelForm(page, t);
   await form.gotoEdit(appLocale, model.id);
+  await form.continue();
+  await form.continue();
   await form.setPackPairs({ 38: 4, 40: 0 });
   await form.save();
 
@@ -51,4 +55,31 @@ test("a model used on an order can't be deleted; an unused one can", async ({ pa
   await expect(list.deleted()).toBeVisible();
   await expect(list.row(unused.name)).toBeHidden();
   expect(await prisma.shoeModel.count({ where: { ownerId: user.id } })).toBe(1);
+});
+
+test("a new model can't leave the details step without a name", async ({ page, t, appLocale, user }) => {
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.continue();
+  await expect(form.nameRequired()).toBeVisible();
+  await expect(form.stepTitle("Details")).toBeVisible();
+  expect(await prisma.shoeModel.count({ where: { ownerId: user.id } })).toBe(0);
+
+  await form.fill({ name: unique("Loafer") });
+  await form.continue();
+  await expect(form.stepTitle("Sizes")).toBeVisible();
+});
+
+test("an existing model saves from its first step", async ({ page, t, appLocale, user }) => {
+  const model = await createModel(user.id);
+  const name = unique("Renamed");
+  const form = new ModelForm(page, t);
+  await form.gotoEdit(appLocale, model.id);
+  await form.fill({ name });
+  await form.save();
+
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/catalog$`));
+  await expect
+    .poll(async () => (await prisma.shoeModel.findUniqueOrThrow({ where: { id: model.id } })).name)
+    .toBe(name);
 });
