@@ -1,0 +1,367 @@
+"use client";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/components/alert-dialog";
+import { Button } from "@repo/ui/components/button";
+import { cn } from "@repo/ui/lib/utils";
+import { CheckIcon, ChevronLeft, ChevronRight, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+import { Illustration, type IllustrationName } from "@/components/ui/illustration";
+import { useRouter } from "@/i18n/navigation";
+
+/**
+ * The roomier controls of the stepped forms: 48px fields with a 16px corner
+ * and 16px text, buttons 44px on a computer and 52px on a phone. Applied here
+ * rather than in `@repo/ui`, so the rest of the app keeps its denser controls.
+ */
+export const roomy = {
+  field: cn(
+    "h-12 rounded-2xl bg-card px-3.5 text-base shadow-none md:text-base dark:bg-card",
+    // No spinner arrows: they crowd the small pair boxes and nobody steps a
+    // price by 0.01.
+    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+  ),
+  area: "min-h-24 rounded-2xl bg-card px-3.5 py-3 text-base shadow-none md:text-base dark:bg-card",
+  label: "text-[0.8125rem] font-medium text-muted-foreground",
+  button: "h-13 rounded-2xl px-5 text-base md:h-11 md:text-[0.9375rem]",
+  /** A secondary button: a raised puck on the sheet rather than an outline. */
+  raised:
+    "border-0 bg-card shadow-[var(--shadow-raised)] hover:bg-accent dark:bg-card dark:hover:bg-accent",
+};
+
+export interface Step {
+  label: string;
+}
+
+/**
+ * A full-screen form in steps, without the sidebar. One header row holds the
+ * form's title, where it is (numbered steps on a computer, a progress bar and
+ * "step 2 of 3" on a phone) and "✕ Cancel". The step itself sits on a raised
+ * sheet with the `preview` card beside it on a wide screen. `actions` is the
+ * footer: in the page on a computer, a fixed bottom bar on a phone.
+ *
+ * `reachable(i)` decides which steps the bar can jump to: finished ones while
+ * creating, all of them while editing. Cancel asks first when `dirty`.
+ */
+export function StepFlow({
+  title,
+  steps,
+  current,
+  reachable,
+  onSelect,
+  cancelHref,
+  dirty,
+  preview,
+  actions,
+  children,
+}: {
+  title: string;
+  steps: readonly Step[];
+  current: number;
+  reachable: (index: number) => boolean;
+  onSelect: (index: number) => void;
+  cancelHref: string;
+  dirty: boolean;
+  preview?: ReactNode;
+  actions: ReactNode;
+  children: ReactNode;
+}) {
+  const t = useTranslations("common");
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const sheetRef = useRef<HTMLElement>(null);
+  const firstStep = useRef(true);
+
+  // A new step starts at its title, for the eye and for a screen reader.
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0 });
+    sheetRef.current?.querySelector<HTMLElement>("[data-step-title]")?.focus();
+  }, [current]);
+
+  function cancel() {
+    if (dirty) setConfirming(true);
+    else router.push(cancelHref);
+  }
+
+  return (
+    <div className="flex min-h-svh flex-col bg-background md:bg-shell">
+      <header className="flex flex-col gap-3.5 px-4 pt-3.5 pb-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
+        <div className="flex items-center justify-between md:justify-start md:gap-7">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={cancel}
+            aria-label={t("cancel")}
+            className="size-11 rounded-[0.875rem] md:hidden"
+          >
+            <XIcon className="size-5.5" aria-hidden />
+          </Button>
+          <h1 className="font-semibold md:text-lg">{title}</h1>
+          <span className="size-11 md:hidden" aria-hidden />
+          <StepList
+            steps={steps}
+            current={current}
+            reachable={reachable}
+            onSelect={onSelect}
+          />
+        </div>
+        <StepProgress steps={steps} current={current} />
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={cancel}
+          className={cn(roomy.button, "hidden md:inline-flex")}
+        >
+          <XIcon className="size-4.5" aria-hidden />
+          {t("cancel")}
+        </Button>
+      </header>
+
+      <main className="grid flex-1 content-start items-start gap-8 px-4 pt-5 pb-32 md:px-10 md:pt-2 md:pb-0 lg:grid-cols-[minmax(0,1fr)_25rem]">
+        <section
+          ref={sheetRef}
+          className={cn(
+            "flex min-w-0 flex-col gap-5 md:gap-7 md:rounded-card md:bg-surface md:px-10 md:py-9",
+            "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-raised)]",
+          )}
+        >
+          {children}
+        </section>
+        {preview && <div className="sticky top-6 hidden lg:block">{preview}</div>}
+      </main>
+
+      <footer
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t bg-background px-4 pt-3",
+          "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+          "md:static md:justify-end md:gap-3 md:border-0 md:bg-transparent md:px-10 md:pt-4.5 md:pb-6",
+        )}
+      >
+        {actions}
+      </footer>
+
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("discardTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("discardBody")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("keepEditing")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => router.push(cancelHref)}
+            >
+              {t("discard")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+/** On a computer: the numbered steps, each one a button. */
+function StepList({
+  steps,
+  current,
+  reachable,
+  onSelect,
+}: {
+  steps: readonly Step[];
+  current: number;
+  reachable: (index: number) => boolean;
+  onSelect: (index: number) => void;
+}) {
+  const t = useTranslations("common");
+
+  return (
+    <nav aria-label={t("steps")} className="hidden md:block">
+      <ol className="flex items-center gap-2.5">
+        {steps.map((step, i) => {
+          const done = i < current;
+          const now = i === current;
+          return (
+            <li key={step.label} className="flex items-center gap-2.5">
+              {i > 0 && (
+                <span
+                  aria-hidden
+                  className={cn("h-[1.5px] w-9", i <= current ? "bg-foreground" : "bg-foreground/20")}
+                />
+              )}
+              <button
+                type="button"
+                disabled={!now && !reachable(i)}
+                aria-current={now ? "step" : undefined}
+                onClick={() => onSelect(i)}
+                className={cn(
+                  "flex items-center gap-2 rounded-md text-sm text-muted-foreground",
+                  "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                  "enabled:cursor-pointer disabled:cursor-default",
+                  (done || now) && "text-foreground",
+                  now && "font-semibold",
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex size-6.5 items-center justify-center rounded-full border-[1.5px] text-[0.8125rem] font-semibold tabular-nums",
+                    done && "border-foreground bg-foreground text-background",
+                    now && "border-2 border-foreground",
+                    !done && !now && "border-foreground/20",
+                  )}
+                >
+                  {done ? <CheckIcon className="size-3.5" aria-hidden /> : i + 1}
+                </span>
+                {step.label}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+/** On a phone: a segmented progress bar and "step 2 of 3 · Sizes". */
+function StepProgress({ steps, current }: { steps: readonly Step[]; current: number }) {
+  const t = useTranslations("common");
+
+  return (
+    <div className="flex flex-col gap-2 md:hidden">
+      <div className="flex gap-1.5" aria-hidden>
+        {steps.map((step, i) => (
+          <span
+            key={step.label}
+            className={cn(
+              "h-1 flex-1 rounded-full",
+              i <= current ? "bg-foreground" : "bg-foreground/20",
+            )}
+          />
+        ))}
+      </div>
+      <p className="text-[0.8125rem] text-muted-foreground">
+        {t("stepOf", {
+          current: current + 1,
+          total: steps.length,
+          name: steps[current]?.label ?? "",
+        })}
+      </p>
+    </div>
+  );
+}
+
+/** A step's title, with its illustration and a one-line hint. */
+export function StepHeader({
+  illustration,
+  title,
+  hint,
+}: {
+  illustration: IllustrationName;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="flex items-center gap-5">
+      <Illustration name={illustration} />
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2
+          data-step-title
+          tabIndex={-1}
+          className="text-3xl font-semibold tracking-[-0.01em] outline-none md:text-[2.125rem]"
+        >
+          {title}
+        </h2>
+        <p className="text-muted-foreground">{hint}</p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The footer's buttons. Back is a square icon on a phone and "‹ Back" on a
+ * computer. The primary button is the form's submit button, so Enter in a
+ * field does what it says: continue, or save on the last step. While editing,
+ * Save is always there and Continue becomes the secondary button.
+ */
+export function StepActions({
+  first,
+  last,
+  editing,
+  pending,
+  onBack,
+  onContinue,
+  saveLabel,
+}: {
+  first: boolean;
+  last: boolean;
+  editing: boolean;
+  pending: boolean;
+  onBack: () => void;
+  onContinue: () => void;
+  saveLabel: string;
+}) {
+  const t = useTranslations("common");
+  const saves = editing || last;
+
+  return (
+    <>
+      {!first && (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={onBack}
+          aria-label={t("back")}
+          className={cn(roomy.button, roomy.raised, "w-13 shrink-0 px-0 md:w-auto md:px-5")}
+        >
+          <ChevronRight className="size-5 ltr:rotate-180 md:size-4.5" aria-hidden />
+          <span className="hidden md:inline">{t("back")}</span>
+        </Button>
+      )}
+      {editing && !last && (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={onContinue}
+          className={cn(roomy.button, roomy.raised, "flex-1 md:flex-none")}
+        >
+          {t("continue")}
+          <ChevronLeft className="size-4.5 ltr:rotate-180" aria-hidden />
+        </Button>
+      )}
+      <Button
+        type="submit"
+        disabled={pending}
+        className={cn(roomy.button, "flex-1 md:min-w-40 md:flex-none")}
+      >
+        {saves ? (
+          <>
+            <CheckIcon className="size-4.5" aria-hidden />
+            {saveLabel}
+          </>
+        ) : (
+          <>
+            {t("continue")}
+            <ChevronLeft className="size-4.5 ltr:rotate-180" aria-hidden />
+          </>
+        )}
+      </Button>
+    </>
+  );
+}
