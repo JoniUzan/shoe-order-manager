@@ -64,7 +64,9 @@ the Terms in the root `CLAUDE.md` for Hebrew wording. Layout uses logical utilit
 Opened by the URL hash, `#settings` or `#settings/<general|account|business>` (ADR 0005).
 `SettingsHost` reads the hash; `components/settings/settings-hash.ts` opens it with
 `pushState`, switches sections with `replaceState` and closes with `history.back()`. Change the
-hash only through those helpers. Near-full-screen dialog on a computer, bottom drawer on a phone
+hash only through those helpers. A hash the browser changes by itself (a link to the same page
+with `#settings/…`) is handed to Next's router by `HashSync` (`components/layout/hash-sync.tsx`),
+or the next refresh drops it. Near-full-screen dialog on a computer, bottom drawer on a phone
 (`useIsPhone`). Rows are `SettingSection` / `SettingRow`; text fields are `AutosaveInput` (saves
 on blur). A language change does a full `window.location` load to the same page and hash. The
 user's `locale` and `theme` are stored on `User`: login redirects to the saved locale, and
