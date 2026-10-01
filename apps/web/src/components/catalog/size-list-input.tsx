@@ -159,7 +159,7 @@ export function SizeListInput({
         id={id}
         className={cn(
           "flex min-h-14 flex-wrap items-center gap-2 rounded-2xl border border-input",
-          "bg-card p-2.5",
+          "p-2.5 dark:bg-input/30",
         )}
       >
         {value.length === 0 ? (

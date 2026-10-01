@@ -202,7 +202,7 @@ export function CatalogForm({
         />
 
         {step === 0 && (
-          <div className="flex flex-col gap-5 md:grid md:grid-cols-[13.75rem_minmax(0,1fr)] md:items-start md:gap-7">
+          <div className="flex flex-col gap-5 @xl:grid @xl:grid-cols-[13.75rem_minmax(0,1fr)] @xl:items-start @xl:gap-7">
             <ImageSlot />
             <div className="flex flex-col gap-4.5">
               <Field label={t("name")} htmlFor="name">
@@ -271,7 +271,6 @@ export function CatalogForm({
 
         {step === 1 && (
           <div className="flex flex-col gap-5">
-            <p className="hidden text-muted-foreground md:block">{t("sizesHelp")}</p>
             <Field label={t("sizeFormat")} htmlFor="sizeFormat" className="max-w-64">
               <Select
                 value={values.sizeFormat}
@@ -307,7 +306,6 @@ export function CatalogForm({
 
         {step === 2 && (
           <div className="flex flex-col gap-5">
-            <p className="hidden text-muted-foreground md:block">{t("packsHelp")}</p>
             <PackEditor
               value={values.packs}
               sizes={values.sizes}
@@ -352,8 +350,8 @@ function ImageSlot() {
     <div
       className={cn(
         "flex h-24 flex-col items-center justify-center gap-1.5 rounded-[1.25rem] px-4 text-center",
-        "border-[1.5px] border-dashed border-foreground/20 bg-card text-muted-foreground",
-        "md:aspect-square md:h-auto md:gap-2.5",
+        "border-[1.5px] border-dashed border-foreground/20 text-muted-foreground",
+        "@xl:aspect-square @xl:h-auto @xl:gap-2.5",
       )}
     >
       <ImagePlus className="size-6 md:size-7" aria-hidden />
@@ -378,7 +376,7 @@ function ModelPreview({ values }: { values: FormValues }) {
     >
       {/* The Product image's place; the step illustration until there is one. */}
       <div className="flex aspect-square w-full items-center justify-center rounded-[1.125rem] border border-border bg-surface">
-        <Illustration name="sneaker" sizes="224px" className="size-3/5 md:size-3/5" />
+        <Illustration name="sneaker" sizes="320px" className="size-3/5 md:size-3/5" />
       </div>
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="truncate text-[1.375rem] font-semibold">

@@ -16,7 +16,10 @@ import { CheckIcon, ChevronLeft, ChevronRight, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { Illustration, type IllustrationName } from "@/components/ui/illustration";
+import {
+  Illustration,
+  type IllustrationName,
+} from "@/components/ui/illustration";
 import { useRouter } from "@/i18n/navigation";
 
 /**
@@ -26,17 +29,20 @@ import { useRouter } from "@/i18n/navigation";
  */
 export const roomy = {
   field: cn(
-    "h-12 rounded-2xl bg-card px-3.5 text-base shadow-none md:text-base dark:bg-card",
+    "h-12 rounded-2xl px-3.5 text-base shadow-none md:text-base",
     // No spinner arrows: they crowd the small pair boxes and nobody steps a
     // price by 0.01.
     "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
   ),
-  area: "min-h-24 rounded-2xl bg-card px-3.5 py-3 text-base shadow-none md:text-base dark:bg-card",
+  area: "min-h-24 rounded-2xl px-3.5 py-3 text-base shadow-none md:text-base",
   label: "text-[0.8125rem] font-medium text-muted-foreground",
   button: "h-13 rounded-2xl px-5 text-base md:h-11 md:text-[0.9375rem]",
-  /** A secondary button: a raised puck on the sheet rather than an outline. */
-  raised:
+  /** A secondary button: a raised puck rather than an outline. */
+  raised: cn(
     "border-0 bg-card shadow-[var(--shadow-raised)] hover:bg-accent dark:bg-card dark:hover:bg-accent",
+    // Disabled, a puck on a card would vanish: keep its outline instead.
+    "disabled:shadow-none disabled:ring-1 disabled:ring-input",
+  ),
 };
 
 export interface Step {
@@ -44,11 +50,11 @@ export interface Step {
 }
 
 /**
- * A full-screen form in steps, without the sidebar. One header row holds the
+ * A form in steps, inside the app's sidebar layout. One header row holds the
  * form's title, where it is (numbered steps on a computer, a progress bar and
  * "step 2 of 3" on a phone) and "✕ Cancel". The step itself sits on a raised
- * sheet with the `preview` card beside it on a wide screen. `actions` is the
- * footer: in the page on a computer, a fixed bottom bar on a phone.
+ * card with the `preview` card beside it on a wide screen. `actions` sit right
+ * under the step on a computer and in a fixed bottom bar on a phone.
  *
  * `reachable(i)` decides which steps the bar can jump to: finished ones while
  * creating, all of them while editing. Cancel asks first when `dirty`.
@@ -98,8 +104,8 @@ export function StepFlow({
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background md:bg-shell">
-      <header className="flex flex-col gap-3.5 px-4 pt-3.5 pb-3 md:flex-row md:items-center md:justify-between md:px-10 md:py-5">
+    <div className="flex flex-col gap-5 md:gap-6">
+      <header className="flex flex-col gap-3.5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between md:justify-start md:gap-7">
           <Button
             type="button"
@@ -111,7 +117,8 @@ export function StepFlow({
           >
             <XIcon className="size-5.5" aria-hidden />
           </Button>
-          <h1 className="font-semibold md:text-lg">{title}</h1>
+          {/* The page's h1 is the app header's section name. */}
+          <h2 className="font-semibold md:text-lg">{title}</h2>
           <span className="size-11 md:hidden" aria-hidden />
           <StepList
             steps={steps}
@@ -132,28 +139,37 @@ export function StepFlow({
         </Button>
       </header>
 
-      <main className="grid flex-1 content-start items-start gap-8 px-4 pt-5 pb-32 md:px-10 md:pt-2 md:pb-0 lg:grid-cols-[minmax(0,1fr)_25rem]">
-        <section
-          ref={sheetRef}
-          className={cn(
-            "flex min-w-0 flex-col gap-5 md:gap-7 md:rounded-card md:bg-surface md:px-10 md:py-9",
-            "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-raised)]",
+      {/* Sized by the room the sidebar leaves, not by the window: at 1280px
+          with the sidebar open a preview beside the step squeezed its fields. */}
+      <div className="@container">
+        <div className="grid items-start gap-6 pb-28 md:pb-0 @5xl:grid-cols-[minmax(0,1fr)_22rem] @7xl:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-8">
+          <div className="flex min-w-0 flex-col gap-5">
+            {/* The app's content panel is already the sheet, so the step is a
+              card on it: one rung up the shell → sheet → card ladder. */}
+            <section
+              ref={sheetRef}
+              className={cn(
+                "@container flex min-w-0 flex-col gap-5 md:gap-7 md:rounded-card md:bg-card md:px-10 md:py-9",
+                "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
+              )}
+            >
+              {children}
+            </section>
+            <footer
+              className={cn(
+                "fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t bg-background px-4 pt-3",
+                "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+                "md:static md:justify-end md:gap-3 md:border-0 md:bg-transparent md:p-0",
+              )}
+            >
+              {actions}
+            </footer>
+          </div>
+          {preview && (
+            <div className="sticky top-6 hidden @5xl:block">{preview}</div>
           )}
-        >
-          {children}
-        </section>
-        {preview && <div className="sticky top-6 hidden lg:block">{preview}</div>}
-      </main>
-
-      <footer
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t bg-background px-4 pt-3",
-          "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
-          "md:static md:justify-end md:gap-3 md:border-0 md:bg-transparent md:px-10 md:pt-4.5 md:pb-6",
-        )}
-      >
-        {actions}
-      </footer>
+        </div>
+      </div>
 
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent>
@@ -201,7 +217,10 @@ function StepList({
               {i > 0 && (
                 <span
                   aria-hidden
-                  className={cn("h-[1.5px] w-9", i <= current ? "bg-foreground" : "bg-foreground/20")}
+                  className={cn(
+                    "h-[1.5px] w-9",
+                    i <= current ? "bg-foreground" : "bg-foreground/20",
+                  )}
                 />
               )}
               <button
@@ -225,7 +244,11 @@ function StepList({
                     !done && !now && "border-foreground/20",
                   )}
                 >
-                  {done ? <CheckIcon className="size-3.5" aria-hidden /> : i + 1}
+                  {done ? (
+                    <CheckIcon className="size-3.5" aria-hidden />
+                  ) : (
+                    i + 1
+                  )}
                 </span>
                 {step.label}
               </button>
@@ -238,7 +261,13 @@ function StepList({
 }
 
 /** On a phone: a segmented progress bar and "step 2 of 3 · Sizes". */
-function StepProgress({ steps, current }: { steps: readonly Step[]; current: number }) {
+function StepProgress({
+  steps,
+  current,
+}: {
+  steps: readonly Step[];
+  current: number;
+}) {
   const t = useTranslations("common");
 
   return (
@@ -279,13 +308,13 @@ export function StepHeader({
     <div className="flex items-center gap-5">
       <Illustration name={illustration} />
       <div className="flex min-w-0 flex-col gap-1">
-        <h2
+        <h3
           data-step-title
           tabIndex={-1}
           className="text-3xl font-semibold tracking-[-0.01em] outline-none md:text-[2.125rem]"
         >
           {title}
-        </h2>
+        </h3>
         <p className="text-muted-foreground">{hint}</p>
       </div>
     </div>
@@ -327,9 +356,16 @@ export function StepActions({
           disabled={pending}
           onClick={onBack}
           aria-label={t("back")}
-          className={cn(roomy.button, roomy.raised, "w-13 shrink-0 px-0 md:w-auto md:px-5")}
+          className={cn(
+            roomy.button,
+            roomy.raised,
+            "w-13 shrink-0 px-0 md:w-auto md:px-5",
+          )}
         >
-          <ChevronRight className="size-5 ltr:rotate-180 md:size-4.5" aria-hidden />
+          <ChevronRight
+            className="size-5 ltr:rotate-180 md:size-4.5"
+            aria-hidden
+          />
           <span className="hidden md:inline">{t("back")}</span>
         </Button>
       )}

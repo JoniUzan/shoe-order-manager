@@ -119,7 +119,7 @@ export function PackEditor({
           <div
             key={pack.id ?? `new-${i}`}
             className={cn(
-              "flex min-w-0 flex-col gap-3.5 rounded-[1.25rem] bg-card p-4 shadow-[var(--shadow-card)]",
+              "flex min-w-0 flex-col gap-3.5 rounded-[1.25rem] bg-surface p-4",
               error && "ring-1 ring-destructive/60",
             )}
           >
@@ -219,7 +219,7 @@ export function PackEditor({
         className={cn(
           "flex h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-[1.25rem]",
           "border-[1.5px] border-dashed border-foreground/20 text-[0.9375rem] font-medium",
-          "outline-none hover:bg-card focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          "outline-none hover:bg-surface focus-visible:ring-[3px] focus-visible:ring-ring/50",
           "disabled:cursor-default disabled:opacity-50",
         )}
       >
