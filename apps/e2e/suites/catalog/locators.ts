@@ -30,9 +30,18 @@ export class ModelForm {
 
   /** Add a Pack with its curve, e.g. { 38: 3, 39: 2 }. */
   async addPack(name: string, curve: Record<string, number>) {
-    await this.page.getByRole("button", { name: this.t("catalog.addPack") }).click();
-    await this.page.getByLabel(this.t("catalog.packName")).last().fill(name);
+    await this.addEmptyPack();
+    await this.packName().last().fill(name);
     await this.setPackPairs(curve);
+  }
+
+  async addEmptyPack() {
+    await this.page.getByRole("button", { name: this.t("catalog.addPack") }).click();
+  }
+
+  /** Every Pack's name field, in order. */
+  packName() {
+    return this.page.getByLabel(this.t("catalog.packName"));
   }
 
   /** Pairs per size in the (last) Pack. */

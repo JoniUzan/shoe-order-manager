@@ -6,7 +6,7 @@ import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId } from "react";
+import { useId, useRef } from "react";
 
 import { roomy } from "@/components/form-steps/form-steps";
 
@@ -98,6 +98,9 @@ export function PackEditor({
   const t = useTranslations("catalog");
   const uid = useId();
   const errors = packErrors(value, sizes);
+  // A pack just added takes the focus, so typing goes into its name and not
+  // into the "Add pack" button (where a space would add another pack).
+  const focusPack = useRef<number | null>(null);
 
   function update(index: number, next: PackFormValue) {
     onChange(value.map((p, i) => (i === index ? next : p)));
@@ -129,6 +132,12 @@ export function PackEditor({
               </label>
               <Input
                 id={nameId}
+                ref={(el) => {
+                  if (el && focusPack.current === i) {
+                    focusPack.current = null;
+                    el.focus();
+                  }
+                }}
                 value={pack.name}
                 placeholder={t("packNamePlaceholder")}
                 maxLength={100}
@@ -215,7 +224,10 @@ export function PackEditor({
       <button
         type="button"
         disabled={value.length >= MAX_PACKS}
-        onClick={() => onChange([...value, { name: "", pairs: {} }])}
+        onClick={() => {
+          focusPack.current = value.length;
+          onChange([...value, { name: "", pairs: {} }]);
+        }}
         className={cn(
           "flex h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-[1.25rem]",
           "border-[1.5px] border-dashed border-foreground/20 text-[0.9375rem] font-medium",

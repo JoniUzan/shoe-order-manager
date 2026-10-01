@@ -83,3 +83,17 @@ test("an existing model saves from its first step", async ({ page, t, appLocale,
     .poll(async () => (await prisma.shoeModel.findUniqueOrThrow({ where: { id: model.id } })).name)
     .toBe(name);
 });
+
+test("a new Pack takes the focus, so typing names it", async ({ page, t, appLocale, user: _user }) => {
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name: unique("Loafer") });
+  await form.continue();
+  await form.continue();
+  await form.addEmptyPack();
+  await expect(form.packName().last()).toBeFocused();
+  // Typing a space used to press "Add Pack" again.
+  await page.keyboard.type("Pack A");
+  await expect(form.packName()).toHaveCount(1);
+  await expect(form.packName().last()).toHaveValue("Pack A");
+});
