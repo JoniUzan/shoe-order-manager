@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 
 import type { T } from "../../fixtures/index.ts";
 
-/** The new/edit Shoe model form, in three steps: details, sizes, Packs. */
+/** The new/edit Shoe model form: sizes, Packs, price. */
 export class ModelForm {
   constructor(
     private page: Page,
@@ -43,20 +43,6 @@ export class ModelForm {
         .last()
         .fill(String(pairs));
     }
-  }
-
-  /** The step forward. Each step's fields are only on the page while it shows. */
-  async continue() {
-    await this.page.getByRole("button", { name: this.t("common.continue") }).click();
-  }
-
-  /** A step's title, which shows while that step is open. */
-  stepTitle(step: "Details" | "Sizes" | "Packs") {
-    return this.page.getByRole("heading", { name: this.t(`catalog.step${step}`), exact: true });
-  }
-
-  nameRequired() {
-    return this.page.getByText(this.t("validation.required"));
   }
 
   async save() {

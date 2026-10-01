@@ -275,15 +275,7 @@
     "updated": "Model saved",
     "deleted": "Model deleted",
     "errorInUse": "Can't delete a model used in orders",
-    "errorGeneric": "Something went wrong. Please try again.",
-    "stepDetails": "Details",
-    "stepDetailsHint": "Name, price and description",
-    "stepSizes": "Sizes",
-    "stepSizesHint": "The size run this model is ordered in",
-    "stepPacks": "Packs",
-    "stepPacksHint": "The cartons this model is sold in",
-    "preview": "Preview",
-    "previewNotSet": "Not set yet"
+    "errorGeneric": "Something went wrong. Please try again."
   },
   "orders": {
     "title": "Orders",
@@ -399,10 +391,7 @@
     "back": "Back",
     "search": "Search",
     "actions": "Actions",
-    "none": "None",
-    "continue": "Continue",
-    "steps": "Steps",
-    "stepOf": "Step {current} of {total} · {name}"
+    "none": "None"
   },
   "settings": {
     "title": "Settings",
