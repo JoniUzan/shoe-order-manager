@@ -29,6 +29,9 @@ server code alike.
 - `catalog.ts`: sizes (`parseSizes`/`serializeSizes`/`normalizeSize`) and pack curves
   (`parseCurve`/`serializeCurve`/`expandPack`). Stored sizes and curves only ever pass through
   these, so their canonical string form stays in one place.
+- `document.ts`: the rows of an order's two PDFs. `buildOrderSummaryRows` groups by model, color
+  and unit price and keeps the cartons; `buildProductionRows` groups by model and color and
+  drops packs and money. Both add pairs up per size.
 - `status.ts`: order and payment status codes. Order statuses also live as DB rows, so
   `OrderStatusCode` is `string`, not a union.
 - `phone.ts`: normalizing Israeli numbers for WhatsApp links. `settings.ts`: locales, themes,

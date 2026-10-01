@@ -68,6 +68,8 @@ export const orderSchema = z
     customerId: z.string().min(1, { message: "customer_required" }),
     statusCode: z.string().min(1).default("not_done"),
     notes: z.string().trim().max(2000).optional().or(z.literal("")),
+    // Printed only on the Production sheet; `notes` never reach the factory.
+    factoryNote: z.string().trim().max(2000).optional().or(z.literal("")),
     // No depositAgorot here on purpose. It is a denormalised cache of
     // SUM(Payment.amountAgorot), owned solely by recomputeOrderPayment in
     // actions/payments.ts. Accepting it from the order form let a stale value

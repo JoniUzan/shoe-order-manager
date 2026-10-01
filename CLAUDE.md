@@ -98,6 +98,9 @@ Use these words in code, UI copy, commits and conversation. Hebrew is the UI wor
 | **Paid** | שולם | The sum of an order's Payments. The column `depositAgorot` and the UI label "מקדמה" mean this same total, not only an up-front payment. | deposit (as a separate concept) |
 | **Balance** | יתרה | Total minus Paid; what's still owed (never below zero when shown as debt). | |
 | **Payment status** | | `unpaid` / `partial` / `paid`, derived from total and Paid. | |
+| **Order summary** | סיכום הזמנה | An Order as a PDF for its Customer: pairs per size, cartons, prices, totals, Paid and Balance. | invoice |
+| **Production sheet** | דף ייצור | An Order as sent to the factory: the pairs per model, color and size of every line item, with no packs or cartons, no prices, totals or payments, and only the Customer's name. Not an Order of its own. | factory order, factory invoice |
+| **Factory note** | הערה למפעל | An Order's note meant for the factory. Printed only on the Production sheet; the regular notes never reach the factory. | |
 | **Picking** | ליקוט | Gathering an order's cartons and loose pairs for delivery. | packing |
 | **Sign-up** | הרשמה | Creating a User; open to anyone. | register |
 | **Onboarding** | | The welcome dialog after Sign-up: language, name/avatar/theme, then Business details. | setup wizard |

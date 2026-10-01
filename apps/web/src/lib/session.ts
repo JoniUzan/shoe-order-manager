@@ -26,9 +26,8 @@ export const requireUser = cache(async function requireUser(locale: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    // Also everything the settings dialog (in every page's layout) and the
-    // printed order show, so neither needs a second read that could find the
-    // row gone.
+    // Also the business details the settings dialog (in every page's layout)
+    // shows, so it needs no second read that could find the row gone.
     select: {
       id: true,
       name: true,

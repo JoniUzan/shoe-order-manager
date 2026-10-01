@@ -25,6 +25,8 @@ model Order {
   statusCode    String   @default("not_done")
   isCustomOrder Boolean  @default(false)
   notes         String?
+  // Printed only on the Production sheet; `notes` never reach the factory.
+  factoryNote   String?
   // Money in agorot (integer minor units). balance = totalAgorot - depositAgorot
   // is computed in app code, not stored.
   totalAgorot   Int      @default(0)

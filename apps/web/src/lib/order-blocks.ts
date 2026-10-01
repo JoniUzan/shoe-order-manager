@@ -56,6 +56,7 @@ export interface BlockForm {
 export interface OrderFormValues {
   customerId: string;
   notes: string;
+  factoryNote: string;
   statusCode: string;
   blocks: BlockForm[];
 }

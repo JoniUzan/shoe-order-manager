@@ -8,7 +8,7 @@ The only deployable: App Router, React 19, Auth.js v5, next-intl.
 
 - `src/app/[locale]/` is the root (there is no `app/layout.tsx`). `(app)/` is everything behind
   login, and its layout loads the user and mounts the sidebar and `SettingsHost`. `(auth)/` holds
-  login and sign-up. `print/` holds the printable order (no app shell).
+  login and sign-up. `app/api/orders/[id]/pdf/` serves an order's two PDFs.
 - `src/lib/actions/*.ts`: Server Actions, one file per area. `src/lib/*-query.ts`: server-only
   reads, one definition per list or report. `src/components/<area>/`: app components (shared
   primitives come from `@repo/ui`).
@@ -71,6 +71,14 @@ or the next refresh drops it. Near-full-screen dialog on a computer, bottom draw
 on blur). A language change does a full `window.location` load to the same page and hash. The
 user's `locale` and `theme` are stored on `User`: login redirects to the saved locale, and
 `ThemeSync` applies the saved theme once per load.
+
+## Order PDFs
+
+The Order summary and the Production sheet are built on the server with `@react-pdf/renderer`
+(ADR 0007): layouts in `lib/pdf/`, row grouping in `@repo/domain`'s `document.ts`. react-pdf
+lays text out LTR unless told otherwise, so a Hebrew `Text` takes `directional(rtl).text` and
+rows `row-reverse`; a user-typed value inside a translated line goes through `mark()`. Look at
+a layout change by rendering the PDF (`/api/orders/<id>/pdf?doc=…&lang=…`), not the web page.
 
 ## Auth
 

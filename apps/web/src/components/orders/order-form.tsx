@@ -197,6 +197,7 @@ export function OrderForm({
     defaultValues: defaultValues ?? {
       customerId: "",
       notes: "",
+      factoryNote: "",
       statusCode: "not_done",
       blocks: [{ ...EMPTY_BLOCK, packs: [], rows: [] }],
     },
@@ -365,6 +366,7 @@ export function OrderForm({
     const input: OrderInput = {
       customerId: values.customerId,
       notes: values.notes,
+      factoryNote: values.factoryNote,
       statusCode: values.statusCode || "not_done",
       // Loose pairs only. Sizes left blank or at zero never become line items.
       items: values.blocks.flatMap((block) =>
@@ -820,6 +822,19 @@ export function OrderForm({
       <div className="flex flex-col gap-1.5">
         <Label htmlFor={`${uid}-notes`}>{t("notes")}</Label>
         <Textarea id={`${uid}-notes`} rows={2} {...form.register("notes")} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${uid}-factory-note`}>{t("factoryNote")}</Label>
+        <Textarea
+          id={`${uid}-factory-note`}
+          rows={2}
+          maxLength={2000}
+          aria-describedby={`${uid}-factory-note-hint`}
+          {...form.register("factoryNote")}
+        />
+        <p id={`${uid}-factory-note-hint`} className="text-xs text-muted-foreground">
+          {t("factoryNoteHint")}
+        </p>
       </div>
 
       {/* Total + actions. Sticky on phones so committing never needs a scroll;

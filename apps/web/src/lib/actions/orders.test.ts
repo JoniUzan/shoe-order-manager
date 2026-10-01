@@ -214,6 +214,31 @@ describe("updateOrder", () => {
   });
 });
 
+describe("factory note", () => {
+  it("saves it on create, changes it on update and clears a blank one", async () => {
+    const s = await setup();
+    const id = await created({ ...packOrder(s), notes: "₪ price talk", factoryNote: " soft sole " });
+    expect(await prisma.order.findUniqueOrThrow({ where: { id } })).toMatchObject({
+      notes: "₪ price talk",
+      factoryNote: "soft sole",
+    });
+
+    await updateOrder(id, { ...packOrder(s), factoryNote: "no logo" });
+    expect((await prisma.order.findUniqueOrThrow({ where: { id } })).factoryNote).toBe("no logo");
+
+    await updateOrder(id, { ...packOrder(s), factoryNote: "   " });
+    expect((await prisma.order.findUniqueOrThrow({ where: { id } })).factoryNote).toBeNull();
+  });
+
+  it("refuses one over 2000 characters", async () => {
+    const s = await setup();
+    expect(await createOrder({ ...packOrder(s), factoryNote: "x".repeat(2001) })).toEqual({
+      ok: false,
+      error: "invalid",
+    });
+  });
+});
+
 describe("status and delete", () => {
   it("sets status and deletes, one or many, only for the owner", async () => {
     const s = await setup();

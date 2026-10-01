@@ -64,6 +64,7 @@ export default async function EditOrderPage({
         defaultValues={{
           customerId: order.customerId,
           notes: order.notes ?? "",
+          factoryNote: order.factoryNote ?? "",
           statusCode: order.statusCode,
           blocks: groupItemsIntoBlocks(
             order.items,

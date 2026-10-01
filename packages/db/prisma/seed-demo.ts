@@ -351,6 +351,9 @@ async function main() {
           statusCode: age > 14 || rand() < 0.4 ? "done" : "not_done",
           isCustomOrder: items.some((it) => it.customDescription !== null),
           notes: rand() < 0.15 ? "לאסוף מהמחסן ביום ראשון" : null,
+          factoryNote: items.some((it) => it.customDescription !== null)
+            ? "סוליה רכה, בלי לוגו על הבטנה"
+            : null,
           totalAgorot: total,
           depositAgorot: deposit,
           paymentStatus,

@@ -14,13 +14,12 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
     "@hookform/resolvers": "^3.10.0",
+    "@react-pdf/renderer": "^4.9.0",
     "@repo/db": "workspace:*",
     "@repo/domain": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "bcryptjs": "^2.4.3",
-    "html2canvas-pro": "^1.5.11",
-    "jspdf": "^3.0.1",
     "lucide-react": "^0.470.0",
     "next": "16.3.0",
     "next-auth": "5.0.0-beta.25",
@@ -46,6 +45,7 @@
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "unpdf": "^1.8.1",
     "vitest": "^5.0.2"
   }
 }
