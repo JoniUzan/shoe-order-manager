@@ -45,7 +45,8 @@ const flow = useStepForm({
   before `Preview` in JSX: it hides itself when a later Preview sibling has its column.
 - **A one-page form** (the Customer form): `steps: []`. The bar disappears and Actions shows
   only Save. Skip `Step` and put the content straight in `Pane`.
-- **Actions** picks Back / Continue / Save from the state. Compose `<StepForm.Back />`,
+- **Actions** picks Back / Continue / Save from the state; `aside` puts a short line (the
+  order's counts) at the row's start on a computer. Compose `<StepForm.Back />`,
   `<StepForm.Next />`, `<StepForm.Submit>` inside `<StepForm.Actions>` only for a different set.
 - The forms sit inside the app layout with the sidebar (a full-screen version was rejected).
   The pane is a card on the content panel and stretches to the panel's height; on a phone it

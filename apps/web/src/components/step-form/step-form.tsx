@@ -665,9 +665,12 @@ function PreviewRow({
  */
 function Actions({
   saveLabel,
+  aside,
   children,
 }: {
   saveLabel?: string;
+  /** A short line at the row's start on a computer, like the order's counts. */
+  aside?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -679,6 +682,13 @@ function Actions({
         "md:static md:justify-end md:gap-3 md:border-0 md:bg-transparent md:p-0 md:[grid-area:actions]",
       )}
     >
+      {aside && (
+        // As tall as the buttons, not centred: the row can be taller than
+        // them when the Preview beside it is.
+        <p className="me-auto hidden h-11 items-center text-sm text-muted-foreground md:flex">
+          {aside}
+        </p>
+      )}
       {children ?? (
         <>
           <Back />
