@@ -173,6 +173,8 @@ export function CatalogForm({
       // at all: no toast, no message, and the browser's tooltip pointing at a
       // throwaway field. Validation is react-hook-form's job here.
       noValidate
+      // Passes the content panel's height on to StepFlow.
+      className="flex flex-1 flex-col"
     >
       <StepFlow
         title={editing ? t("edit") : t("new")}

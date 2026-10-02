@@ -137,7 +137,9 @@ export function StepFlow({
   }
 
   return (
-    <div className="flex flex-col gap-5 md:gap-6">
+    // Fills the content panel's height, so on a computer the step's card
+    // reaches down to its buttons however short the step is.
+    <div className="flex flex-1 flex-col gap-5 md:gap-6">
       <header className="flex flex-col gap-3.5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between md:justify-start md:gap-7">
           <Button
@@ -174,15 +176,16 @@ export function StepFlow({
 
       {/* Sized by the room the sidebar leaves, not by the window: at 1280px
           with the sidebar open a preview beside the step squeezed its fields. */}
-      <div className="@container">
-        <div className="grid items-start gap-6 pb-28 md:pb-0 @5xl:grid-cols-[minmax(0,1fr)_22rem] @7xl:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-8">
+      <div className="flex flex-1 flex-col @container">
+        <div className="grid flex-1 gap-6 pb-28 md:pb-0 @5xl:grid-cols-[minmax(0,1fr)_22rem] @7xl:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-8">
           <div className="flex min-w-0 flex-col gap-5">
+            {/* md:flex-1 stretches the card; on a phone it isn't a card. */}
             {/* The app's content panel is already the sheet, so the step is a
               card on it: one rung up the shell → sheet → card ladder. */}
             <section
               ref={sheetRef}
               className={cn(
-                "@container min-w-0 md:rounded-card md:bg-card md:px-10 md:py-9",
+                "@container min-w-0 md:flex-1 md:rounded-card md:bg-card md:px-10 md:py-9",
                 "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
               )}
             >
@@ -214,7 +217,7 @@ export function StepFlow({
             </footer>
           </div>
           {preview && (
-            <div className="sticky top-6 hidden @5xl:block">{preview}</div>
+            <div className="sticky top-6 hidden self-start @5xl:block">{preview}</div>
           )}
         </div>
       </div>
