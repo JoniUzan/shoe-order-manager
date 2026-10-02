@@ -15,7 +15,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { Link } from "@/i18n/navigation";
 import type { RawSearchParams } from "@/lib/list-params";
-import { listOrders, parseOrderListParams } from "@/lib/orders-query";
+import {
+  listOrders,
+  ORDER_LIST_DEFAULTS,
+  parseOrderListParams,
+} from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
 
 export default async function CustomerDetailPage({
@@ -104,7 +108,12 @@ export default async function CustomerDetailPage({
           <h3 className="text-sm font-medium text-muted-foreground">
             {t("orderHistory")}
           </h3>
-          {list.total === 0 && list.params.q === "" ? (
+          {/* Only a Customer with no orders at all gets the bare card. An
+              empty result under a search or filter keeps the table, so the
+              toolbar stays and the empty row offers "clear filters". */}
+          {list.total === 0 &&
+          list.params.q === "" &&
+          list.params.filter === ORDER_LIST_DEFAULTS.filter ? (
             <Card>
               <CardContent className="py-6 text-center text-sm text-muted-foreground">
                 {t("noOrders")}

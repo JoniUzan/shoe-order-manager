@@ -61,4 +61,25 @@ export class CustomerPage {
   hasOrdersError() {
     return this.page.getByText(this.t("customers.errorHasOrders"));
   }
+
+  /** The order history's filter tabs: all, open, unpaid. */
+  filterTab(key: "filterAll" | "filterOpen" | "filterUnpaid") {
+    return this.page.getByRole("tab", { name: this.t(`orders.${key}`) });
+  }
+
+  noMatch() {
+    return this.page.getByText(this.t("dashboard.noMatch"));
+  }
+
+  /** The order history's footer, e.g. "1 orders". */
+  rowCount(count: number) {
+    // On a phone the count text matches twice; only one is shown.
+    return this.page
+      .getByText(this.t("dashboard.rowCount", { count }), { exact: true })
+      .filter({ visible: true });
+  }
+
+  clearFiltersButton() {
+    return this.page.getByRole("button", { name: this.t("list.clearFilters") });
+  }
 }
