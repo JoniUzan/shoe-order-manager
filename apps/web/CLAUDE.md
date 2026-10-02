@@ -45,6 +45,9 @@ P2002.
 
 ## Client forms
 
+A create/edit form is built from `components/step-form/` (StepForm, `roomy`, `useAddedItem`); its
+`CLAUDE.md` has the rules and the `stepped-form` skill the steps.
+
 Validate on the client with the same domain schema the action uses (react-hook-form +
 `zodResolver` in the simple forms). Submit with a plain `async` handler and a
 `useState` pending flag, then call `router.push(...)` **after** the awaited action.
