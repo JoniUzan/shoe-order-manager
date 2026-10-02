@@ -188,6 +188,9 @@ function Root({
             "md:has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_minmax(0,1fr)_auto]",
             "@5xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_22rem]",
             "@5xl:has-[>[data-slot=step-form-preview]]:[grid-template-areas:'header_header'_'pane_preview'_'actions_preview']",
+            // Three rows again: the Summary, hidden beside a Preview, mustn't
+            // keep a row of its own, or the buttons' row takes the stretch.
+            "@5xl:has-[>[data-slot=step-form-preview]]:grid-rows-[auto_minmax(0,1fr)_auto]",
             "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
             className,
           )}
@@ -520,18 +523,24 @@ function Field({
  */
 function Preview({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <aside
-      aria-label={label}
+    // The column's slot. The card sits in it out of flow, so its height never
+    // sizes the grid's rows: a long order's preview would otherwise stretch
+    // the buttons' row (it spans it) and squeeze the pane. Taller than the
+    // slot, the card scrolls.
+    <div
       data-slot="step-form-preview"
-      className={cn(
-        "sticky top-6 hidden flex-col gap-4 self-start [grid-area:preview] @5xl:flex",
-        // A long order's preview scrolls too, rather than run past the window.
-        "md:max-h-full md:overflow-y-auto",
-        "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
-      )}
+      className="relative hidden [grid-area:preview] @5xl:block"
     >
-      {children}
-    </aside>
+      <aside
+        aria-label={label}
+        className={cn(
+          "absolute inset-x-0 top-0 flex max-h-full flex-col gap-4 overflow-y-auto overscroll-contain",
+          "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
+        )}
+      >
+        {children}
+      </aside>
+    </div>
   );
 }
 
