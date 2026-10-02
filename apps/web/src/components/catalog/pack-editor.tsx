@@ -4,9 +4,12 @@ import { MAX_PACKS, type Curve } from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId } from "react";
+
+import { roomy } from "@/components/step-form/roomy";
+import { useAddedItem } from "@/components/step-form/use-added-item";
 
 /** A pack as the catalog form edits it: pairs are kept as typed, per size. */
 export interface PackFormValue {
@@ -96,13 +99,15 @@ export function PackEditor({
   const t = useTranslations("catalog");
   const uid = useId();
   const errors = packErrors(value, sizes);
+  // The pack just added takes the focus and eases in (see useAddedItem).
+  const added = useAddedItem();
 
   function update(index: number, next: PackFormValue) {
     onChange(value.map((p, i) => (i === index ? next : p)));
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {value.map((pack, i) => {
         const orphans = orphanSizes(pack, sizes);
         const columns = [...sizes, ...orphans];
@@ -117,109 +122,95 @@ export function PackEditor({
           <div
             key={pack.id ?? `new-${i}`}
             className={cn(
-              "flex min-w-0 flex-col gap-3 rounded-md border p-3",
-              error && "border-destructive/60",
+              "flex min-w-0 flex-col gap-3.5 rounded-[1.25rem] bg-surface p-4",
+              added.className(i),
+              error && "ring-1 ring-destructive/60",
             )}
           >
-            <div className="flex items-end gap-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <label
-                  htmlFor={nameId}
-                  className="text-xs text-muted-foreground"
-                >
-                  {t("packName")}
-                </label>
-                <Input
-                  id={nameId}
-                  value={pack.name}
-                  placeholder={t("packNamePlaceholder")}
-                  maxLength={100}
-                  aria-invalid={
-                    error?.key === "errorPackName" ||
-                    error?.key === "errorPackNameDuplicate"
-                  }
-                  onChange={(e) => update(i, { ...pack, name: e.target.value })}
-                  className="h-11 md:h-9"
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor={nameId} className="sr-only">
+                {t("packName")}
+              </label>
+              <Input
+                id={nameId}
+                ref={added.focusRef(i)}
+                value={pack.name}
+                placeholder={t("packNamePlaceholder")}
+                maxLength={100}
+                aria-invalid={
+                  error?.key === "errorPackName" ||
+                  error?.key === "errorPackNameDuplicate"
+                }
+                onChange={(e) => update(i, { ...pack, name: e.target.value })}
+                className={cn(roomy.field, "h-11 flex-1")}
+              />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => onChange(value.filter((_, k) => k !== i))}
+                onClick={() => {
+                  added.reset();
+                  onChange(value.filter((_, k) => k !== i));
+                }}
                 aria-label={t("removePack", { name: pack.name })}
-                className="size-11 md:size-9"
+                className="size-11 rounded-[0.875rem]"
               >
-                <Trash2 className="size-4" />
+                <X className="size-4.5" />
               </Button>
             </div>
 
             {columns.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[0.8125rem] text-muted-foreground">
                 {t("packsNeedSizes")}
               </p>
             ) : (
-              // Scrolls inside itself so a long run never scrolls the page.
-              <div className="overflow-x-auto">
-                <div className="flex items-start gap-1.5">
-                  <div className="flex shrink-0 flex-col gap-1.5 pe-1 text-xs text-muted-foreground">
-                    <span className="flex h-6 items-center">
-                      {t("packSize")}
-                    </span>
-                    <span className="flex h-11 items-center md:h-9">
-                      {t("packPairs")}
-                    </span>
-                  </div>
-                  {columns.map((size) => {
-                    const orphan = !sizes.includes(size);
-                    return (
-                      <div
-                        key={size}
-                        className="flex shrink-0 flex-col items-center gap-1.5"
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-2">
+                {columns.map((size) => {
+                  const orphan = !sizes.includes(size);
+                  return (
+                    <div key={size} className="flex flex-col gap-1">
+                      <span
+                        className={cn(
+                          "text-center text-xs tabular-nums",
+                          orphan
+                            ? "font-semibold text-destructive"
+                            : "text-muted-foreground",
+                        )}
                       >
-                        <span
-                          className={cn(
-                            "flex h-6 items-center text-xs tabular-nums",
-                            orphan
-                              ? "font-semibold text-destructive"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {size}
-                        </span>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="999"
-                          inputMode="numeric"
-                          dir="ltr"
-                          value={pack.pairs[size] ?? ""}
-                          onChange={(e) =>
-                            update(i, {
-                              ...pack,
-                              pairs: { ...pack.pairs, [size]: e.target.value },
-                            })
-                          }
-                          aria-label={t("packPairsFor", { size })}
-                          aria-invalid={orphan}
-                          className={cn(
-                            "h-11 w-14 px-1 text-center font-medium md:h-9",
-                            pairsOf(pack.pairs[size]) > 0 &&
-                              "border-foreground/25",
-                          )}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
+                        {size}
+                      </span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="999"
+                        inputMode="numeric"
+                        dir="ltr"
+                        value={pack.pairs[size] ?? ""}
+                        onChange={(e) =>
+                          update(i, {
+                            ...pack,
+                            pairs: { ...pack.pairs, [size]: e.target.value },
+                          })
+                        }
+                        aria-label={t("packPairsFor", { size })}
+                        aria-invalid={orphan}
+                        className={cn(
+                          roomy.field,
+                          "h-11 rounded-xl px-1 text-center font-medium tabular-nums",
+                          pairsOf(pack.pairs[size]) > 0 && "border-foreground/25",
+                        )}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[0.8125rem] text-muted-foreground">
               {t("packPairsTotal", { count: total })}
             </p>
             {error && (
-              <p className="text-sm text-destructive">
+              <p className={cn("text-sm text-destructive", roomy.appear)}>
                 {error.key === "errorPackSizeNotInRun"
                   ? t(error.key, { sizes: error.sizes })
                   : t(error.key)}
@@ -229,23 +220,29 @@ export function PackEditor({
         );
       })}
 
-      <Button
+      <button
         type="button"
-        variant="outline"
-        size="sm"
         disabled={value.length >= MAX_PACKS}
-        onClick={() => onChange([...value, { name: "", pairs: {} }])}
-        className="h-11 self-start md:h-8"
+        onClick={() => {
+          added.add(value.length);
+          onChange([...value, { name: "", pairs: {} }]);
+        }}
+        className={cn(
+          "flex h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-[1.25rem]",
+          "border-[1.5px] border-dashed border-foreground/20 text-[0.9375rem] font-medium",
+          "outline-none hover:bg-surface focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          "disabled:cursor-default disabled:opacity-50",
+          roomy.press,
+        )}
       >
-        <Plus className="size-4" />
+        <Plus className="size-4.5" aria-hidden />
         {t("addPack")}
-      </Button>
+      </button>
       {value.length >= MAX_PACKS && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[0.8125rem] text-muted-foreground">
           {t("packsMax", { max: MAX_PACKS })}
         </p>
       )}
     </div>
   );
 }
-

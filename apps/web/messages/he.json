@@ -218,7 +218,6 @@
     "price": "מחיר ברירת מחדל",
     "orderLines": "שורות הזמנה",
     "sizes": "מידות",
-    "sizesHelp": "טווח המידות שבו הדגם מוזמן. טופס ההזמנה בונה את הטבלה מהרשימה הזו.",
     "sizeFormat": "שיטת מידות",
     "sizeFormat_eu": "אירופאי (EU)",
     "sizeFormat_us": "אמריקאי (US)",
@@ -234,7 +233,6 @@
     "sizesAddPlaceholder": "לדוגמה 42.5",
     "removeSize": "הסרת מידה {size}",
     "packs": "סדרות",
-    "packsHelp": "הקרטונים שבהם הדגם נמכר, עם מספר קבוע של זוגות בכל מידה. בהזמנה אפשר לקחת כמה קרטונים מסדרה ועוד זוגות בודדים.",
     "packsEmpty": "אין סדרות",
     "addPack": "הוספת סדרה",
     "removePack": "הסרת סדרה {name}",
@@ -275,7 +273,17 @@
     "updated": "הדגם נשמר",
     "deleted": "הדגם נמחק",
     "errorInUse": "לא ניתן למחוק דגם שנמצא בשימוש בהזמנות",
-    "errorGeneric": "משהו השתבש. נסו שוב."
+    "errorGeneric": "משהו השתבש. נסו שוב.",
+    "stepDetails": "פרטים",
+    "stepDetailsHint": "שם, תמונה ומחיר",
+    "stepSizes": "מידות",
+    "stepSizesHint": "טווח המידות שבו הדגם מוזמן",
+    "stepPacks": "סדרות",
+    "stepPacksHint": "הקרטונים שבהם הדגם נמכר",
+    "productImage": "תמונת מוצר",
+    "productImageSoon": "העלאת תמונה תגיע בקרוב",
+    "preview": "תצוגה מקדימה",
+    "previewNoPacks": "טרם נוספו"
   },
   "orders": {
     "title": "הזמנות",
@@ -391,7 +399,15 @@
     "back": "חזרה",
     "search": "חיפוש",
     "actions": "פעולות",
-    "none": "ללא"
+    "none": "ללא",
+    "continue": "המשך",
+    "steps": "שלבים",
+    "stepOf": "שלב {current} מתוך {total} · {name}",
+    "discardTitle": "לבטל את השינויים?",
+    "discardBody": "מה שמילאתם כאן לא יישמר.",
+    "discard": "ביטול השינויים",
+    "keepEditing": "המשך עריכה",
+    "notSet": "טרם הוגדר"
   },
   "settings": {
     "title": "הגדרות",

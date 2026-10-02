@@ -46,7 +46,8 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 
 - Server Component page: `requireUser(locale)` then an `ownerId`-scoped query (lists go through
   `lib/*-query.ts` and `list-params.ts`).
-- Client form: same schema for validation, async submit, `router.push` after the await.
+- Client form: same schema for validation, async submit, `router.push` after the await. Build
+  it on StepForm with the `stepped-form` skill.
 - Every string in both `messages/en.json` and `messages/he.json`; logical Tailwind utilities
   only.
 - A new screen or flow gets a spec in its area's suite, `apps/e2e/suites/<area>/`, in the same

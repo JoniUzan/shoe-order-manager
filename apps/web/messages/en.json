@@ -218,7 +218,6 @@
     "price": "Default price",
     "orderLines": "Order lines",
     "sizes": "Sizes",
-    "sizesHelp": "The run this model is ordered in. The order form lays out its grid from this list.",
     "sizeFormat": "Size system",
     "sizeFormat_eu": "European (EU)",
     "sizeFormat_us": "US",
@@ -234,7 +233,6 @@
     "sizesAddPlaceholder": "e.g. 42.5",
     "removeSize": "Remove size {size}",
     "packs": "Packs",
-    "packsHelp": "Boxes this model is sold in, with a fixed number of pairs per size. Orders can take N of a pack plus extra pairs.",
     "packsEmpty": "No packs",
     "addPack": "Add pack",
     "removePack": "Remove pack {name}",
@@ -275,7 +273,17 @@
     "updated": "Model saved",
     "deleted": "Model deleted",
     "errorInUse": "Can't delete a model used in orders",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "stepDetails": "Details",
+    "stepDetailsHint": "Name, photo and price",
+    "stepSizes": "Sizes",
+    "stepSizesHint": "The size run this model is ordered in",
+    "stepPacks": "Packs",
+    "stepPacksHint": "The cartons this model is sold in",
+    "productImage": "Product image",
+    "productImageSoon": "Photo upload is coming soon",
+    "preview": "Preview",
+    "previewNoPacks": "None yet"
   },
   "orders": {
     "title": "Orders",
@@ -391,7 +399,15 @@
     "back": "Back",
     "search": "Search",
     "actions": "Actions",
-    "none": "None"
+    "none": "None",
+    "continue": "Continue",
+    "steps": "Steps",
+    "stepOf": "Step {current} of {total} · {name}",
+    "discardTitle": "Discard changes?",
+    "discardBody": "Nothing you entered here will be saved.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing",
+    "notSet": "Not set yet"
   },
   "settings": {
     "title": "Settings",

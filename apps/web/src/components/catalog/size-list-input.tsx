@@ -21,6 +21,8 @@ import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
+import { cascadeDelay, roomy } from "@/components/step-form/roomy";
+
 /**
  * A model's size run.
  *
@@ -49,6 +51,12 @@ export function SizeListInput({
   const [to, setTo] = useState("");
   const [step, setStep] = useState("1");
   const [extra, setExtra] = useState("");
+  // Chips ease in only after the user changes the run here: not when the step
+  // opens on sizes already there. Each Generate is a new generation of keys,
+  // so the whole replaced run plays again; a size added by hand comes alone.
+  const [generation, setGeneration] = useState(0);
+  const [live, setLive] = useState(false);
+  const [stagger, setStagger] = useState(false);
 
   const fromN = Number(from);
   const toN = Number(to);
@@ -65,6 +73,9 @@ export function SizeListInput({
     // Replaces rather than merges: correcting 36→38 and generating again must
     // not leave 36 and 37 behind.
     onChange(expandSizeRange(fromN, toN, step === "0.5" ? 0.5 : 1));
+    setGeneration((g) => g + 1);
+    setLive(true);
+    setStagger(true);
   }
 
   const atCapacity = value.length >= MAX_SIZES;
@@ -75,6 +86,8 @@ export function SizeListInput({
     // with a generic "something went wrong" and no field to point at.
     if (!size || atCapacity) return;
     onChange(canonicalSizes([...value, size]));
+    setLive(true);
+    setStagger(false);
     setExtra("");
   }
 
@@ -84,8 +97,8 @@ export function SizeListInput({
     v: string,
     set: (s: string) => void,
   ) => (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={fieldId} className="text-xs text-muted-foreground">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={fieldId} className={roomy.label}>
         {label}
       </label>
       <Input
@@ -104,25 +117,25 @@ export function SizeListInput({
         step="0.5"
         min="0.5"
         dir="ltr"
-        className="h-11 w-20 text-center md:h-9"
+        className={cn(roomy.field, "w-24 text-center tabular-nums")}
         aria-invalid={rangeInvalid}
       />
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {/* Generator */}
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-end gap-3">
         {numberField(t("sizesFrom"), `${uid}-from`, from, setFrom)}
         {numberField(t("sizesTo"), `${uid}-to`, to, setTo)}
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor={`${uid}-step`} className="text-xs text-muted-foreground">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`${uid}-step`} className={roomy.label}>
             {t("sizesStep")}
           </label>
           <Select value={step} onValueChange={setStep}>
-            <SelectTrigger id={`${uid}-step`} className="h-11 w-24 md:h-9">
+            <SelectTrigger id={`${uid}-step`} className={cn(roomy.field, "w-24 data-[size=default]:h-12")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -137,7 +150,7 @@ export function SizeListInput({
           variant="outline"
           onClick={generate}
           disabled={!canGenerate}
-          className="h-11 md:h-9"
+          className={cn(roomy.button, roomy.raised, "h-12 md:h-12")}
         >
           {t("sizesGenerate")}
         </Button>
@@ -145,7 +158,7 @@ export function SizeListInput({
 
       <p
         className={cn(
-          "text-xs",
+          "text-[0.8125rem]",
           rangeInvalid ? "text-destructive" : "text-muted-foreground",
         )}
       >
@@ -156,29 +169,35 @@ export function SizeListInput({
       <div
         id={id}
         className={cn(
-          "flex min-h-11 flex-wrap items-center gap-1.5 rounded-md border border-input",
-          "bg-transparent px-2 py-1.5 shadow-xs dark:bg-input/30",
+          "flex min-h-14 flex-wrap items-center gap-2 rounded-2xl border border-input",
+          "p-2.5 dark:bg-input/30",
         )}
       >
         {value.length === 0 ? (
-          <span className="px-1 text-sm text-muted-foreground">
+          <span className="px-1.5 text-muted-foreground">
             {t("sizesEmpty")}
           </span>
         ) : (
-          value.map((size) => (
+          value.map((size, i) => (
             <Badge
-              key={size}
+              key={`${generation}-${size}`}
               variant="secondary"
-              className="gap-1 py-1 ps-2.5 pe-1"
+              className={cn(
+                "h-8 gap-1 rounded-full ps-3 pe-1 text-sm",
+                // One even wave after Generate, clickable throughout; a size
+                // added by hand comes alone (see roomy.cascade).
+                live && roomy.cascade,
+              )}
+              style={stagger ? cascadeDelay(i, value.length) : undefined}
             >
               <span className="tabular-nums">{size}</span>
               <button
                 type="button"
                 onClick={() => onChange(value.filter((s) => s !== size))}
                 aria-label={t("removeSize", { size })}
-                className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+                className="rounded-full p-1 text-muted-foreground hover:text-foreground"
               >
-                <X className="size-3" />
+                <X className="size-3.5" />
               </button>
             </Badge>
           ))
@@ -186,7 +205,7 @@ export function SizeListInput({
       </div>
 
       {/* One-off additions outside the generated run */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <Input
           value={extra}
           onChange={(e) => setExtra(e.target.value)}
@@ -206,7 +225,7 @@ export function SizeListInput({
           inputMode="decimal"
           placeholder={t("sizesAddPlaceholder")}
           aria-label={t("sizesAdd")}
-          className="h-11 w-32 text-center md:h-9"
+          className={cn(roomy.field, "w-40 text-center")}
         />
         <Button
           type="button"
@@ -215,9 +234,9 @@ export function SizeListInput({
           onClick={addExtra}
           disabled={!normalizeSize(extra) || atCapacity}
           aria-label={t("sizesAdd")}
-          className="size-11 md:size-9"
+          className={cn(roomy.raised, roomy.press, "size-12 rounded-2xl")}
         >
-          <Plus className="size-4" />
+          <Plus className="size-4.5" />
         </Button>
       </div>
     </div>
