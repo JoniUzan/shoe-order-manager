@@ -11,10 +11,22 @@ export class ModelForm {
 
   async gotoNew(locale: string) {
     await this.page.goto(`/${locale}/catalog/new`);
+    await this.ready();
   }
 
   async gotoEdit(locale: string, id: string) {
     await this.page.goto(`/${locale}/catalog/${id}/edit`);
+    await this.ready();
+  }
+
+  /**
+   * Until the form hydrates its fields are the server's HTML, and
+   * react-hook-form then writes the saved values in over anything typed:
+   * an edit that typed too early saved "Runner 8ea5…Renamed 5e0b…".
+   * StepForm marks itself ready once it runs in the browser.
+   */
+  private async ready() {
+    await this.page.locator("form[data-ready]").waitFor();
   }
 
   async fill(fields: { name?: string; price?: string }) {

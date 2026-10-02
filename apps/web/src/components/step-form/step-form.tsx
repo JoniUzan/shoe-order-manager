@@ -21,6 +21,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type FormEvent,
   type ReactNode,
 } from "react";
@@ -147,6 +148,8 @@ function Root({
   className?: string;
   children: ReactNode;
 }) {
+  const ready = useHydrated();
+
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     if (!flow.saves) {
       e.preventDefault();
@@ -166,6 +169,10 @@ function Root({
           // silently vetoes submit when a scratch field holds a bad value.
           noValidate
           data-slot="step-form"
+          // Set once the form runs in the browser. Until then the fields are
+          // the server's HTML, and react-hook-form writes their saved values
+          // in on hydration, over anything typed before it.
+          data-ready={ready || undefined}
           className={cn(
             "grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] gap-x-6 gap-y-5 pb-28 md:gap-y-6 md:pb-0",
             "[grid-template-areas:'header'_'pane'_'actions']",
@@ -179,6 +186,16 @@ function Root({
         </form>
       </div>
     </StepFormContext>
+  );
+}
+
+const noSubscribe = () => () => {};
+/** False in the server's HTML and while hydrating, true after. */
+function useHydrated() {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => true,
+    () => false,
   );
 }
 
