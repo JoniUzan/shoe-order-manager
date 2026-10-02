@@ -404,7 +404,7 @@ function ProgressFill({ filled }: { filled: boolean }) {
  */
 function Pane({ children }: { children: ReactNode }) {
   const { current } = useStepFormContext();
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const first = useRef(true);
 
   useEffect(() => {
@@ -420,16 +420,28 @@ function Pane({ children }: { children: ReactNode }) {
 
   return (
     <section
-      ref={ref}
       data-slot="step-form-pane"
       className={cn(
-        "@container flex min-w-0 flex-col gap-5 [grid-area:pane] md:gap-7",
-        "md:rounded-card md:bg-card md:px-10 md:py-9",
-        "md:min-h-0 md:overflow-y-auto md:overscroll-contain",
+        "@container flex min-w-0 flex-col [grid-area:pane]",
+        // The card. Its vertical padding is the corner's radius, so the
+        // scroll area (and the browser's scrollbar) starts and ends clear of
+        // the rounded corners instead of being cut by them.
+        "md:min-h-0 md:rounded-card md:bg-card md:py-6",
         "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
       )}
     >
-      {children}
+      <div
+        ref={ref}
+        className={cn(
+          "flex flex-col gap-5 md:gap-7",
+          // `relative`: an absolutely placed child (an sr-only radio, a
+          // remove ✕) stays inside the scroll area. Without it, it hangs
+          // off the page and makes the window scroll too.
+          "relative md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-contain md:px-10 md:py-3",
+        )}
+      >
+        {children}
+      </div>
     </section>
   );
 }

@@ -52,7 +52,9 @@ const flow = useStepForm({
 - The forms sit inside the app layout with the sidebar (a full-screen version was rejected).
   On a computer the page holding a form is held to the window's height (the app layout's
   `SidebarInset`), the pane is a card filling the space left, and a step longer than that
-  scrolls inside the pane, with the buttons staying put. On a phone the pane isn't a card, the
+  scrolls inside the pane, with the buttons staying put. The scroll area is an inner box,
+  inset from the card's rounded corners and `relative`, so absolutely placed children (sr-only
+  radios) can't hang off it and make the window scroll too. On a phone the pane isn't a card, the
   page scrolls, and the actions are a fixed bottom bar.
 
 ## Controls inside a step
