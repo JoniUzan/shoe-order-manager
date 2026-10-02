@@ -39,6 +39,10 @@ const flow = useStepForm({
   breakpoints.
 - **Submit continues** until the form can save (`flow.saves`): new records walk the steps in
   order, existing ones save from any step. Enter in a field does what the primary button says.
+- **Where it opens:** step 0, or `useStepForm({ start })`; an existing order opens on Review.
+- **Summary** stands in for the Preview where there's no room for it (phones, narrow panels):
+  a bar under the header reading a name and a total that opens to the same facts. Put it
+  before `Preview` in JSX: it hides itself when a later Preview sibling has its column.
 - **A one-page form** (the Customer form): `steps: []`. The bar disappears and Actions shows
   only Save. Skip `Step` and put the content straight in `Pane`.
 - **Actions** picks Back / Continue / Save from the state. Compose `<StepForm.Back />`,
@@ -71,6 +75,7 @@ under reduced motion while dropping the movement.
 | Step bar | ink fill `scale-x` from the start edge, 300ms `ease-in-out-quint`, a transition; dot colours 200ms `ease`; ✓ enters from 90% | `Header` |
 | Item added | `roomy.enter`: from 97%, −4px, opacity 0, 200ms `ease-out-quint` | `useAddedItem` |
 | Items generated together | `roomy.cascade` + `cascadeDelay(i, count)`: 30ms apart, squeezed so the wave spans ≤300ms | e.g. `size-list-input.tsx` |
+| Summary bar opens | content `roomy.appear`, chevron turns 180° in 200ms `ease-out-quint`; no height animation (the step below would slide) | `Summary` |
 | Press | `scale(0.97)` while pressed, 150ms, enabled controls only | `roomy.button` / `roomy.press` |
 | Error line | `roomy.appear`: from −4px + fade, 150ms | `Field` |
 
