@@ -37,9 +37,14 @@ none of its own.
 
 - The page renders the form directly under the app layout: no `PageHeader` (the form's Header is
   the title row).
-- The area's e2e page object gets `continue()` and `stepTitle(step)` (see
-  `apps/e2e/suites/catalog/locators.ts`); existing specs walk the steps; new tests cover leaving
-  a step with a missing required field and saving an existing record from its first step.
+- The area's e2e page object copies the catalog one (`apps/e2e/suites/catalog/locators.ts`):
+  every `goto` waits for `form[data-ready]` (typing before hydration gets mixed with the saved
+  values), plus `continue()`, `stepTitle()`, `goToStep()` (the bar on a computer, Back/Continue
+  on a phone) and the Cancel/discard actions.
+- Its specs cover what the catalog suite covers for this form: walking the steps, a missing
+  required field, Enter continuing, a finished step reopening with its values, Cancel with and
+  without changes, a failed save landing on its step, and saving an existing record from its
+  first step.
 
 Done when `pnpm typecheck`, `pnpm lint` and the area's e2e suite pass in all four projects.
 
