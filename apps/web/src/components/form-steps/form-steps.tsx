@@ -23,6 +23,17 @@ import {
 import { useRouter } from "@/i18n/navigation";
 
 /**
+ * A slight squeeze on press that confirms the interface heard it: never when
+ * disabled, not with reduced motion. Exact properties, not `transition: all`
+ * (the shared Button's), and `scale` because that's what Tailwind's scale-*
+ * sets.
+ */
+const PRESS = cn(
+  "transition-[color,background-color,box-shadow,scale] duration-150 ease-out-quint",
+  "enabled:active:scale-[0.97] motion-reduce:enabled:active:scale-100",
+);
+
+/**
  * The roomier controls of the stepped forms: 48px fields with a 16px corner
  * and 16px text, buttons 44px on a computer and 52px on a phone. Applied here
  * rather than in `@repo/ui`, so the rest of the app keeps its denser controls.
@@ -36,7 +47,21 @@ export const roomy = {
   ),
   area: "min-h-24 rounded-2xl px-3.5 py-3 text-base shadow-none md:text-base",
   label: "text-[0.8125rem] font-medium text-muted-foreground",
-  button: "h-13 rounded-2xl px-5 text-base md:h-11 md:text-[0.9375rem]",
+  button: cn(
+    "h-13 rounded-2xl px-5 text-base md:h-11 md:text-[0.9375rem]",
+    PRESS,
+  ),
+  /** Press feedback for anything else pressable in these forms. */
+  press: PRESS,
+  /**
+   * A line that appears, like a field's error: eases in from just above
+   * (@starting-style, so it plays only when the line is inserted). Reduced
+   * motion keeps the fade.
+   */
+  appear: cn(
+    "transition-[opacity,translate] duration-150 ease-out-quint",
+    "starting:opacity-0 motion-safe:starting:-translate-y-1",
+  ),
   /** A secondary button: a raised puck rather than an outline. */
   raised: cn(
     "border-0 bg-card shadow-[var(--shadow-raised)] hover:bg-accent dark:bg-card dark:hover:bg-accent",
@@ -87,6 +112,14 @@ export function StepFlow({
   const [confirming, setConfirming] = useState(false);
   const sheetRef = useRef<HTMLElement>(null);
   const firstStep = useRef(true);
+  // Which way the last step change went, so the new step can come in from
+  // that side. Null until the first change: the page itself doesn't animate.
+  const [shown, setShown] = useState(current);
+  const [motion, setMotion] = useState<"forward" | "back" | null>(null);
+  if (shown !== current) {
+    setShown(current);
+    setMotion(current > shown ? "forward" : "back");
+  }
 
   // A new step starts at its title, for the eye and for a screen reader.
   useEffect(() => {
@@ -149,11 +182,26 @@ export function StepFlow({
             <section
               ref={sheetRef}
               className={cn(
-                "@container flex min-w-0 flex-col gap-5 md:gap-7 md:rounded-card md:bg-card md:px-10 md:py-9",
+                "@container min-w-0 md:rounded-card md:bg-card md:px-10 md:py-9",
                 "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
               )}
             >
-              {children}
+              {/* Keyed by step, so each step mounts fresh and plays its entrance.
+                  Entry only: an exit would make every Continue wait. */}
+              <div
+                key={current}
+                data-step-motion={motion ?? undefined}
+                className={cn(
+                  "flex flex-col gap-5 md:gap-7",
+                  motion && "animate-in fade-in-0 duration-200 ease-out-quint",
+                  // Forward comes in from the end edge, Back from the start;
+                  // both flip in RTL. Reduced motion keeps only the fade.
+                  motion === "forward" && "motion-safe:slide-in-from-end-3",
+                  motion === "back" && "motion-safe:slide-in-from-start-3",
+                )}
+              >
+                {children}
+              </div>
             </section>
             <footer
               className={cn(
@@ -217,11 +265,10 @@ function StepList({
               {i > 0 && (
                 <span
                   aria-hidden
-                  className={cn(
-                    "h-[1.5px] w-9",
-                    i <= current ? "bg-foreground" : "bg-foreground/20",
-                  )}
-                />
+                  className="relative h-[1.5px] w-9 overflow-hidden bg-foreground/20"
+                >
+                  <ProgressFill filled={i <= current} />
+                </span>
               )}
               <button
                 type="button"
@@ -229,7 +276,7 @@ function StepList({
                 aria-current={now ? "step" : undefined}
                 onClick={() => onSelect(i)}
                 className={cn(
-                  "flex items-center gap-2 rounded-md text-sm text-muted-foreground",
+                  "flex items-center gap-2 rounded-md text-sm text-muted-foreground transition-colors duration-200 ease-[ease]",
                   "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
                   "enabled:cursor-pointer disabled:cursor-default",
                   (done || now) && "text-foreground",
@@ -239,13 +286,22 @@ function StepList({
                 <span
                   className={cn(
                     "flex size-6.5 items-center justify-center rounded-full border-[1.5px] text-[0.8125rem] font-semibold tabular-nums",
+                    "transition-[background-color,border-color,color] duration-200 ease-[ease]",
                     done && "border-foreground bg-foreground text-background",
                     now && "border-2 border-foreground",
                     !done && !now && "border-foreground/20",
                   )}
                 >
                   {done ? (
-                    <CheckIcon className="size-3.5" aria-hidden />
+                    <CheckIcon
+                      // Enters as the step is finished: ease-out from 90%,
+                      // never from nothing. Reduced motion keeps the fade.
+                      className={cn(
+                        "size-3.5 transition-[opacity,scale] duration-150 ease-out-quint",
+                        "starting:opacity-0 motion-safe:starting:scale-90",
+                      )}
+                      aria-hidden
+                    />
                   ) : (
                     i + 1
                   )}
@@ -276,11 +332,10 @@ function StepProgress({
         {steps.map((step, i) => (
           <span
             key={step.label}
-            className={cn(
-              "h-1 flex-1 rounded-full",
-              i <= current ? "bg-foreground" : "bg-foreground/20",
-            )}
-          />
+            className="relative h-1 flex-1 overflow-hidden rounded-full bg-foreground/20"
+          >
+            <ProgressFill filled={i <= current} />
+          </span>
         ))}
       </div>
       <p className="text-[0.8125rem] text-muted-foreground">
@@ -291,6 +346,25 @@ function StepProgress({
         })}
       </p>
     </div>
+  );
+}
+
+/**
+ * The ink inside a step bar's track. It grows from the start edge when a step
+ * is reached and shrinks back toward it on Back: a transition, not keyframes,
+ * so clicking through steps quickly retargets mid-way instead of restarting.
+ * Moving on screen, so ease-in-out. Reduced motion fades it in place.
+ */
+function ProgressFill({ filled }: { filled: boolean }) {
+  return (
+    <span
+      className={cn(
+        "absolute inset-0 rounded-[inherit] bg-foreground ltr:origin-left rtl:origin-right",
+        "transition-transform duration-300 ease-in-out-quint",
+        "motion-reduce:scale-x-100 motion-reduce:transition-opacity motion-reduce:duration-200",
+        filled ? "scale-x-100" : "scale-x-0 motion-reduce:opacity-0",
+      )}
+    />
   );
 }
 
@@ -306,7 +380,11 @@ export function StepHeader({
 }) {
   return (
     <div className="flex items-center gap-5">
-      <Illustration name={illustration} />
+      <Illustration
+        name={illustration}
+        // Grows in slightly as its step slides in (never on the first load).
+        className="in-data-step-motion:animate-in in-data-step-motion:fade-in-0 in-data-step-motion:duration-200 in-data-step-motion:ease-out-quint in-data-step-motion:motion-safe:zoom-in-96"
+      />
       <div className="flex min-w-0 flex-col gap-1">
         <h3
           data-step-title

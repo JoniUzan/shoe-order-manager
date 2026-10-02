@@ -19,7 +19,7 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useId, useState, type CSSProperties } from "react";
 
 import { roomy } from "@/components/form-steps/form-steps";
 
@@ -36,6 +36,15 @@ import { roomy } from "@/components/form-steps/form-steps";
  * hand. Ordering comes from `canonicalSizes`, so what is shown here is exactly
  * what gets stored.
  */
+/**
+ * The gap between chips in the Generate cascade: 30ms, tightened for long runs
+ * so the whole wave spans at most 300ms. Capping the delay instead made a long
+ * run cascade for ten chips and then show the rest all at once.
+ */
+function chipStep(count: number): number {
+  return count > 1 ? Math.min(30, 300 / (count - 1)) : 0;
+}
+
 export function SizeListInput({
   value,
   onChange,
@@ -51,6 +60,12 @@ export function SizeListInput({
   const [to, setTo] = useState("");
   const [step, setStep] = useState("1");
   const [extra, setExtra] = useState("");
+  // Chips ease in only after the user changes the run here: not when the step
+  // opens on sizes already there. Each Generate is a new generation of keys,
+  // so the whole replaced run plays again; a size added by hand comes alone.
+  const [generation, setGeneration] = useState(0);
+  const [live, setLive] = useState(false);
+  const [stagger, setStagger] = useState(false);
 
   const fromN = Number(from);
   const toN = Number(to);
@@ -67,6 +82,9 @@ export function SizeListInput({
     // Replaces rather than merges: correcting 36→38 and generating again must
     // not leave 36 and 37 behind.
     onChange(expandSizeRange(fromN, toN, step === "0.5" ? 0.5 : 1));
+    setGeneration((g) => g + 1);
+    setLive(true);
+    setStagger(true);
   }
 
   const atCapacity = value.length >= MAX_SIZES;
@@ -77,6 +95,8 @@ export function SizeListInput({
     // with a generic "something went wrong" and no field to point at.
     if (!size || atCapacity) return;
     onChange(canonicalSizes([...value, size]));
+    setLive(true);
+    setStagger(false);
     setExtra("");
   }
 
@@ -167,11 +187,25 @@ export function SizeListInput({
             {t("sizesEmpty")}
           </span>
         ) : (
-          value.map((size) => (
+          value.map((size, i) => (
             <Badge
-              key={size}
+              key={`${generation}-${size}`}
               variant="secondary"
-              className="h-8 gap-1 rounded-full ps-3 pe-1 text-sm"
+              className={cn(
+                "h-8 gap-1 rounded-full ps-3 pe-1 text-sm",
+                // Entering, so ease-out from just below full size. One even wave
+                // (see chipStep): in within ~450ms however long the run, and
+                // clickable throughout. Reduced motion: one fade, no stagger.
+                live && [
+                  "transition-[opacity,scale] duration-150 ease-out-quint [transition-delay:var(--chip-delay)]",
+                  "starting:opacity-0 motion-safe:starting:scale-95 motion-reduce:[transition-delay:0ms]",
+                ],
+              )}
+              style={
+                stagger
+                  ? ({ "--chip-delay": `${i * chipStep(value.length)}ms` } as CSSProperties)
+                  : undefined
+              }
             >
               <span className="tabular-nums">{size}</span>
               <button
@@ -217,7 +251,7 @@ export function SizeListInput({
           onClick={addExtra}
           disabled={!normalizeSize(extra) || atCapacity}
           aria-label={t("sizesAdd")}
-          className={cn(roomy.raised, "size-12 rounded-2xl")}
+          className={cn(roomy.raised, roomy.press, "size-12 rounded-2xl")}
         >
           <Plus className="size-4.5" />
         </Button>

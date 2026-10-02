@@ -220,7 +220,9 @@ export function CatalogForm({
                     },
                   })}
                 />
-                {nameError && <p className="text-sm text-destructive">{tv("required")}</p>}
+                {nameError && (
+                  <p className={cn("text-sm text-destructive", roomy.appear)}>{tv("required")}</p>
+                )}
               </Field>
 
               <div className="grid grid-cols-2 gap-3 md:gap-4">
