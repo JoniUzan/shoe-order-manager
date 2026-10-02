@@ -3,7 +3,7 @@ import { prisma } from "@repo/db";
 import { expect, test } from "../../fixtures/index.ts";
 
 import { OrderForm, OrderPage } from "./locators.ts";
-import { orderPrerequisites, orderWithChangedPack } from "./setup.ts";
+import { createCustomer, orderPrerequisites, orderWithChangedPack } from "./setup.ts";
 
 test("a new order can't leave the Customer step without a Customer", async ({ page, t, appLocale, user }) => {
   const { customer } = await orderPrerequisites(user.id);
@@ -123,4 +123,39 @@ test("a model that fails its check takes the save to the Items step", async ({ p
   await expect(form.error("orders.errorPackCount", { max: 999 })).toBeVisible();
   const pack = await prisma.orderPack.findFirstOrThrow({ where: { orderId: order.id } });
   expect(pack.count).toBe(2);
+});
+
+test("a long step scrolls inside its pane: the window stays put and the buttons stay on screen", async ({ page, t, appLocale, user }) => {
+  // Enough Customers to overflow the pane. Their hidden radios once hung off
+  // the pane and made the whole window scroll, hiding the buttons.
+  for (let i = 0; i < 25; i++) await createCustomer(user.id);
+  const form = new OrderForm(page, t);
+  await form.gotoNew(appLocale);
+  await expect(form.stepTitle("Customer")).toBeVisible();
+
+  expect(await form.scrollsInPlace()).toBe(true);
+});
+
+test("a model left empty is dropped, and a model can be removed", async ({ page, t, appLocale, user }) => {
+  const { customer, model } = await orderPrerequisites(user.id);
+  const form = new OrderForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.pickCustomer(customer.name);
+  await form.continue();
+  await form.addModel(model.name);
+  await form.pairs(0).fill("2");
+  await form.closeModel();
+
+  await form.addEmptyModel();
+  await form.closeModel();
+  await form.continue();
+  // The empty one was dropped rather than failing "Choose a model".
+  await expect(form.stepTitle("Notes")).toBeVisible();
+  await form.goToStep("Items");
+  await expect(form.modelRow(t("orders.selectModel"))).toHaveCount(0);
+
+  await form.removeModel(model.name);
+  await expect(form.error("orders.itemsEmptyStep")).toBeVisible();
+  await form.continue();
+  await expect(form.error("orders.errorNoItems")).toBeVisible();
 });

@@ -64,6 +64,49 @@ export class OrderForm {
     if (this.isPhone() || (await row.isVisible())) await row.click();
   }
 
+  /** Add a model and leave it empty, without picking one. */
+  async addEmptyModel() {
+    await this.page.getByRole("button", { name: this.t("orders.addModel") }).click();
+  }
+
+  /** A folded model's row, by the name it shows (a placeholder until picked). */
+  modelRow(name: string) {
+    return this.page.getByRole("button", { name: this.t("orders.editModel", { name }) });
+  }
+
+  /** Remove a model: ✕ on its card on a computer, "Remove" in its sheet on a phone. */
+  async removeModel(name: string) {
+    await this.openModel(name);
+    if (this.isPhone()) {
+      await this.page.getByRole("button", { name: this.t("orders.removeModel"), exact: true }).click();
+      await this.page.getByRole("dialog").waitFor({ state: "hidden" });
+    } else {
+      await this.page
+        .getByRole("button", { name: this.t("orders.removeModelNamed", { name }) })
+        .click();
+    }
+  }
+
+  /**
+   * Whether a long step stays in place: on a computer the window doesn't
+   * scroll, the pane does, and the buttons are on screen; on a phone the page
+   * scrolls by design and the buttons are a fixed bar that stays on screen.
+   */
+  async scrollsInPlace() {
+    const primary = this.page.getByRole("button", { name: this.t("common.continue") });
+    const onScreen = await primary.evaluate((el) => {
+      const b = el.getBoundingClientRect();
+      return b.top >= 0 && b.bottom <= window.innerHeight;
+    });
+    if (this.isPhone()) return onScreen;
+    return this.page.evaluate((buttonsOnScreen) => {
+      const area = document.querySelector("[data-slot=step-form-pane] > div")!;
+      const windowScrolls = document.documentElement.scrollHeight > window.innerHeight;
+      const paneScrolls = area.scrollHeight > area.clientHeight;
+      return buttonsOnScreen && !windowScrolls && paneScrolls;
+    }, onScreen);
+  }
+
   /** Done with the open model: closes its sheet on a phone; on a computer it stays open. */
   async closeModel() {
     if (this.isPhone()) {
