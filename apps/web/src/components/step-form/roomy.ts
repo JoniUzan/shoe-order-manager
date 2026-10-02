@@ -23,6 +23,15 @@ const PRESS = cn(
 );
 
 export const roomy = {
+  /**
+   * The browser's scrollbar on a transparent track, its thumb the text colour
+   * at low strength: it takes the card's colour in light and dark, and firms
+   * up while the pointer is over the area.
+   */
+  scrollbar: cn(
+    "[scrollbar-color:color-mix(in_oklab,var(--foreground)_18%,transparent)_transparent]",
+    "hover:[scrollbar-color:color-mix(in_oklab,var(--foreground)_32%,transparent)_transparent]",
+  ),
   /** 48px fields with a 16px corner and 16px text. */
   field: cn(
     "h-12 rounded-2xl px-3.5 text-base shadow-none md:text-base",

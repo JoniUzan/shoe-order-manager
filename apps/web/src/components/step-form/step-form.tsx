@@ -438,6 +438,7 @@ function Pane({ children }: { children: ReactNode }) {
           // remove ✕) stays inside the scroll area. Without it, it hangs
           // off the page and makes the window scroll too.
           "relative md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-contain md:px-10 md:py-3",
+          roomy.scrollbar,
         )}
       >
         {children}
@@ -547,6 +548,7 @@ function Preview({ label, children }: { label: string; children: ReactNode }) {
         aria-label={label}
         className={cn(
           "absolute inset-x-0 top-0 flex max-h-full flex-col gap-4 overflow-y-auto overscroll-contain",
+          roomy.scrollbar,
           "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
         )}
       >
