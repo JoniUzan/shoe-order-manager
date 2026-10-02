@@ -33,9 +33,12 @@ export default async function AppLayout({
         }}
         variant="inset"
       />
-      <SidebarInset>
+      {/* A stepped form fills the window on a computer and scrolls inside
+          its pane, so the panel is held to the window's height (less the
+          inset's 8px margins) on those pages only. */}
+      <SidebarInset className="md:has-[[data-slot=step-form]]:h-[calc(100svh-1rem)]">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
       </SidebarInset>
       {/* The settings dialog, which any page can open (`#settings/…`). */}
       <SettingsHost data={settings} />

@@ -50,8 +50,10 @@ const flow = useStepForm({
   order's counts) at the row's start on a computer. Compose `<StepForm.Back />`,
   `<StepForm.Next />`, `<StepForm.Submit>` inside `<StepForm.Actions>` only for a different set.
 - The forms sit inside the app layout with the sidebar (a full-screen version was rejected).
-  The pane is a card on the content panel and stretches to the panel's height; on a phone it
-  isn't a card and the actions are a fixed bottom bar.
+  On a computer the page holding a form is held to the window's height (the app layout's
+  `SidebarInset`), the pane is a card filling the space left, and a step longer than that
+  scrolls inside the pane, with the buttons staying put. On a phone the pane isn't a card, the
+  page scrolls, and the actions are a fixed bottom bar.
 
 ## Controls inside a step
 

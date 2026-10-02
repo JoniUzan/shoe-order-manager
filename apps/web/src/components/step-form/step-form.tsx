@@ -166,7 +166,7 @@ function Root({
   return (
     <StepFormContext value={{ ...flow, pending, dirty, cancelHref }}>
       {/* Fills the content panel's height, so the pane reaches its buttons. */}
-      <div className="flex flex-1 flex-col @container">
+      <div className="flex flex-1 flex-col @container md:min-h-0">
         <form
           onSubmit={onSubmit}
           // Validation is react-hook-form's job: native constraint validation
@@ -182,6 +182,10 @@ function Root({
             "[grid-template-areas:'header'_'pane'_'actions']",
             "has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_1fr_auto]",
             "has-[>[data-slot=step-form-summary]]:[grid-template-areas:'header'_'summary'_'pane'_'actions']",
+            // On a computer the form is held to the panel's height and the
+            // pane's row may shrink below its content: the pane scrolls.
+            "md:min-h-0 md:grid-rows-[auto_minmax(0,1fr)_auto]",
+            "md:has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_minmax(0,1fr)_auto]",
             "@5xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_22rem]",
             "@5xl:has-[>[data-slot=step-form-preview]]:[grid-template-areas:'header_header'_'pane_preview'_'actions_preview']",
             "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
@@ -405,8 +409,10 @@ function Pane({ children }: { children: ReactNode }) {
       first.current = false;
       return;
     }
+    // The page scrolls on a phone, the pane itself on a computer.
     window.scrollTo({ top: 0 });
-    ref.current?.querySelector<HTMLElement>("[data-step-title]")?.focus();
+    ref.current?.scrollTo({ top: 0 });
+    ref.current?.querySelector<HTMLElement>("[data-step-title]")?.focus({ preventScroll: true });
   }, [current]);
 
   return (
@@ -416,6 +422,7 @@ function Pane({ children }: { children: ReactNode }) {
       className={cn(
         "@container flex min-w-0 flex-col gap-5 [grid-area:pane] md:gap-7",
         "md:rounded-card md:bg-card md:px-10 md:py-9",
+        "md:min-h-0 md:overflow-y-auto md:overscroll-contain",
         "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
       )}
     >
@@ -518,6 +525,8 @@ function Preview({ label, children }: { label: string; children: ReactNode }) {
       data-slot="step-form-preview"
       className={cn(
         "sticky top-6 hidden flex-col gap-4 self-start [grid-area:preview] @5xl:flex",
+        // A long order's preview scrolls too, rather than run past the window.
+        "md:max-h-full md:overflow-y-auto",
         "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
       )}
     >
