@@ -1,7 +1,8 @@
 # StepForm
 
 The app's create/edit form: a shadcn-style compound component. `catalog/catalog-form.tsx` is the
-reference build; read it next to this file. The step-by-step for a new form is the
+reference build; read it next to this file (`orders/order-form.tsx` for a list of records and a
+Summary). The step-by-step for a new form is the
 `stepped-form` skill.
 
 ## Anatomy
@@ -61,7 +62,13 @@ into both `messages/*.json`; Hebrew wording from the root `CLAUDE.md` Terms.
 
 A list the user adds to (Packs, order lines) uses `useAddedItem`: the item just added takes the
 focus and eases in. Without it the cursor stays on the "Add" button and a typed space adds a
-second item.
+second item. When the hook lives above the step (the order form's models), `reset()` it when
+the step changes and when an item folds or opens, or the item eases in again each time.
+
+A list whose items are too big to show open at once (the Order's models) folds each item to
+a row and opens one at a time: inline on a computer, in a bottom `Drawer` on a phone
+(`orders/order-form.tsx`). An item left empty is dropped when it closes. The sheet is outside
+the `<form>` and its `@container`, so its fields get the narrow layout.
 
 ## Motion
 
