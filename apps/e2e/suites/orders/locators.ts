@@ -158,7 +158,7 @@ export class OrderForm {
   }
 
   async setStatus(code: "not_done" | "done") {
-    await this.page.getByRole("radio", { name: this.t(`status.${code}`), exact: true }).click();
+    await this.page.getByRole("tab", { name: this.t(`status.${code}`), exact: true }).click();
   }
 
   private barButton(step: Step) {

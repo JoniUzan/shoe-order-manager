@@ -1,12 +1,13 @@
 "use client";
 
 import { formatMoney } from "@repo/domain";
-import { ToggleGroup, ToggleGroupItem } from "@repo/ui/components/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { cn } from "@repo/ui/lib/utils";
 import { Pencil } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
+import { HIT_TALLER } from "@/components/data-table/data-table";
 import { useBlockText } from "@/components/orders/order-block-row";
 import { customerLine, type PickerCustomer } from "@/components/orders/order-customer-picker";
 import type { ModelOption } from "@/components/orders/order-form";
@@ -88,26 +89,16 @@ export function OrderReview({
       <div className="grid grid-cols-1 gap-2 py-4.5 @xl:grid-cols-[8.75rem_minmax(0,1fr)] @xl:items-center @xl:gap-4">
         <dt className="text-sm text-muted-foreground">{t("status")}</dt>
         <dd>
-          <ToggleGroup
-            type="single"
-            value={values.statusCode}
-            onValueChange={(v) => v && onStatus(v)}
-            aria-label={t("status")}
-            className="rounded-2xl border border-border bg-surface p-1"
-          >
-            {STATUSES.map((code) => (
-              <ToggleGroupItem
-                key={code}
-                value={code}
-                className={cn(
-                  "h-10 rounded-xl px-4 text-sm data-[state=on]:bg-card data-[state=on]:font-medium data-[state=on]:shadow-[var(--shadow-raised)]",
-                  roomy.press,
-                )}
-              >
-                {ts(code)}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+          {/* The same pill as the orders list's filter (All / Open / Unpaid). */}
+          <Tabs value={values.statusCode} onValueChange={onStatus}>
+            <TabsList aria-label={t("status")}>
+              {STATUSES.map((code) => (
+                <TabsTrigger key={code} value={code} className={HIT_TALLER}>
+                  {ts(code)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </dd>
       </div>
     </dl>
