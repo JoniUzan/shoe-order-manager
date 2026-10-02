@@ -19,9 +19,9 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState, type CSSProperties } from "react";
+import { useId, useState } from "react";
 
-import { roomy } from "@/components/form-steps/form-steps";
+import { cascadeDelay, roomy } from "@/components/step-form/roomy";
 
 /**
  * A model's size run.
@@ -36,15 +36,6 @@ import { roomy } from "@/components/form-steps/form-steps";
  * hand. Ordering comes from `canonicalSizes`, so what is shown here is exactly
  * what gets stored.
  */
-/**
- * The gap between chips in the Generate cascade: 30ms, tightened for long runs
- * so the whole wave spans at most 300ms. Capping the delay instead made a long
- * run cascade for ten chips and then show the rest all at once.
- */
-function chipStep(count: number): number {
-  return count > 1 ? Math.min(30, 300 / (count - 1)) : 0;
-}
-
 export function SizeListInput({
   value,
   onChange,
@@ -193,19 +184,11 @@ export function SizeListInput({
               variant="secondary"
               className={cn(
                 "h-8 gap-1 rounded-full ps-3 pe-1 text-sm",
-                // Entering, so ease-out from just below full size. One even wave
-                // (see chipStep): in within ~450ms however long the run, and
-                // clickable throughout. Reduced motion: one fade, no stagger.
-                live && [
-                  "transition-[opacity,scale] duration-150 ease-out-quint [transition-delay:var(--chip-delay)]",
-                  "starting:opacity-0 motion-safe:starting:scale-95 motion-reduce:[transition-delay:0ms]",
-                ],
+                // One even wave after Generate, clickable throughout; a size
+                // added by hand comes alone (see roomy.cascade).
+                live && roomy.cascade,
               )}
-              style={
-                stagger
-                  ? ({ "--chip-delay": `${i * chipStep(value.length)}ms` } as CSSProperties)
-                  : undefined
-              }
+              style={stagger ? cascadeDelay(i, value.length) : undefined}
             >
               <span className="tabular-nums">{size}</span>
               <button

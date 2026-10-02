@@ -6,9 +6,10 @@ import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useRef, useState } from "react";
+import { useId } from "react";
 
-import { roomy } from "@/components/form-steps/form-steps";
+import { roomy } from "@/components/step-form/roomy";
+import { useAddedItem } from "@/components/step-form/use-added-item";
 
 /** A pack as the catalog form edits it: pairs are kept as typed, per size. */
 export interface PackFormValue {
@@ -98,12 +99,8 @@ export function PackEditor({
   const t = useTranslations("catalog");
   const uid = useId();
   const errors = packErrors(value, sizes);
-  // A pack just added takes the focus, so typing goes into its name and not
-  // into the "Add pack" button (where a space would add another pack).
-  const focusPack = useRef<number | null>(null);
-  // The pack just added, which eases in. Only that one: packs already there
-  // when the step opens, or when editing a model, must not animate.
-  const [added, setAdded] = useState<number | null>(null);
+  // The pack just added takes the focus and eases in (see useAddedItem).
+  const added = useAddedItem();
 
   function update(index: number, next: PackFormValue) {
     onChange(value.map((p, i) => (i === index ? next : p)));
@@ -126,13 +123,7 @@ export function PackEditor({
             key={pack.id ?? `new-${i}`}
             className={cn(
               "flex min-w-0 flex-col gap-3.5 rounded-[1.25rem] bg-surface p-4",
-              // Entering, so ease-out, from just below full size; a transition
-              // (@starting-style), so adding packs quickly stays smooth.
-              // Reduced motion keeps the fade only.
-              i === added && [
-                "transition-[opacity,scale,translate] duration-200 ease-out-quint",
-                "starting:opacity-0 motion-safe:starting:scale-[0.97] motion-safe:starting:-translate-y-1",
-              ],
+              added.className(i),
               error && "ring-1 ring-destructive/60",
             )}
           >
@@ -142,12 +133,7 @@ export function PackEditor({
               </label>
               <Input
                 id={nameId}
-                ref={(el) => {
-                  if (el && focusPack.current === i) {
-                    focusPack.current = null;
-                    el.focus();
-                  }
-                }}
+                ref={added.focusRef(i)}
                 value={pack.name}
                 placeholder={t("packNamePlaceholder")}
                 maxLength={100}
@@ -163,8 +149,7 @@ export function PackEditor({
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  // Indexes shift on removal, so forget which one was new.
-                  setAdded(null);
+                  added.reset();
                   onChange(value.filter((_, k) => k !== i));
                 }}
                 aria-label={t("removePack", { name: pack.name })}
@@ -239,8 +224,7 @@ export function PackEditor({
         type="button"
         disabled={value.length >= MAX_PACKS}
         onClick={() => {
-          focusPack.current = value.length;
-          setAdded(value.length);
+          added.add(value.length);
           onChange([...value, { name: "", pairs: {} }]);
         }}
         className={cn(

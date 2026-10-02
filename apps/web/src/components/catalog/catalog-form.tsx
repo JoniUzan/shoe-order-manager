@@ -21,7 +21,7 @@ import { Textarea } from "@repo/ui/components/textarea";
 import { cn } from "@repo/ui/lib/utils";
 import { ImagePlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -33,12 +33,8 @@ import {
   type PackFormValue,
 } from "@/components/catalog/pack-editor";
 import { SizeListInput } from "@/components/catalog/size-list-input";
-import {
-  roomy,
-  StepActions,
-  StepFlow,
-  StepHeader,
-} from "@/components/form-steps/form-steps";
+import { roomy } from "@/components/step-form/roomy";
+import { StepForm, useStepForm } from "@/components/step-form/step-form";
 import { Illustration, type IllustrationName } from "@/components/ui/illustration";
 import { useRouter } from "@/i18n/navigation";
 import { createShoeModel, updateShoeModel } from "@/lib/actions/catalog";
@@ -90,9 +86,6 @@ export function CatalogForm({
   const router = useRouter();
   const editing = modelId !== undefined;
   const [pending, setPending] = useState(false);
-  const [step, setStep] = useState(0);
-  // The furthest step reached, so the step bar can return to it.
-  const [reached, setReached] = useState(editing ? LAST : 0);
   // Pack errors are derived from the live values (see packErrors) and only
   // shown once a save has been tried, so a half-typed pack isn't shouted at.
   const [showPackErrors, setShowPackErrors] = useState(false);
@@ -102,22 +95,20 @@ export function CatalogForm({
   });
   const values = useWatch({ control: form.control }) as FormValues;
 
-  function goTo(next: number) {
-    setStep(next);
-    setReached((r) => Math.max(r, next));
-  }
-
-  async function next() {
-    // Only the details step has a required field; the size run and Packs may
-    // be left empty.
-    if (step === 0 && !(await form.trigger("name"))) return;
-    goTo(step + 1);
-  }
+  const flow = useStepForm({
+    editing,
+    steps: STEPS.map((s) => ({
+      label: t(`step${s.key}`),
+      // Only the details step has a required field; the size run and Packs
+      // may be left empty.
+      canLeave: s.key === "Details" ? () => form.trigger("name") : undefined,
+    })),
+  });
 
   async function save(values: FormValues) {
     if (packErrors(values.packs, values.sizes).some(Boolean)) {
       setShowPackErrors(true);
-      goTo(LAST);
+      flow.goTo(LAST);
       toast.error(t("errorPacks"));
       return;
     }
@@ -149,198 +140,150 @@ export function CatalogForm({
     }
   }
 
-  // The primary button submits, so Enter in a field continues until the form
-  // can save. A missing name can only be on the details step: go there.
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    if (!editing && step < LAST) {
-      e.preventDefault();
-      void next();
-      return;
-    }
-    void form.handleSubmit(save, () => goTo(0))(e);
-  }
-
-  const current = STEPS[step]!;
   const nameError = form.formState.errors.name;
 
   return (
-    <form
-      onSubmit={onSubmit}
-      // Native constraint validation is off because it silently vetoes submit.
-      // The size range's from/to boxes are `type=number` scratch fields that are
-      // never submitted, but a `badInput` residue in one of them — typing "-"
-      // or "e" — made the whole form fail checkValidity(), so Save did nothing
-      // at all: no toast, no message, and the browser's tooltip pointing at a
-      // throwaway field. Validation is react-hook-form's job here.
-      noValidate
-      // Passes the content panel's height on to StepFlow.
-      className="flex flex-1 flex-col"
+    <StepForm
+      flow={flow}
+      // A missing name can only be on the details step: go there.
+      onSave={(e) => void form.handleSubmit(save, () => flow.goTo(0))(e)}
+      cancelHref="/catalog"
+      dirty={form.formState.isDirty}
+      pending={pending}
     >
-      <StepFlow
-        title={editing ? t("edit") : t("new")}
-        steps={STEPS.map((s) => ({ label: t(`step${s.key}`) }))}
-        current={step}
-        reachable={(i) => i <= reached}
-        onSelect={goTo}
-        cancelHref="/catalog"
-        dirty={form.formState.isDirty}
-        preview={<ModelPreview values={values} />}
-        actions={
-          <StepActions
-            first={step === 0}
-            last={step === LAST}
-            editing={editing}
-            pending={pending}
-            onBack={() => goTo(step - 1)}
-            onContinue={next}
-            saveLabel={tc("save")}
-          />
-        }
-      >
-        <StepHeader
-          illustration={current.illustration}
-          title={t(`step${current.key}`)}
-          hint={t(`step${current.key}Hint`)}
-        />
+      <StepForm.Header title={editing ? t("edit") : t("new")} />
 
-        {step === 0 && (
-          <div className="flex flex-col gap-5 @xl:grid @xl:grid-cols-[13.75rem_minmax(0,1fr)] @xl:items-start @xl:gap-7">
-            <ImageSlot />
-            <div className="flex flex-col gap-4.5">
-              <Field label={t("name")} htmlFor="name">
-                <Input
-                  id="name"
-                  placeholder={t("namePlaceholder")}
-                  aria-invalid={!!nameError}
-                  className={roomy.field}
-                  {...form.register("name", {
-                    required: true,
-                    // Clear "required" as soon as it's fixed; without a submit
-                    // react-hook-form would wait for the next Continue.
-                    onChange: () => {
-                      if (form.formState.errors.name) void form.trigger("name");
-                    },
-                  })}
-                />
-                {nameError && (
-                  <p className={cn("text-sm text-destructive", roomy.appear)}>{tv("required")}</p>
-                )}
-              </Field>
+      <StepForm.Pane>
+        {STEPS.map((s, i) => (
+          <StepForm.Step key={s.key} index={i}>
+            <StepForm.StepHeader
+              illustration={s.illustration}
+              title={t(`step${s.key}`)}
+              hint={t(`step${s.key}Hint`)}
+            />
+            {s.key === "Details" && (
+              <div className="flex flex-col gap-5 @xl:grid @xl:grid-cols-[13.75rem_minmax(0,1fr)] @xl:items-start @xl:gap-7">
+                <ImageSlot />
+                <div className="flex flex-col gap-4.5">
+                  <StepForm.Field
+                    label={t("name")}
+                    htmlFor="name"
+                    error={nameError ? tv("required") : undefined}
+                  >
+                    <Input
+                      id="name"
+                      placeholder={t("namePlaceholder")}
+                      aria-invalid={!!nameError}
+                      className={roomy.field}
+                      {...form.register("name", {
+                        required: true,
+                        // Clear "required" as soon as it's fixed; without a
+                        // submit react-hook-form would wait for the next
+                        // Continue.
+                        onChange: () => {
+                          if (form.formState.errors.name) void form.trigger("name");
+                        },
+                      })}
+                    />
+                  </StepForm.Field>
 
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <Field label={t("sku")} htmlFor="sku">
-                  <Input
-                    id="sku"
-                    dir="ltr"
-                    className={cn(roomy.field, "text-start")}
-                    {...form.register("sku")}
-                  />
-                </Field>
-                <Field label={`${t("price")} (₪)`} htmlFor="price">
-                  <Input
-                    id="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    inputMode="decimal"
-                    dir="ltr"
-                    className={cn(roomy.field, "text-start tabular-nums")}
-                    {...form.register("price")}
-                  />
-                </Field>
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    <StepForm.Field label={t("sku")} htmlFor="sku">
+                      <Input
+                        id="sku"
+                        dir="ltr"
+                        className={cn(roomy.field, "text-start")}
+                        {...form.register("sku")}
+                      />
+                    </StepForm.Field>
+                    <StepForm.Field label={`${t("price")} (₪)`} htmlFor="price">
+                      <Input
+                        id="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputMode="decimal"
+                        dir="ltr"
+                        className={cn(roomy.field, "text-start tabular-nums")}
+                        {...form.register("price")}
+                      />
+                    </StepForm.Field>
+                  </div>
+
+                  <StepForm.Field label={t("description")} htmlFor="description">
+                    <Textarea
+                      id="description"
+                      rows={3}
+                      className={cn(roomy.area, "resize-none")}
+                      {...form.register("description")}
+                    />
+                  </StepForm.Field>
+
+                  <label className="flex min-h-11 items-center gap-3">
+                    <Switch
+                      size="lg"
+                      checked={values.isActive}
+                      onCheckedChange={(v) =>
+                        form.setValue("isActive", v, { shouldDirty: true })
+                      }
+                    />
+                    <span className="font-medium">{t("active")}</span>
+                  </label>
+                </div>
               </div>
+            )}
 
-              <Field label={t("description")} htmlFor="description">
-                <Textarea
-                  id="description"
-                  rows={3}
-                  className={cn(roomy.area, "resize-none")}
-                  {...form.register("description")}
+            {s.key === "Sizes" && (
+              <div className="flex flex-col gap-5">
+                <StepForm.Field label={t("sizeFormat")} htmlFor="sizeFormat" className="max-w-64">
+                  <Select
+                    value={values.sizeFormat}
+                    onValueChange={(v) =>
+                      form.setValue("sizeFormat", v as SizeFormat, { shouldDirty: true })
+                    }
+                  >
+                    <SelectTrigger
+                      id="sizeFormat"
+                      className={cn(roomy.field, "w-full data-[size=default]:h-12")}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SIZE_FORMATS.map((f) => (
+                        <SelectItem key={f} value={f}>
+                          {t(`sizeFormat_${f}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </StepForm.Field>
+                <Label htmlFor="sizes" className="sr-only">
+                  {t("sizes")}
+                </Label>
+                <SizeListInput
+                  id="sizes"
+                  value={values.sizes}
+                  onChange={(next) => form.setValue("sizes", next, { shouldDirty: true })}
                 />
-              </Field>
+              </div>
+            )}
 
-              <label className="flex min-h-11 items-center gap-3">
-                <Switch
-                  size="lg"
-                  checked={values.isActive}
-                  onCheckedChange={(v) =>
-                    form.setValue("isActive", v, { shouldDirty: true })
-                  }
-                />
-                <span className="font-medium">{t("active")}</span>
-              </label>
-            </div>
-          </div>
-        )}
+            {s.key === "Packs" && (
+              <PackEditor
+                value={values.packs}
+                sizes={values.sizes}
+                showErrors={showPackErrors}
+                onChange={(next) => form.setValue("packs", next, { shouldDirty: true })}
+              />
+            )}
+          </StepForm.Step>
+        ))}
+      </StepForm.Pane>
 
-        {step === 1 && (
-          <div className="flex flex-col gap-5">
-            <Field label={t("sizeFormat")} htmlFor="sizeFormat" className="max-w-64">
-              <Select
-                value={values.sizeFormat}
-                onValueChange={(v) =>
-                  form.setValue("sizeFormat", v as SizeFormat, { shouldDirty: true })
-                }
-              >
-                <SelectTrigger
-                  id="sizeFormat"
-                  className={cn(roomy.field, "w-full data-[size=default]:h-12")}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SIZE_FORMATS.map((f) => (
-                    <SelectItem key={f} value={f}>
-                      {t(`sizeFormat_${f}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Label htmlFor="sizes" className="sr-only">
-              {t("sizes")}
-            </Label>
-            <SizeListInput
-              id="sizes"
-              value={values.sizes}
-              onChange={(next) => form.setValue("sizes", next, { shouldDirty: true })}
-            />
-          </div>
-        )}
+      <ModelPreview values={values} />
 
-        {step === 2 && (
-          <div className="flex flex-col gap-5">
-            <PackEditor
-              value={values.packs}
-              sizes={values.sizes}
-              showErrors={showPackErrors}
-              onChange={(next) => form.setValue("packs", next, { shouldDirty: true })}
-            />
-          </div>
-        )}
-      </StepFlow>
-    </form>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  className,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label htmlFor={htmlFor} className={roomy.label}>
-        {label}
-      </Label>
-      {children}
-    </div>
+      <StepForm.Actions saveLabel={tc("save")} />
+    </StepForm>
   );
 }
 
@@ -374,41 +317,39 @@ function ModelPreview({ values }: { values: FormValues }) {
   const packs = values.packs.filter((p) => p.name.trim());
 
   return (
-    <aside
-      aria-label={t("preview")}
-      className="flex flex-col gap-4 rounded-card bg-card p-5 shadow-[var(--shadow-card)]"
-    >
-      {/* The Product image's place; the step illustration until there is one. */}
-      <div className="flex aspect-square w-full items-center justify-center rounded-[1.125rem] border border-border bg-surface">
+    <StepForm.Preview label={t("preview")}>
+      <StepForm.PreviewImage>
+        {/* The step illustration until the model has a Product image. */}
         <Illustration name="sneaker" sizes="320px" className="size-3/5 md:size-3/5" />
-      </div>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="truncate text-[1.375rem] font-semibold">
-          {values.name.trim() || <span className="text-muted-foreground">{t("new")}</span>}
-        </p>
-        {values.sku && (
-          <p dir="ltr" className="truncate text-start text-[0.8125rem] text-muted-foreground">
-            {values.sku}
-          </p>
-        )}
-      </div>
-      <hr className="border-border" />
-      <dl className="flex flex-col gap-2 text-sm">
-        <PreviewRow label={t("price")}>
+      </StepForm.PreviewImage>
+      <StepForm.PreviewTitle
+        placeholder={t("new")}
+        subtitle={
+          values.sku ? (
+            <span dir="ltr" className="block text-start">
+              {values.sku}
+            </span>
+          ) : undefined
+        }
+      >
+        {values.name.trim()}
+      </StepForm.PreviewTitle>
+      <StepForm.PreviewRows>
+        <StepForm.PreviewRow label={t("price")}>
           {price ? (
             <span className="tabular-nums">
               {formatMoney(shekelsToAgorot(Number(price)), locale)}
             </span>
-          ) : null}
-        </PreviewRow>
-        <PreviewRow label={t("sizes")}>
+          ) : undefined}
+        </StepForm.PreviewRow>
+        <StepForm.PreviewRow label={t("sizes")}>
           {sizes.length ? (
             <span dir="ltr" className="tabular-nums">
               {sizes[0]}–{sizes[sizes.length - 1]}
             </span>
-          ) : null}
-        </PreviewRow>
-        <PreviewRow label={t("packs")} empty={t("previewNoPacks")}>
+          ) : undefined}
+        </StepForm.PreviewRow>
+        <StepForm.PreviewRow label={t("packs")} empty={t("previewNoPacks")}>
           {packs.length ? (
             <ul className="flex flex-col items-end gap-2">
               {packs.map((p, i) => (
@@ -421,29 +362,9 @@ function ModelPreview({ values }: { values: FormValues }) {
                 </li>
               ))}
             </ul>
-          ) : null}
-        </PreviewRow>
-      </dl>
-    </aside>
-  );
-}
-
-function PreviewRow({
-  label,
-  empty,
-  children,
-}: {
-  label: string;
-  empty?: string;
-  children: ReactNode;
-}) {
-  const t = useTranslations("catalog");
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-end">
-        {children ?? <span className="text-muted-foreground">{empty ?? t("previewNotSet")}</span>}
-      </dd>
-    </div>
+          ) : undefined}
+        </StepForm.PreviewRow>
+      </StepForm.PreviewRows>
+    </StepForm.Preview>
   );
 }
