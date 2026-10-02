@@ -82,6 +82,8 @@ test("the Factory note is written on the order form and shown on the order", asy
   await orderPage.edit();
 
   const form = new OrderForm(page, t);
+  await form.ready();
+  await form.editFromReview("notes");
   await form.factoryNote().fill("No logo on the lining");
   await form.save();
   await page.waitForURL(OrderPage.URL);

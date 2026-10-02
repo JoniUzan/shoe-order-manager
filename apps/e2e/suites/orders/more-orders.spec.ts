@@ -8,11 +8,13 @@ import { createCustomer, orderWithChangedPack, threeOrders } from "./setup.ts";
 test("a custom item makes a custom order", async ({ page, t, appLocale, user }) => {
   const customer = await createCustomer(user.id);
   const form = new OrderForm(page, t);
-  await form.goto(appLocale);
+  await form.gotoNew(appLocale);
   await form.pickCustomer(customer.name);
-  await form.setCustomItem("Red boots");
+  await form.continue();
+  await form.addCustomItem("Red boots");
   await form.unitPrice().fill("250");
   await form.addSize("41", 2);
+  await form.closeModel();
   await expect(page.getByText("500.00").first()).toBeVisible();
   await form.save();
 
@@ -28,13 +30,17 @@ test("a custom item makes a custom order", async ({ page, t, appLocale, user }) 
 });
 
 test("editing an order keeps the Pack it was sold with", async ({ page, t, appLocale, user }) => {
-  const { order } = await orderWithChangedPack(user.id);
+  const { order, model } = await orderWithChangedPack(user.id);
   const orderPage = new OrderPage(page, t);
   await orderPage.goto(appLocale, order.id);
   await orderPage.edit();
 
   const form = new OrderForm(page, t);
+  await form.ready();
+  await form.editFromReview("items");
+  await form.openModel(model.name);
   await form.packCount().fill("3");
+  await form.closeModel();
   await form.save();
   await page.waitForURL(OrderPage.URL);
 
