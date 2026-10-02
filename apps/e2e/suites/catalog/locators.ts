@@ -2,6 +2,9 @@ import type { Page } from "@playwright/test";
 
 import type { T } from "../../fixtures/index.ts";
 
+const STEPS = ["Details", "Sizes", "Packs"] as const;
+type Step = (typeof STEPS)[number];
+
 /** The new/edit Shoe model form, in three steps: details, sizes, Packs. */
 export class ModelForm {
   constructor(
@@ -72,8 +75,86 @@ export class ModelForm {
   }
 
   /** A step's title, which shows while that step is open. */
-  stepTitle(step: "Details" | "Sizes" | "Packs") {
+  stepTitle(step: Step) {
     return this.page.getByRole("heading", { name: this.t(`catalog.step${step}`), exact: true });
+  }
+
+  /**
+   * Open a step the way the screen offers it: the step bar on a computer;
+   * on a phone, which has no bar buttons, Back and Continue.
+   */
+  async goToStep(step: Step) {
+    if (!this.isPhone()) {
+      await this.barButton(step).click();
+    } else {
+      const target = STEPS.indexOf(step);
+      for (let i = 0; i < STEPS.length; i++) {
+        const at = await this.currentStep();
+        if (at === target) break;
+        await this.page
+          .getByRole("button", { name: this.t(at > target ? "common.back" : "common.continue") })
+          .click();
+        await this.stepTitle(STEPS[at + (at > target ? -1 : 1)]!).waitFor();
+      }
+    }
+    await this.stepTitle(step).waitFor();
+  }
+
+  /** Whether the step bar can open `step`. Never on a phone: its bar has no buttons. */
+  async canOpenFromBar(step: Step) {
+    return !this.isPhone() && (await this.barButton(step).isEnabled());
+  }
+
+  private barButton(step: Step) {
+    return this.page
+      .getByRole("navigation", { name: this.t("common.steps") })
+      .getByRole("button", { name: this.t(`catalog.step${step}`) });
+  }
+
+  private async currentStep() {
+    for (const [i, step] of STEPS.entries()) {
+      if (await this.stepTitle(step).isVisible()) return i;
+    }
+    throw new Error("No step title on the page");
+  }
+
+  private isPhone() {
+    return this.page.viewportSize()!.width < 768;
+  }
+
+  nameField() {
+    return this.page.locator("#name");
+  }
+
+  /** Enter in the name field: the form's primary button, so it continues. */
+  async pressEnterInName() {
+    await this.nameField().press("Enter");
+  }
+
+  /** ✕ Cancel: a labelled button on a computer, an icon on a phone; same name. */
+  async cancel() {
+    await this.page.getByRole("button", { name: this.t("common.cancel"), exact: true }).click();
+  }
+
+  discardDialog() {
+    return this.page.getByRole("alertdialog");
+  }
+
+  async keepEditing() {
+    await this.discardDialog().getByRole("button", { name: this.t("common.keepEditing") }).click();
+  }
+
+  async discard() {
+    await this.discardDialog().getByRole("button", { name: this.t("common.discard") }).click();
+  }
+
+  async setActive(on: boolean) {
+    const toggle = this.page.getByRole("switch", { name: this.t("catalog.active") });
+    if ((await toggle.isChecked()) !== on) await toggle.click();
+  }
+
+  packNameError() {
+    return this.page.getByText(this.t("catalog.errorPackName"));
   }
 
   nameRequired() {

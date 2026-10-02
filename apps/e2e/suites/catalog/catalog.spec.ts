@@ -66,6 +66,7 @@ test("a new model can't leave the details step without a name", async ({ page, t
   expect(await prisma.shoeModel.count({ where: { ownerId: user.id } })).toBe(0);
 
   await form.fill({ name: unique("Loafer") });
+  await expect(form.nameRequired()).toBeHidden();
   await form.continue();
   await expect(form.stepTitle("Sizes")).toBeVisible();
 });
@@ -96,4 +97,81 @@ test("a new Pack takes the focus, so typing names it", async ({ page, t, appLoca
   await page.keyboard.type("Pack A");
   await expect(form.packName()).toHaveCount(1);
   await expect(form.packName().last()).toHaveValue("Pack A");
+});
+
+test("Enter in a field continues to the next step", async ({ page, t, appLocale, user }) => {
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name: unique("Loafer") });
+  await form.pressEnterInName();
+
+  await expect(form.stepTitle("Sizes")).toBeVisible();
+  expect(await prisma.shoeModel.count({ where: { ownerId: user.id } })).toBe(0);
+});
+
+test("a finished step can be opened again and keeps what was typed; one not reached is locked", async ({ page, t, appLocale, user: _user }) => {
+  const name = unique("Loafer");
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name });
+  await form.continue();
+  await expect(form.stepTitle("Sizes")).toBeVisible();
+  expect(await form.canOpenFromBar("Packs")).toBe(false);
+
+  await form.goToStep("Details");
+  await expect(form.nameField()).toHaveValue(name);
+});
+
+test("Cancel leaves at once when nothing was typed", async ({ page, t, appLocale, user: _user }) => {
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.cancel();
+
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/catalog$`));
+});
+
+test("Cancel asks first once something was typed", async ({ page, t, appLocale, user }) => {
+  const name = unique("Loafer");
+  const form = new ModelForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name });
+
+  await form.cancel();
+  await expect(form.discardDialog()).toBeVisible();
+  await form.keepEditing();
+  await expect(form.discardDialog()).toBeHidden();
+  await expect(form.nameField()).toHaveValue(name);
+
+  await form.cancel();
+  await form.discard();
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/catalog$`));
+  expect(await prisma.shoeModel.count({ where: { ownerId: user.id } })).toBe(0);
+});
+
+test("a Pack that fails its check takes the save to the Packs step", async ({ page, t, appLocale, user }) => {
+  const model = await createModel(user.id);
+  const form = new ModelForm(page, t);
+  await form.gotoEdit(appLocale, model.id);
+  await form.goToStep("Packs");
+  await form.packName().last().fill("");
+  await form.goToStep("Details");
+  await form.save();
+
+  await expect(form.stepTitle("Packs")).toBeVisible();
+  await expect(form.packNameError()).toBeVisible();
+  const pack = await prisma.sizePack.findFirstOrThrow({ where: { shoeModelId: model.id } });
+  expect(pack.name).toBe("Mix");
+});
+
+test("the Active switch is saved", async ({ page, t, appLocale, user }) => {
+  const model = await createModel(user.id);
+  const form = new ModelForm(page, t);
+  await form.gotoEdit(appLocale, model.id);
+  await form.setActive(false);
+  await form.save();
+
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/catalog$`));
+  await expect
+    .poll(async () => (await prisma.shoeModel.findUniqueOrThrow({ where: { id: model.id } })).isActive)
+    .toBe(false);
 });
