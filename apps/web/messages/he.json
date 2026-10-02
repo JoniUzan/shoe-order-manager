@@ -407,7 +407,8 @@
     "discardTitle": "לבטל את השינויים?",
     "discardBody": "מה שמילאתם כאן לא יישמר.",
     "discard": "ביטול השינויים",
-    "keepEditing": "המשך עריכה"
+    "keepEditing": "המשך עריכה",
+    "notSet": "טרם הוגדר"
   },
   "settings": {
     "title": "הגדרות",

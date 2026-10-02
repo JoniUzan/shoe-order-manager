@@ -407,7 +407,8 @@
     "discardTitle": "Discard changes?",
     "discardBody": "Nothing you entered here will be saved.",
     "discard": "Discard",
-    "keepEditing": "Keep editing"
+    "keepEditing": "Keep editing",
+    "notSet": "Not set yet"
   },
   "settings": {
     "title": "Settings",
