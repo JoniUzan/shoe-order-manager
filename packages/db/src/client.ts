@@ -6,7 +6,7 @@ import { PrismaClient } from "./generated/prisma/client";
  * settings are pg's, not Prisma's: the old `connection_limit` / `pgbouncer`
  * URL parameters no longer do anything.
  *
- * Safe behind a transaction-mode pooler (Supabase port 6543, PgBouncer):
+ * Safe behind a transaction-mode pooler (Neon's `-pooler` host, PgBouncer):
  * the adapter sends unnamed statements (no `statementNameGenerator`), so no
  * prepared statement outlives the transaction that made it.
  */

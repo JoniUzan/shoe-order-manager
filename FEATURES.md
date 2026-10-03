@@ -93,10 +93,10 @@ save when you leave them (a "Saved" mark appears), choices apply as you pick the
 
 ## Not built yet
 
-- **M7 — Cloud (multi-device):** the database is moving to **Supabase** (Postgres) — done in code; the app itself still needs hosting (Vercel). Once both are live, that unlocks:
+- **M7 — Cloud (multi-device):** production will run on **Vercel** with **Neon** (Postgres) and **Cloudflare R2** (images) — see ADR 0008; nothing is deployed yet. Once both are live, that unlocks:
   - using it from **any device** (phone + computer) on the same account,
   - a **one-tap** "send the order as a link" over WhatsApp,
-  - and adding **more users** (e.g. staff) — the data model already supports this.
+  - and, later, **several people in one business** (e.g. staff). Not supported yet: data belongs to one User today; ADR 0003 has the path.
 - **Optional:** a sales **bar chart** on the Reports page.
 
 ## Running it (quick reference)
