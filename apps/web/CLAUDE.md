@@ -83,7 +83,10 @@ square JPEG in the browser (`components/catalog/crop-image.ts`) and uploads it w
 `uploadProductImage` when the model is saved; `createShoeModel`/`updateShoeModel` take the key,
 check it is the User's own, and delete a replaced file after the write commits (ADR 0011).
 Pages pass `imageUrl(key)` down; `ModelThumb` shows it, or the shoe outline without one. The
-PDFs read the bytes with `getObject`, never the public URL.
+PDFs read the bytes with `getObject`, never the public URL. The S3 client sends checksums only
+where an operation needs them, which R2 and the local server both accept. `pnpm storage:check`
+(`scripts/check-storage.mts`) runs a probe object through the same module: write, read, public
+fetch, delete. Run it with new storage settings before deploying them.
 
 ## Order PDFs
 

@@ -38,6 +38,11 @@ function storage(): StorageConfig | null {
           // R2 and local servers both take bucket-in-path URLs, which need no
           // per-bucket DNS.
           forcePathStyle: true,
+          // Since v3.729 the SDK adds CRC checksums to every request and checks
+          // them on every response. R2 and other S3-compatible servers don't
+          // all support that, so only send one where an operation needs it.
+          requestChecksumCalculation: "WHEN_REQUIRED",
+          responseChecksumValidation: "WHEN_REQUIRED",
         }),
       }
     : null;
@@ -83,16 +88,20 @@ export async function getObject(key: string): Promise<Uint8Array | null> {
   }
 }
 
+export async function deleteObject(key: string): Promise<void> {
+  const s = storage();
+  if (!s) return;
+  await s.client.send(new DeleteObjectCommand({ Bucket: s.bucket, Key: key }));
+}
+
 /**
  * Removes an object that nothing points at any more. Called after the write
  * that dropped the reference has committed, so a failure here only leaves an
  * unused file behind: it is logged, not thrown.
  */
 export async function deleteObjectQuietly(key: string): Promise<void> {
-  const s = storage();
-  if (!s) return;
   try {
-    await s.client.send(new DeleteObjectCommand({ Bucket: s.bucket, Key: key }));
+    await deleteObject(key);
   } catch (error) {
     console.error(`storage: could not delete ${key}`, error);
   }

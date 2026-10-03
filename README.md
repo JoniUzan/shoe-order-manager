@@ -40,7 +40,8 @@ http://localhost:5050 with no login screen and the local database already regist
 
 To start over locally, `pnpm dev:reset` wipes the database and the Product images, then
 re-applies the migrations and the seed (`pnpm db:seed:demo` after it for demo data).
-`pnpm storage:reset` deletes only the images.
+`pnpm storage:reset` deletes only the images. `pnpm storage:check` checks that image storage
+works (pass `--env <file>` to try R2 credentials before putting them in Vercel).
 
 ### Neon (production database)
 
