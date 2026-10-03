@@ -25,6 +25,7 @@ import { ModelRowActions } from "@/components/catalog/model-row-actions";
 import { CurveText } from "@/components/catalog/curve-text";
 import { DataTable } from "@/components/data-table/data-table";
 import { DetailRow } from "@/components/data-table/detail-row";
+import { ModelThumb } from "@/components/orders/model-thumb";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import { Link } from "@/i18n/navigation";
@@ -169,7 +170,14 @@ export function CatalogTable({
         // cell would swallow that click and take you to the edit form — the
         // one thing looking at a model should not do.
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.name}</span>
+          <div className="flex items-center gap-3">
+            {/* Every row gets the square, so the names line up. */}
+            <ModelThumb
+              src={row.original.imageUrl}
+              className="size-10 rounded-[0.625rem] md:size-10"
+            />
+            <span className="font-medium">{row.original.name}</span>
+          </div>
         ),
       },
       {
@@ -308,6 +316,14 @@ export function CatalogTable({
                 <DrawerDescription>{t("details")}</DrawerDescription>
               </DrawerHeader>
               <div className="flex flex-col gap-3 overflow-y-auto px-4 text-sm">
+                {active.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element -- already a small square JPEG
+                  <img
+                    src={active.imageUrl}
+                    alt={t("productImage")}
+                    className="aspect-square w-full max-w-60 rounded-2xl border border-border object-cover"
+                  />
+                )}
                 <DetailRow label={t("sku")} value={active.sku ?? "—"} />
                 <DetailRow
                   label={t("price")}

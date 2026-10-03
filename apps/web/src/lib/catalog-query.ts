@@ -6,6 +6,7 @@ import {
   type ListParams,
   type RawSearchParams,
 } from "@/lib/list-params";
+import { imageUrl } from "@/lib/storage";
 
 /**
  * The one definition of "a page of shoe models" — the mirror of
@@ -60,6 +61,8 @@ export type CatalogRow = {
   /** The model's packs in catalog order; `curve` parses with `parseCurve`. */
   packs: { name: string; curve: string }[];
   isActive: boolean;
+  /** The Product image's URL, when the model has one. */
+  imageUrl: string | null;
   createdAt: string;
   /**
    * How many order lines reference this model. Line items, not distinct orders:
@@ -147,6 +150,7 @@ const ROW_SELECT = {
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
   },
   isActive: true,
+  imageKey: true,
   createdAt: true,
   _count: { select: { items: true } },
 } satisfies Prisma.ShoeModelSelect;
@@ -164,6 +168,7 @@ function toRow(m: RawRow): CatalogRow {
     sizeFormat: m.sizeFormat,
     packs: m.packs,
     isActive: m.isActive,
+    imageUrl: imageUrl(m.imageKey),
     createdAt: m.createdAt.toISOString(),
     orderLines: m._count.items,
   };

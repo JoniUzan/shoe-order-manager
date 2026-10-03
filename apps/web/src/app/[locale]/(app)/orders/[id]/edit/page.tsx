@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { OrderForm } from "@/components/orders/order-form";
 import { groupItemsIntoBlocks } from "@/lib/order-blocks";
 import { requireUser } from "@/lib/session";
+import { imageUrl } from "@/lib/storage";
 
 export default async function EditOrderPage({
   params,
@@ -35,6 +36,7 @@ export default async function EditOrderPage({
         defaultPriceAgorot: true,
         sizes: true,
         isActive: true,
+        imageKey: true,
         packs: {
           select: { id: true, name: true, curve: true },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -46,6 +48,7 @@ export default async function EditOrderPage({
 
   const modelOptions = models.map((m) => ({
     ...m,
+    imageUrl: imageUrl(m.imageKey),
     sizes: parseSizes(m.sizes),
     packs: m.packs.map((p) => ({ ...p, curve: parseCurve(p.curve) })),
   }));

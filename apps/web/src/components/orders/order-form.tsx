@@ -84,6 +84,8 @@ export interface ModelOption {
   defaultPriceAgorot: number | null;
   sizes: string[];
   isActive: boolean;
+  /** The Product image's URL, when the model has one. */
+  imageUrl: string | null;
   /** The model's packs, in catalog order. */
   packs: { id: string; name: string; curve: Curve }[];
 }
@@ -466,7 +468,7 @@ export function OrderForm({
                         )}
                       >
                         <div className="flex items-center gap-3.5">
-                          <ModelThumb className="hidden @xl:flex" />
+                          <ModelThumb src={text.image(block)} className="hidden @xl:flex" />
                           <OrderBlockPicker
                             id={pickerId(i)}
                             form={form}
@@ -640,7 +642,7 @@ export function OrderForm({
             {open !== null && openBlockValues && (
               <>
                 <DrawerHeader className="flex-row items-center gap-3 px-4 pt-3 pb-4 text-start">
-                  <ModelThumb />
+                  <ModelThumb src={text.image(openBlockValues)} />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <DrawerTitle className="truncate text-[1.0625rem]">
                       {text.name(openBlockValues)}

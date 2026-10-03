@@ -9,6 +9,7 @@ import { OrderForm } from "@/components/orders/order-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
 import { requireUser } from "@/lib/session";
+import { imageUrl } from "@/lib/storage";
 
 export default async function NewOrderPage({
   params,
@@ -35,6 +36,7 @@ export default async function NewOrderPage({
         defaultPriceAgorot: true,
         sizes: true,
         isActive: true,
+        imageKey: true,
         packs: {
           select: { id: true, name: true, curve: true },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -49,6 +51,7 @@ export default async function NewOrderPage({
         customers={customers}
         models={models.map((m) => ({
           ...m,
+          imageUrl: imageUrl(m.imageKey),
           sizes: parseSizes(m.sizes),
           packs: m.packs.map((p) => ({ ...p, curve: parseCurve(p.curve) })),
         }))}

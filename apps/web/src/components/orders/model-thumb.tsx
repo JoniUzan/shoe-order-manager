@@ -1,18 +1,29 @@
 import { cn } from "@repo/ui/lib/utils";
 
 /**
- * A Shoe model's square in the order form, holding the place of its Product
- * image until uploads land: a quiet shoe outline on the surface colour.
+ * A Shoe model's small square: its Product image, or a quiet shoe outline on
+ * the surface colour when it has none (or is a custom item). Decorative: the
+ * model's name is always next to it.
  */
-export function ModelThumb({ className }: { className?: string }) {
+export function ModelThumb({
+  src,
+  className,
+}: {
+  src?: string | null;
+  className?: string;
+}) {
+  const box = cn(
+    "flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-[0.875rem] border border-border bg-surface text-muted-foreground md:size-16",
+    className,
+  );
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- already a small square JPEG
+      <img src={src} alt="" loading="lazy" className={cn(box, "object-cover")} />
+    );
+  }
   return (
-    <div
-      aria-hidden
-      className={cn(
-        "flex size-14 shrink-0 items-center justify-center rounded-[0.875rem] border border-border bg-surface text-muted-foreground md:size-16",
-        className,
-      )}
-    >
+    <div aria-hidden className={box}>
       <svg
         viewBox="0 0 24 24"
         fill="none"
