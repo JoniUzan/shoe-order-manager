@@ -11,6 +11,7 @@ import {
   Footer,
   Header,
   mark,
+  ModelCell,
   Note,
   SizeGrid,
   valueStyle,
@@ -39,6 +40,9 @@ export function OrderSummaryPdf({
   const orderLabel = t("orderNumber", { number: data.orderNumber });
   // An order where no line has a color doesn't get an empty Color column.
   const hasColor = summary.rows.some((r) => r.color);
+  const withImages = summary.rows.some(
+    (r) => r.shoeModelId && data.images.has(r.shoeModelId),
+  );
 
   return (
     <Document title={orderLabel} language={data.locale}>
@@ -112,6 +116,8 @@ export function OrderSummaryPdf({
             row={row}
             money={money}
             hasColor={hasColor}
+            image={row.shoeModelId ? data.images.get(row.shoeModelId) : undefined}
+            withImages={withImages}
           />
         ))}
 
@@ -199,12 +205,16 @@ function SummaryLine({
   row,
   money,
   hasColor,
+  image,
+  withImages,
 }: {
   d: Directional;
   t: PdfT;
   row: SummaryRow;
   money: (agorot: number) => string;
   hasColor: boolean;
+  image: Buffer | undefined;
+  withImages: boolean;
 }) {
   // "2 cartons × Pack A · 1 carton × Pack B + 3 loose pairs"
   const cartons =
@@ -224,34 +234,36 @@ function SummaryLine({
   return (
     <View style={[styles.tr, { flexDirection: d.row }]} wrap={false}>
       <Cell width={COLS.item}>
-        <View
-          style={{
-            flexDirection: d.row,
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <Text style={[{ fontWeight: 500 }, valueStyle(d, row.name)]}>
-            {row.name}
-          </Text>
-          {row.custom && (
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: RULE,
-                borderRadius: 8,
-                paddingHorizontal: 4,
-              }}
-            >
-              <Text
-                style={[{ fontSize: 8, fontWeight: 500 }, styles.muted, d.text]}
+        <ModelCell d={d} image={image} withImages={withImages}>
+          <View
+            style={{
+              flexDirection: d.row,
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <Text style={[{ fontWeight: 500 }, valueStyle(d, row.name)]}>
+              {row.name}
+            </Text>
+            {row.custom && (
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: RULE,
+                  borderRadius: 8,
+                  paddingHorizontal: 4,
+                }}
               >
-                {t("custom")}
-              </Text>
-            </View>
-          )}
-        </View>
+                <Text
+                  style={[{ fontSize: 8, fontWeight: 500 }, styles.muted, d.text]}
+                >
+                  {t("custom")}
+                </Text>
+              </View>
+            )}
+          </View>
+        </ModelCell>
       </Cell>
       {hasColor && (
         <Cell width={COLS.color}>

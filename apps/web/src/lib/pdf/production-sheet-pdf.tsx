@@ -6,6 +6,7 @@ import {
   Footer,
   Header,
   mark,
+  ModelCell,
   Note,
   SizeGrid,
   valueStyle,
@@ -33,6 +34,9 @@ export function ProductionSheetPdf({
   const { rows, pairs } = buildProductionRows(data.items);
   // An order where no line has a color doesn't get an empty Color column.
   const hasColor = rows.some((r) => r.color);
+  const withImages = rows.some(
+    (r) => r.shoeModelId && data.images.has(r.shoeModelId),
+  );
   const title = t("production");
   const orderLabel = t("orderNumber", { number: data.orderNumber });
 
@@ -79,26 +83,32 @@ export function ProductionSheetPdf({
             wrap={false}
           >
             <Cell width="24%">
-              <Text style={[{ fontWeight: 500 }, valueStyle(d, row.name)]}>
-                {row.name}
-              </Text>
-              {row.custom ? (
-                <Text style={[{ fontSize: 9 }, styles.muted, d.text]}>
-                  {t("custom")}
+              <ModelCell
+                d={d}
+                image={row.shoeModelId ? data.images.get(row.shoeModelId) : undefined}
+                withImages={withImages}
+              >
+                <Text style={[{ fontWeight: 500 }, valueStyle(d, row.name)]}>
+                  {row.name}
                 </Text>
-              ) : (
-                row.sku && (
-                  <Text
-                    style={[
-                      { fontSize: 9 },
-                      styles.muted,
-                      valueStyle(d, row.sku),
-                    ]}
-                  >
-                    {row.sku}
+                {row.custom ? (
+                  <Text style={[{ fontSize: 9 }, styles.muted, d.text]}>
+                    {t("custom")}
                   </Text>
-                )
-              )}
+                ) : (
+                  row.sku && (
+                    <Text
+                      style={[
+                        { fontSize: 9 },
+                        styles.muted,
+                        valueStyle(d, row.sku),
+                      ]}
+                    >
+                      {row.sku}
+                    </Text>
+                  )
+                )}
+              </ModelCell>
             </Cell>
             {hasColor && (
               <Cell width="12%">

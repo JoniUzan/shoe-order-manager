@@ -1,8 +1,8 @@
 import type { SizePairs } from "@repo/domain";
-import { Text, View } from "@react-pdf/renderer";
+import { Image, Text, View } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
 
-import { HAIRLINE, RULE, styles, type Directional } from "./theme";
+import { HAIRLINE, RULE, SHADE, styles, type Directional } from "./theme";
 
 export interface Business {
   businessName: string | null;
@@ -241,6 +241,38 @@ export function Note({
     >
       <Text style={[styles.label, d.text]}>{label}</Text>
       <Text style={valueStyle(d, text)}>{text}</Text>
+    </View>
+  );
+}
+
+/**
+ * A row's model: its Product image beside the name lines, when the order
+ * has any images at all. A row without one keeps a shaded square so the
+ * names still line up.
+ */
+export function ModelCell({
+  d,
+  image,
+  withImages,
+  children,
+}: {
+  d: Directional;
+  image: Buffer | undefined;
+  /** Whether any row of the document has an image. */
+  withImages: boolean;
+  children: ReactNode;
+}) {
+  if (!withImages) return <>{children}</>;
+  return (
+    <View style={{ flexDirection: d.row, alignItems: "center", gap: 6 }}>
+      {image ? (
+        // react-pdf's Image takes no alt: the name beside it says what it is.
+        // eslint-disable-next-line jsx-a11y/alt-text
+        <Image src={{ data: image, format: "jpg" }} style={styles.thumb} />
+      ) : (
+        <View style={[styles.thumb, { borderWidth: 0, backgroundColor: SHADE }]} />
+      )}
+      <View style={{ flexGrow: 1, flexBasis: 0 }}>{children}</View>
     </View>
   );
 }

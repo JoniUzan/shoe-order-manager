@@ -74,6 +74,15 @@ export const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   muted: { color: MUTED },
+  /** A row's Product image. */
+  thumb: {
+    width: 34,
+    height: 34,
+    borderRadius: 4,
+    borderWidth: 0.75,
+    borderColor: HAIRLINE,
+    objectFit: "cover",
+  },
   label: { fontSize: 9, fontWeight: 600, color: MUTED },
   title: { fontSize: 16.5, fontWeight: 600 },
   headerRule: {

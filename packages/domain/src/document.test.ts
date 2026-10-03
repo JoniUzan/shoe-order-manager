@@ -80,6 +80,15 @@ describe("buildOrderSummaryRows", () => {
     expect(summary.rows.map((r) => r.custom)).toEqual([false, false, false, true]);
   });
 
+  it("keeps each row's model, for its Product image", () => {
+    expect(summary.rows.map((r) => r.shoeModelId === null)).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ]);
+  });
+
   it("keeps two custom items with different text apart", () => {
     const rows = buildOrderSummaryRows(
       [
@@ -119,6 +128,14 @@ describe("buildProductionRows", () => {
     ]);
     expect(production.rows.map((r) => r.pairs)).toEqual([19, 3, 2]);
     expect(production.pairs).toBe(24);
+  });
+
+  it("keeps each row's model, null for a custom item", () => {
+    expect(production.rows.map((r) => r.shoeModelId === null)).toEqual([
+      false,
+      false,
+      true,
+    ]);
   });
 
   it("carries the SKU and the custom flag", () => {

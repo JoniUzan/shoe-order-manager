@@ -34,6 +34,8 @@ export interface SizePairs {
 }
 
 export interface SummaryRow {
+  /** The catalog model, for its Product image; null for a custom item. */
+  shoeModelId: string | null;
   name: string;
   color: string | null;
   custom: boolean;
@@ -48,6 +50,8 @@ export interface SummaryRow {
 }
 
 export interface ProductionRow {
+  /** The catalog model, for its Product image; null for a custom item. */
+  shoeModelId: string | null;
   name: string;
   sku: string | null;
   color: string | null;
@@ -100,6 +104,7 @@ export function buildOrderSummaryRows(
     let group = groups.get(key);
     if (!group) {
       group = {
+        shoeModelId: item.shoeModelId,
         name: item.name,
         color: item.color,
         custom: !item.shoeModelId,
@@ -144,6 +149,7 @@ export function buildProductionRows(items: DocumentItem[]): ProductionRows {
     let group = groups.get(key);
     if (!group) {
       group = {
+        shoeModelId: item.shoeModelId,
         name: item.name,
         sku: item.sku,
         color: item.color,
