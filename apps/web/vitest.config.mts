@@ -8,6 +8,10 @@ const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
   "postgresql://postgres@localhost:5432/shoe_test";
 
+// Product images go to the local S3 server (docker compose), in a bucket of
+// their own that global setup creates.
+const TEST_S3_ENDPOINT = process.env.TEST_S3_ENDPOINT ?? "http://localhost:8333";
+
 export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
@@ -18,7 +22,15 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
-    env: { DATABASE_URL: TEST_DATABASE_URL, DIRECT_URL: TEST_DATABASE_URL },
+    env: {
+      DATABASE_URL: TEST_DATABASE_URL,
+      DIRECT_URL: TEST_DATABASE_URL,
+      S3_ENDPOINT: TEST_S3_ENDPOINT,
+      S3_BUCKET: "shoe-test",
+      S3_ACCESS_KEY_ID: "local",
+      S3_SECRET_ACCESS_KEY: "local",
+      IMAGE_BASE_URL: `${TEST_S3_ENDPOINT}/shoe-test`,
+    },
     globalSetup: ["test/global-setup.ts"],
     setupFiles: ["test/setup.ts"],
     // next-auth imports `next/server` without an extension, which Node's ESM

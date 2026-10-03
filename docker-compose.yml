@@ -1,4 +1,4 @@
-# Local Postgres for development: `docker compose up -d`.
+# Local Postgres and object storage for development: `docker compose up -d`.
 # Matches the DATABASE_URL / DIRECT_URL in packages/db/.env.example and
 # apps/web/.env.example. Production uses Neon; this never touches it.
 #
@@ -20,6 +20,31 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  # S3-compatible storage for Product images, standing in for Cloudflare R2
+  # (ADR 0008): http://localhost:8333, bucket `product-images`. SeaweedFS
+  # rather than MinIO, whose community images stopped being published in
+  # 2025. With no credentials configured it accepts any key pair and serves
+  # every object publicly, which is how the app reads images (IMAGE_BASE_URL);
+  # fine because the port is bound to this machine only.
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    restart: unless-stopped
+    command: server -dir=/data -s3 -s3.port=8333
+    ports:
+      - "127.0.0.1:8333:8333"
+    volumes:
+      - storage:/data
+
+  # Creates the dev bucket once storage is up, then exits. Re-running it is
+  # harmless. (The tests make their own `shoe-test` bucket.)
+  storage-init:
+    image: chrislusf/seaweedfs:4.48
+    depends_on:
+      - storage
+    restart: "no"
+    entrypoint: >-
+      sh -c 'until echo "s3.bucket.create -name product-images" | weed shell -master=storage:9333 2>&1 | grep -qE "created|exists"; do sleep 1; done'
 
   # Optional DB browser: `docker compose --profile studio up -d`, then
   # http://localhost:5050. The profile keeps a plain `up -d` to Postgres only.
@@ -55,3 +80,4 @@ services:
 volumes:
   pgdata:
   pgadmin:
+  storage:

@@ -10,6 +10,10 @@ const TEST_DATABASE_URL =
   "postgresql://postgres@localhost:5432/shoe_test";
 // The suites' setup writes straight to the database.
 process.env.DATABASE_URL = TEST_DATABASE_URL;
+// Product images go to the local S3 server, in the bucket the integration
+// tests use too (global-setup.ts creates it).
+const TEST_S3_ENDPOINT = process.env.TEST_S3_ENDPOINT ?? "http://localhost:8333";
+process.env.IMAGE_BASE_URL = `${TEST_S3_ENDPOINT}/shoe-test`;
 
 const desktop = { viewport: { width: 1280, height: 900 } };
 const phone = {
@@ -49,6 +53,11 @@ export default defineConfig<Options>({
       DIRECT_URL: TEST_DATABASE_URL,
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-only-secret-not-used-anywhere-else",
       AUTH_TRUST_HOST: "true",
+      S3_ENDPOINT: TEST_S3_ENDPOINT,
+      S3_BUCKET: "shoe-test",
+      S3_ACCESS_KEY_ID: "local",
+      S3_SECRET_ACCESS_KEY: "local",
+      IMAGE_BASE_URL: process.env.IMAGE_BASE_URL,
     },
   },
 });

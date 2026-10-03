@@ -103,7 +103,7 @@ save when you leave them (a "Saved" mark appears), choices apply as you pick the
 
 ```bash
 pnpm install
-docker compose up -d   # local Postgres (copy the .env.example files first)
+docker compose up -d   # local Postgres + image storage (copy the .env.example files first)
 pnpm db:migrate   # set up the database (first time)
 pnpm db:seed      # create the login account
 pnpm dev          # http://localhost:3000

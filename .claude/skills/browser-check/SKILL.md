@@ -11,7 +11,8 @@ reported what you saw.
 
 ## 1. Make sure the app is up
 
-1. Postgres: `docker compose ps` shows `db` running. If not, `docker compose up -d`.
+1. Postgres and storage: `docker compose ps` shows `db` and `storage` running. If not,
+   `docker compose up -d`.
 2. Data: a fresh database needs `pnpm db:migrate` and `pnpm db:seed` (the seed is idempotent).
 3. Dev server: `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/he/login` gives
    `200`. If not, start `pnpm dev` in the background, wait for `200`, and stop it at the end
