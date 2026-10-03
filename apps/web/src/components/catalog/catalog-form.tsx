@@ -36,9 +36,10 @@ import {
   type ProductImageValue,
 } from "@/components/catalog/product-image-field";
 import { SizeListInput } from "@/components/catalog/size-list-input";
+import { ShoeOutline } from "@/components/orders/model-thumb";
 import { roomy } from "@/components/step-form/roomy";
 import { StepForm, useStepForm } from "@/components/step-form/step-form";
-import { Illustration, type IllustrationName } from "@/components/ui/illustration";
+import type { IllustrationName } from "@/components/ui/illustration";
 import { useRouter } from "@/i18n/navigation";
 import {
   createShoeModel,
@@ -357,8 +358,8 @@ function ModelPreview({
           // eslint-disable-next-line @next/next/no-img-element -- already a small square JPEG
           <img src={imageUrl} alt="" className="size-full object-cover" />
         ) : (
-          // The step illustration until the model has a Product image.
-          <Illustration name="sneaker" sizes="320px" className="size-3/5 md:size-3/5" />
+          // The same outline as a model without a Product image anywhere else.
+          <ShoeOutline className="size-2/5 text-muted-foreground opacity-70" />
         )}
       </StepForm.PreviewImage>
       <StepForm.PreviewTitle

@@ -24,19 +24,26 @@ export function ModelThumb({
   }
   return (
     <div aria-hidden className={box}>
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-[45%] opacity-70"
-      >
-        <path d="M3 7.5V17h18v-1.6a2.4 2.4 0 0 0-1.8-2.3l-4.4-1.2-3-4.4H9.6L8.5 9.8C7 10 5 9.4 3 7.5z" />
-        <path d="M3 17v1.5h18V17" />
-        <path d="M11.6 10l-1.3 1.2M13 12l-1.3 1.2" />
-      </svg>
+      <ShoeOutline className="size-[45%] opacity-70" />
     </div>
+  );
+}
+
+/** The quiet shoe outline that stands in for a missing Product image. */
+export function ShoeOutline({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 7.5V17h18v-1.6a2.4 2.4 0 0 0-1.8-2.3l-4.4-1.2-3-4.4H9.6L8.5 9.8C7 10 5 9.4 3 7.5z" />
+      <path d="M3 17v1.5h18V17" />
+      <path d="M11.6 10l-1.3 1.2M13 12l-1.3 1.2" />
+    </svg>
   );
 }
