@@ -37,7 +37,8 @@ services:
       - storage:/data
 
   # Creates the dev bucket once storage is up, then exits. Re-running it is
-  # harmless. (The tests make their own `shoe-test` bucket.)
+  # harmless; `pnpm storage:reset` deletes the bucket and runs this again.
+  # (The tests make their own `shoe-test` bucket.)
   storage-init:
     image: chrislusf/seaweedfs:4.48
     depends_on:

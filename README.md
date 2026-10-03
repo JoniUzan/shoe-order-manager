@@ -38,6 +38,10 @@ To browse the local database, `docker compose --profile studio up -d` also start
 http://localhost:5050 with no login screen and the local database already registered
 (`pnpm db:studio` works too).
 
+To start over locally, `pnpm dev:reset` wipes the database and the Product images, then
+re-applies the migrations and the seed (`pnpm db:seed:demo` after it for demo data).
+`pnpm storage:reset` deletes only the images.
+
 ### Neon (production database)
 
 Neon is used as **plain Postgres** (ADR 0008), so moving to any other Postgres host later is a

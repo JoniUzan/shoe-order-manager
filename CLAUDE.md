@@ -25,6 +25,8 @@ docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no
 pnpm db:migrate              # create/apply migrations (prisma migrate dev)
 pnpm db:seed                 # order statuses + admin user; db:seed:demo adds demo data
 pnpm db:generate             # regenerate the Prisma client after schema edits
+pnpm storage:reset           # delete every local Product image (empties the product-images bucket)
+pnpm dev:reset               # wipe the local database and images, re-migrate and re-seed
 ```
 
 Tests come in three layers (ADR 0006), and a change adds tests at the layer it touches:
