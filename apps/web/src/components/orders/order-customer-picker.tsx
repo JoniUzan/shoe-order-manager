@@ -1,0 +1,132 @@
+"use client";
+
+import { Input } from "@repo/ui/components/input";
+import { cn } from "@repo/ui/lib/utils";
+import { CheckIcon, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState, type KeyboardEvent } from "react";
+
+import { roomy } from "@/components/step-form/roomy";
+
+export interface PickerCustomer {
+  id: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+}
+
+/** The short line under a Customer's name: where they are, else their phone. */
+export function customerLine(c: Pick<PickerCustomer, "phone" | "address">) {
+  return [c.address, c.phone].filter(Boolean).join(" · ");
+}
+
+/**
+ * The Customer step: a search box over the list of Customers, each one a
+ * radio. Enter in the search with a single match picks it, so typing a few
+ * letters and Enter is a whole step.
+ */
+export function OrderCustomerPicker({
+  customers,
+  value,
+  onChange,
+  error,
+}: {
+  customers: PickerCustomer[];
+  value: string;
+  onChange: (id: string) => void;
+  error?: string;
+}) {
+  const t = useTranslations("orders");
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLocaleLowerCase();
+  const shown = q
+    ? customers.filter((c) =>
+        [c.name, c.address, c.phone].some((s) => s?.toLocaleLowerCase().includes(q)),
+      )
+    : customers;
+
+  function onSearchKey(e: KeyboardEvent<HTMLInputElement>) {
+    // Before the form's submit runs (which continues), so the pick counts.
+    if (e.key === "Enter" && shown.length === 1) onChange(shown[0]!.id);
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="relative">
+        <Search
+          className="pointer-events-none absolute start-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onSearchKey}
+          placeholder={t("searchCustomer")}
+          aria-label={t("searchCustomer")}
+          className={cn(roomy.field, "ps-11")}
+        />
+      </div>
+
+      {/* Under the search, not under the list: a long list would hide it. */}
+      {error && <p className={cn("text-sm text-destructive", roomy.appear)}>{error}</p>}
+
+      <div role="radiogroup" aria-label={t("customer")} className="flex flex-col gap-1">
+        {shown.map((c) => {
+          const selected = c.id === value;
+          const line = customerLine(c);
+          return (
+            <label
+              key={c.id}
+              className={cn(
+                "flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl px-3.5 py-3",
+                "transition-[background-color,box-shadow] duration-150 ease-[ease]",
+                "has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50",
+                selected
+                  ? "bg-card shadow-[var(--shadow-card)] md:bg-surface md:shadow-none md:ring-[1.5px] md:ring-foreground"
+                  : "hover:bg-surface",
+              )}
+            >
+              <input
+                type="radio"
+                name="customer"
+                className="sr-only"
+                checked={selected}
+                onChange={() => onChange(c.id)}
+              />
+              <span
+                aria-hidden
+                className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold"
+              >
+                {c.name.trim().charAt(0)}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className={cn("truncate", selected ? "font-semibold" : "font-medium")}>
+                  {c.name}
+                </span>
+                {line && (
+                  <span className="truncate text-[0.8125rem] text-muted-foreground">{line}</span>
+                )}
+              </span>
+              {selected && (
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex size-6.5 shrink-0 items-center justify-center rounded-full bg-foreground text-background",
+                    "transition-[opacity,scale] duration-150 ease-out-quint starting:opacity-0 motion-safe:starting:scale-90",
+                  )}
+                >
+                  <CheckIcon className="size-3.5" />
+                </span>
+              )}
+            </label>
+          );
+        })}
+        {shown.length === 0 && (
+          <p className="px-3.5 py-3 text-muted-foreground">{t("noMatches")}</p>
+        )}
+      </div>
+
+    </div>
+  );
+}

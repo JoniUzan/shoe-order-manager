@@ -13,12 +13,13 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Label } from "@repo/ui/components/label";
 import { cn } from "@repo/ui/lib/utils";
-import { CheckIcon, ChevronLeft, ChevronRight, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDown, ChevronLeft, ChevronRight, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   createContext,
   use,
   useEffect,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
@@ -66,12 +67,15 @@ type Direction = "forward" | "back";
 export function useStepForm({
   steps,
   editing,
+  start = 0,
 }: {
   steps: readonly StepDef[];
   editing: boolean;
+  /** The step it opens on, e.g. an existing order's Review. */
+  start?: number;
 }) {
   const last = Math.max(steps.length - 1, 0);
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(start);
   // The furthest step reached, so the bar can return to it.
   const [reached, setReached] = useState(editing ? last : 0);
   // Which way the last change went; null until one happens, so the page
@@ -162,7 +166,7 @@ function Root({
   return (
     <StepFormContext value={{ ...flow, pending, dirty, cancelHref }}>
       {/* Fills the content panel's height, so the pane reaches its buttons. */}
-      <div className="flex flex-1 flex-col @container">
+      <div className="flex flex-1 flex-col @container md:min-h-0">
         <form
           onSubmit={onSubmit}
           // Validation is react-hook-form's job: native constraint validation
@@ -176,8 +180,17 @@ function Root({
           className={cn(
             "grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] gap-x-6 gap-y-5 pb-28 md:gap-y-6 md:pb-0",
             "[grid-template-areas:'header'_'pane'_'actions']",
+            "has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_1fr_auto]",
+            "has-[>[data-slot=step-form-summary]]:[grid-template-areas:'header'_'summary'_'pane'_'actions']",
+            // On a computer the form is held to the panel's height and the
+            // pane's row may shrink below its content: the pane scrolls.
+            "md:min-h-0 md:grid-rows-[auto_minmax(0,1fr)_auto]",
+            "md:has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_minmax(0,1fr)_auto]",
             "@5xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_22rem]",
             "@5xl:has-[>[data-slot=step-form-preview]]:[grid-template-areas:'header_header'_'pane_preview'_'actions_preview']",
+            // Three rows again: the Summary, hidden beside a Preview, mustn't
+            // keep a row of its own, or the buttons' row takes the stretch.
+            "@5xl:has-[>[data-slot=step-form-preview]]:grid-rows-[auto_minmax(0,1fr)_auto]",
             "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
             className,
           )}
@@ -391,7 +404,7 @@ function ProgressFill({ filled }: { filled: boolean }) {
  */
 function Pane({ children }: { children: ReactNode }) {
   const { current } = useStepFormContext();
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const first = useRef(true);
 
   useEffect(() => {
@@ -399,21 +412,37 @@ function Pane({ children }: { children: ReactNode }) {
       first.current = false;
       return;
     }
+    // The page scrolls on a phone, the pane itself on a computer.
     window.scrollTo({ top: 0 });
-    ref.current?.querySelector<HTMLElement>("[data-step-title]")?.focus();
+    ref.current?.scrollTo({ top: 0 });
+    ref.current?.querySelector<HTMLElement>("[data-step-title]")?.focus({ preventScroll: true });
   }, [current]);
 
   return (
     <section
-      ref={ref}
       data-slot="step-form-pane"
       className={cn(
-        "@container flex min-w-0 flex-col gap-5 [grid-area:pane] md:gap-7",
-        "md:rounded-card md:bg-card md:px-10 md:py-9",
+        "@container flex min-w-0 flex-col [grid-area:pane]",
+        // The card. Its vertical padding is the corner's radius, so the
+        // scroll area (and the browser's scrollbar) starts and ends clear of
+        // the rounded corners instead of being cut by them.
+        "md:min-h-0 md:rounded-card md:bg-card md:py-6",
         "md:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-card)]",
       )}
     >
-      {children}
+      <div
+        ref={ref}
+        className={cn(
+          "flex flex-col gap-5 md:gap-7",
+          // `relative`: an absolutely placed child (an sr-only radio, a
+          // remove ✕) stays inside the scroll area. Without it, it hangs
+          // off the page and makes the window scroll too.
+          "relative md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-contain md:px-10 md:py-3",
+          roomy.scrollbar,
+        )}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -507,16 +536,90 @@ function Field({
  */
 function Preview({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <aside
-      aria-label={label}
+    // The column's slot. The card sits in it out of flow, so its height never
+    // sizes the grid's rows: a long order's preview would otherwise stretch
+    // the buttons' row (it spans it) and squeeze the pane. Taller than the
+    // slot, the card scrolls.
+    <div
       data-slot="step-form-preview"
+      className="relative hidden [grid-area:preview] @5xl:block"
+    >
+      <aside
+        aria-label={label}
+        className={cn(
+          "absolute inset-x-0 top-0 flex max-h-full flex-col gap-4 overflow-y-auto overscroll-contain",
+          roomy.scrollbar,
+          "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
+        )}
+      >
+        {children}
+      </aside>
+    </div>
+  );
+}
+
+/**
+ * The preview for a screen too narrow for it: a bar under the header that
+ * reads `label` and `value` (a name, a total) and opens to `children`. Gone
+ * once the Preview has its column. Opens with a short ease-out, no height
+ * animation: it pushes the step down, and the step shouldn't slide.
+ */
+function Summary({
+  label,
+  value,
+  children,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+
+  return (
+    <div
+      data-slot="step-form-summary"
       className={cn(
-        "sticky top-6 hidden flex-col gap-4 self-start [grid-area:preview] @5xl:flex",
-        "rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
+        "flex flex-col [grid-area:summary]",
+        // Hidden where the Preview has its own column (the same container query).
+        "@5xl:has-[~[data-slot=step-form-preview]]:hidden",
       )}
     >
-      {children}
-    </aside>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "flex h-12 items-center justify-between gap-2 rounded-2xl border bg-surface px-4 text-sm",
+          "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          roomy.press,
+        )}
+      >
+        <span className="min-w-0 truncate">{label}</span>
+        <span className="flex shrink-0 items-center gap-1.5 font-semibold">
+          {value}
+          <ChevronDown
+            className={cn(
+              "size-4 transition-[rotate] duration-200 ease-out-quint",
+              open && "rotate-180",
+            )}
+            aria-hidden
+          />
+        </span>
+      </button>
+      {open && (
+        <div
+          id={id}
+          className={cn(
+            "mt-2 flex flex-col gap-4 rounded-card bg-card p-5 shadow-[var(--shadow-card)]",
+            roomy.appear,
+          )}
+        >
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -594,9 +697,12 @@ function PreviewRow({
  */
 function Actions({
   saveLabel,
+  aside,
   children,
 }: {
   saveLabel?: string;
+  /** A short line at the row's start on a computer, like the order's counts. */
+  aside?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -608,6 +714,13 @@ function Actions({
         "md:static md:justify-end md:gap-3 md:border-0 md:bg-transparent md:p-0 md:[grid-area:actions]",
       )}
     >
+      {aside && (
+        // As tall as the buttons, not centred: the row can be taller than
+        // them when the Preview beside it is.
+        <p className="me-auto hidden h-11 items-center text-sm text-muted-foreground md:flex">
+          {aside}
+        </p>
+      )}
       {children ?? (
         <>
           <Back />
@@ -703,6 +816,7 @@ export const StepForm = Object.assign(Root, {
   StepHeader,
   Field,
   Preview,
+  Summary,
   PreviewImage,
   PreviewTitle,
   PreviewRows,

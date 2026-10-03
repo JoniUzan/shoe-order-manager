@@ -1,10 +1,8 @@
 import { prisma } from "@repo/db";
 import { parseCurve, parseSizes } from "@repo/domain";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { OrderForm } from "@/components/orders/order-form";
-import { PageHeader } from "@/components/layout/page-header";
 import { groupItemsIntoBlocks } from "@/lib/order-blocks";
 import { requireUser } from "@/lib/session";
 
@@ -15,7 +13,6 @@ export default async function EditOrderPage({
 }) {
   const { locale, id } = await params;
   const user = await requireUser(locale);
-  const t = await getTranslations({ locale, namespace: "orders" });
 
   const [order, customers, models] = await Promise.all([
     prisma.order.findFirst({
@@ -25,7 +22,7 @@ export default async function EditOrderPage({
     prisma.customer.findMany({
       where: { ownerId: user.id },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, phone: true, address: true },
     }),
     // A model the order uses may since have been deactivated; it still has to
     // appear here or editing the order would silently drop that block.
@@ -55,10 +52,9 @@ export default async function EditOrderPage({
   const sizesByModelId = new Map(modelOptions.map((m) => [m.id, m.sizes]));
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t("edit")} />
-      <OrderForm
+    <OrderForm
         orderId={order.id}
+        orderNumber={order.orderNumber}
         customers={customers}
         models={modelOptions}
         defaultValues={{
@@ -73,6 +69,5 @@ export default async function EditOrderPage({
           ),
         }}
       />
-    </div>
   );
 }

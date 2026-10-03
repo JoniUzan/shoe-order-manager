@@ -9,12 +9,16 @@ test("an order with Cartons of a Pack and Loose pairs", async ({ page, t, appLoc
   const { customer, model } = await orderPrerequisites(user.id);
   const form = new OrderForm(page, t);
 
-  await form.goto(appLocale);
+  await form.gotoNew(appLocale);
   await form.pickCustomer(customer.name);
-  await form.pickModel(model.name);
+  await form.continue();
+  await form.addModel(model.name);
   await expect(form.unitPrice()).toHaveValue("100");
-  await form.addPack(2); // 16 pairs
+  await form.addPack(1);
+  await form.addCarton(); // 2 Cartons: 16 pairs
+  await expect(form.packCount()).toHaveValue("2");
   await form.pairs(2).fill("1"); // + 1 Loose pair of size 40
+  await form.closeModel();
   await expect(page.getByText("1,700.00").first()).toBeVisible();
   await form.save();
 

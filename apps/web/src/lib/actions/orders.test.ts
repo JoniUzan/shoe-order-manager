@@ -239,6 +239,27 @@ describe("factory note", () => {
   });
 });
 
+describe("status", () => {
+  it("is saved by updateOrder, as the order form's Review step sends it", async () => {
+    const s = await setup();
+    const id = await created(packOrder(s));
+    expect(await updateOrder(id, { ...packOrder(s), statusCode: "done" })).toEqual({ ok: true, id });
+    const order = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(order.statusCode).toBe("done");
+  });
+
+  it("refuses a status that isn't in OrderStatus, on every path, instead of throwing", async () => {
+    const s = await setup();
+    const id = await created(packOrder(s));
+    const bad = { ...packOrder(s), statusCode: "shipped" };
+    expect(await createOrder(bad)).toEqual({ ok: false, error: "invalid" });
+    expect(await updateOrder(id, bad)).toEqual({ ok: false, error: "invalid" });
+    expect(await setOrderStatus(id, "shipped")).toEqual({ ok: false, error: "invalid" });
+    const order = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(order.statusCode).toBe("not_done");
+  });
+});
+
 describe("status and delete", () => {
   it("sets status and deletes, one or many, only for the owner", async () => {
     const s = await setup();

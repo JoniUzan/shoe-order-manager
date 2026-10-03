@@ -211,6 +211,15 @@ function revalidateOrderViews(id?: string) {
   if (id) revalidatePath(`/orders/${id}`);
 }
 
+/**
+ * Status codes live in the OrderStatus table so stages can be added without a
+ * code change: check against it. An unknown code would otherwise fail the
+ * foreign key and throw instead of returning `invalid`.
+ */
+async function statusIsKnown(statusCode: string) {
+  return (await prisma.orderStatus.count({ where: { code: statusCode } })) > 0;
+}
+
 export async function createOrder(
   input: OrderInput,
 ): Promise<OrderActionResult> {
@@ -224,6 +233,7 @@ export async function createOrder(
     select: { id: true },
   });
   if (!customer) return { ok: false, error: "invalid" };
+  if (!(await statusIsKnown(data.statusCode))) return { ok: false, error: "invalid" };
   if (!(await modelsAreValid(ownerId, data)))
     return { ok: false, error: "invalid" };
   const packs = await resolvePacks(prisma, ownerId, data);
@@ -303,6 +313,7 @@ export async function updateOrder(
     select: { id: true },
   });
   if (!customer) return { ok: false, error: "invalid" };
+  if (!(await statusIsKnown(data.statusCode))) return { ok: false, error: "invalid" };
   if (!(await modelsAreValid(ownerId, data)))
     return { ok: false, error: "invalid" };
 
@@ -390,6 +401,7 @@ export async function setOrderStatus(
   statusCode: string,
 ): Promise<OrderActionResult> {
   const ownerId = await requireOwnerId();
+  if (!(await statusIsKnown(statusCode))) return { ok: false, error: "invalid" };
   const result = await prisma.order.updateMany({
     where: { id, ownerId },
     data: { statusCode },
@@ -428,10 +440,7 @@ export async function setOrdersStatus(
   const ownerId = await requireOwnerId();
   if (!validIds(ids)) return { ok: false, error: "invalid" };
 
-  // Status codes live in the OrderStatus table so stages can be added without
-  // a code change — validate against it rather than a hard-coded list.
-  const known = await prisma.orderStatus.count({ where: { code: statusCode } });
-  if (known === 0) return { ok: false, error: "invalid" };
+  if (!(await statusIsKnown(statusCode))) return { ok: false, error: "invalid" };
 
   const result = await prisma.order.updateMany({
     where: { id: { in: ids }, ownerId },

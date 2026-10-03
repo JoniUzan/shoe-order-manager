@@ -24,7 +24,7 @@ export default async function NewOrderPage({
     prisma.customer.findMany({
       where: { ownerId: user.id },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, phone: true, address: true },
     }),
     prisma.shoeModel.findMany({
       where: { ownerId: user.id, isActive: true },
@@ -43,11 +43,23 @@ export default async function NewOrderPage({
     }),
   ]);
 
+  if (customers.length > 0) {
+    return (
+      <OrderForm
+        customers={customers}
+        models={models.map((m) => ({
+          ...m,
+          sizes: parseSizes(m.sizes),
+          packs: m.packs.map((p) => ({ ...p, curve: parseCurve(p.curve) })),
+        }))}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("new")} />
-      {customers.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <Card className="flex flex-col items-center justify-center gap-3 py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-muted">
             <Users className="size-6 text-muted-foreground" />
           </div>
@@ -58,17 +70,7 @@ export default async function NewOrderPage({
               {tCustomers("add")}
             </Link>
           </Button>
-        </Card>
-      ) : (
-        <OrderForm
-          customers={customers}
-          models={models.map((m) => ({
-            ...m,
-            sizes: parseSizes(m.sizes),
-            packs: m.packs.map((p) => ({ ...p, curve: parseCurve(p.curve) })),
-          }))}
-        />
-      )}
+      </Card>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 # StepForm
 
 The app's create/edit form: a shadcn-style compound component. `catalog/catalog-form.tsx` is the
-reference build; read it next to this file. The step-by-step for a new form is the
+reference build; read it next to this file (`orders/order-form.tsx` for a list of records and a
+Summary). The step-by-step for a new form is the
 `stepped-form` skill.
 
 ## Anatomy
@@ -39,24 +40,39 @@ const flow = useStepForm({
   breakpoints.
 - **Submit continues** until the form can save (`flow.saves`): new records walk the steps in
   order, existing ones save from any step. Enter in a field does what the primary button says.
+- **Where it opens:** step 0, or `useStepForm({ start })`; an existing order opens on Review.
+- **Summary** stands in for the Preview where there's no room for it (phones, narrow panels):
+  a bar under the header reading a name and a total that opens to the same facts. Put it
+  before `Preview` in JSX: it hides itself when a later Preview sibling has its column.
 - **A one-page form** (the Customer form): `steps: []`. The bar disappears and Actions shows
   only Save. Skip `Step` and put the content straight in `Pane`.
-- **Actions** picks Back / Continue / Save from the state. Compose `<StepForm.Back />`,
+- **Actions** picks Back / Continue / Save from the state; `aside` puts a short line (the
+  order's counts) at the row's start on a computer. Compose `<StepForm.Back />`,
   `<StepForm.Next />`, `<StepForm.Submit>` inside `<StepForm.Actions>` only for a different set.
 - The forms sit inside the app layout with the sidebar (a full-screen version was rejected).
-  The pane is a card on the content panel and stretches to the panel's height; on a phone it
-  isn't a card and the actions are a fixed bottom bar.
+  On a computer the page holding a form is held to the window's height (the app layout's
+  `SidebarInset`), the pane is a card filling the space left, and a step longer than that
+  scrolls inside the pane, with the buttons staying put. The scroll area is an inner box,
+  inset from the card's rounded corners and `relative`, so absolutely placed children (sr-only
+  radios) can't hang off it and make the window scroll too. On a phone the pane isn't a card, the
+  page scrolls, and the actions are a fixed bottom bar.
 
 ## Controls inside a step
 
 Use `roomy` (`roomy.ts`) for every control a step builds itself: `field` (48px, 16px corner,
 16px text, no number spinners), `area`, `label`, `button` (52px phone / 44px computer), `raised`
-(secondary), `press`. Fields sit on the card without a fill of their own. Every string goes
+(secondary), `press`, `scrollbar` (transparent track, thumb in the text colour). Fields sit on the card without a fill of their own. Every string goes
 into both `messages/*.json`; Hebrew wording from the root `CLAUDE.md` Terms.
 
 A list the user adds to (Packs, order lines) uses `useAddedItem`: the item just added takes the
 focus and eases in. Without it the cursor stays on the "Add" button and a typed space adds a
-second item.
+second item. When the hook lives above the step (the order form's models), `reset()` it when
+the step changes and when an item folds or opens, or the item eases in again each time.
+
+A list whose items are too big to show open at once (the Order's models) folds each item to
+a row and opens one at a time: inline on a computer, in a bottom `Drawer` on a phone
+(`orders/order-form.tsx`). An item left empty is dropped when it closes. The sheet is outside
+the `<form>` and its `@container`, so its fields get the narrow layout.
 
 ## Motion
 
@@ -71,6 +87,7 @@ under reduced motion while dropping the movement.
 | Step bar | ink fill `scale-x` from the start edge, 300ms `ease-in-out-quint`, a transition; dot colours 200ms `ease`; ✓ enters from 90% | `Header` |
 | Item added | `roomy.enter`: from 97%, −4px, opacity 0, 200ms `ease-out-quint` | `useAddedItem` |
 | Items generated together | `roomy.cascade` + `cascadeDelay(i, count)`: 30ms apart, squeezed so the wave spans ≤300ms | e.g. `size-list-input.tsx` |
+| Summary bar opens | content `roomy.appear`, chevron turns 180° in 200ms `ease-out-quint`; no height animation (the step below would slide) | `Summary` |
 | Press | `scale(0.97)` while pressed, 150ms, enabled controls only | `roomy.button` / `roomy.press` |
 | Error line | `roomy.appear`: from −4px + fade, 150ms | `Field` |
 
