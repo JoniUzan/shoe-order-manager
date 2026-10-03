@@ -6,6 +6,7 @@ import {
   type ListParams,
   type RawSearchParams,
 } from "@/lib/list-params";
+import { imageUrl } from "@/lib/storage";
 
 /**
  * "A page of one order's line items."
@@ -57,6 +58,8 @@ export type OrderItemRow = {
   shoeModelId: string | null;
   /** Needed to format the size the way the model expresses it. */
   sizeFormat: string | null;
+  /** The model's Product image; null for a custom line or a model without one. */
+  imageUrl: string | null;
   size: string;
   color: string | null;
   quantity: number;
@@ -121,7 +124,7 @@ export async function listOrderItems(
       color: true,
       quantity: true,
       unitPriceAgorot: true,
-      shoeModel: { select: { name: true, sizeFormat: true } },
+      shoeModel: { select: { name: true, sizeFormat: true, imageKey: true } },
     },
   });
 
@@ -130,6 +133,7 @@ export async function listOrderItems(
     name: it.shoeModel?.name ?? it.customDescription ?? "",
     shoeModelId: it.shoeModelId,
     sizeFormat: it.shoeModel?.sizeFormat ?? null,
+    imageUrl: imageUrl(it.shoeModel?.imageKey),
     size: it.size,
     color: it.color,
     quantity: it.quantity,

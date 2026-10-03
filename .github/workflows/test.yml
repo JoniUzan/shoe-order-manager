@@ -56,6 +56,14 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # Product images: the same S3 server as docker compose. A step rather
+      # than a service, because the server needs its command line. The tests
+      # create their bucket.
+      - name: Start S3 storage
+        run: |
+          docker run -d --name storage -p 8333:8333 chrislusf/seaweedfs:4.48 server -dir=/data -s3 -s3.port=8333
+          for i in $(seq 60); do curl -sf -o /dev/null http://localhost:8333/ && exit 0; sleep 1; done
+          docker logs storage; exit 1
       - run: pnpm install --frozen-lockfile
       # Global setup migrates and seeds the database.
       - run: pnpm --filter web test:coverage
@@ -92,6 +100,14 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # Product images: the same S3 server as docker compose. A step rather
+      # than a service, because the server needs its command line. The tests
+      # create their bucket.
+      - name: Start S3 storage
+        run: |
+          docker run -d --name storage -p 8333:8333 chrislusf/seaweedfs:4.48 server -dir=/data -s3 -s3.port=8333
+          for i in $(seq 60); do curl -sf -o /dev/null http://localhost:8333/ && exit 0; sleep 1; done
+          docker logs storage; exit 1
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
         working-directory: apps/e2e

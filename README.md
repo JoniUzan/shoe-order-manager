@@ -24,7 +24,7 @@ packages/config/*     shared typescript / eslint config
 
 ```bash
 pnpm install
-docker compose up -d  # local Postgres 17 on localhost:5432
+docker compose up -d  # local Postgres 17 on :5432 + S3 storage for images on :8333
 pnpm db:migrate       # run migrations
 pnpm db:seed          # seed order statuses + admin user
 pnpm dev              # http://localhost:3000
@@ -37,6 +37,11 @@ set `AUTH_SECRET` (`openssl rand -base64 33`).
 To browse the local database, `docker compose --profile studio up -d` also starts pgAdmin on
 http://localhost:5050 with no login screen and the local database already registered
 (`pnpm db:studio` works too).
+
+To start over locally, `pnpm dev:reset` wipes the database and the Product images, then
+re-applies the migrations and the seed (`pnpm db:seed:demo` after it for demo data).
+`pnpm storage:reset` deletes only the images. `pnpm storage:check` checks that image storage
+works (pass `--env <file>` to try R2 credentials before putting them in Vercel).
 
 ### Neon (production database)
 

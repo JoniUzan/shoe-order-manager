@@ -57,7 +57,7 @@ export function OrderFacts({
         <ul className="flex flex-col gap-3.5">
           {values.blocks.map((block, i) => (
             <li key={i} className="flex items-center gap-3">
-              <ModelThumb className="size-11 rounded-xl md:size-11" />
+              <ModelThumb src={text.image(block)} className="size-11 rounded-xl md:size-11" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium">{text.name(block)}</span>
                 <span className="text-[0.8125rem] text-muted-foreground">

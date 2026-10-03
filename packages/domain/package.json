@@ -12,6 +12,7 @@
     "./document": "./src/document.ts",
     "./status": "./src/status.ts",
     "./phone": "./src/phone.ts",
+    "./product-image": "./src/product-image.ts",
     "./settings": "./src/settings.ts"
   },
   "scripts": {

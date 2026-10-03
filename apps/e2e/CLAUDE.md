@@ -2,7 +2,8 @@
 
 End-to-end tests for `apps/web`, run against its production build (`next start` on :3100)
 and the `shoe_test` database. `pnpm test:e2e` from the root builds `web` first. Locally,
-`pnpm --filter e2e test:e2e` reuses a server already on :3100, and needs Docker Postgres up.
+`pnpm --filter e2e test:e2e` reuses a server already on :3100, and needs `docker compose up -d`
+(Postgres and S3 storage).
 
 ## Layout
 

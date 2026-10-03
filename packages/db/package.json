@@ -16,6 +16,7 @@
     "postinstall": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
+    "reset": "prisma migrate reset --force",
     "seed": "prisma db seed",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",

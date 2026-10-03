@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isProductImageKey } from "./product-image";
+
 /**
  * The sizing system a model's numbers belong to.
  *
@@ -215,6 +217,13 @@ export const shoeModelSchema = z
     sizeFormat: z.enum(SIZE_FORMATS).default("eu"),
     isActive: z.boolean().default(true),
     packs: z.array(sizePackSchema).max(MAX_PACKS).default([]),
+    // The Product image's storage key. Left out: keep the stored one; null:
+    // remove it. Whether the key is the User's own is checked by the action.
+    imageKey: z
+      .string()
+      .refine(isProductImageKey, { message: "invalid_image" })
+      .nullable()
+      .optional(),
   })
   .superRefine((model, ctx) => {
     // A pack is a box of this model, so every size it holds has to be one the

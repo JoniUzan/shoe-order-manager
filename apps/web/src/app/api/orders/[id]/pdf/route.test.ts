@@ -1,4 +1,8 @@
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+
 import { prisma } from "@repo/db";
+import { productImageKey } from "@repo/domain";
 import { createTranslator } from "next-intl";
 import { extractText, getDocumentProxy } from "unpdf";
 import { describe, expect, it, vi } from "vitest";
@@ -9,6 +13,7 @@ import {
   createUser,
 } from "../../../../../../test/factories";
 import { signInAs } from "../../../../../../test/session";
+import { putObject } from "@/lib/storage";
 import en from "../../../../../../messages/en.json";
 import he from "../../../../../../messages/he.json";
 
@@ -76,7 +81,12 @@ async function setup() {
       unitPriceAgorot: 10_000,
     })),
   });
-  return { user, order };
+  return { user, order, model };
+}
+
+/** Whether the PDF embeds a picture (pdfkit writes image XObjects uncompressed). */
+async function hasImage(res: Response): Promise<boolean> {
+  return Buffer.from(await res.arrayBuffer()).includes("/Subtype /Image");
 }
 
 function get(id: string, query: string) {
@@ -154,6 +164,29 @@ describe("GET /api/orders/:id/pdf", () => {
     const body = await text(await get(order.id, "doc=production&lang=he"));
     expect(body).toContain("דף ייצור");
     expect(body).toContain("הערה למפעל");
+  });
+
+  it("prints each model's Product image in both PDFs, and none when it has none", async () => {
+    const { user, order, model } = await setup();
+    for (const doc of ["summary", "production"]) {
+      expect(await hasImage(await get(order.id, `doc=${doc}&lang=he`))).toBe(false);
+    }
+
+    const key = productImageKey(user.id, randomUUID());
+    await putObject(key, await readFile("test/files/photo.jpg"), "image/jpeg");
+    await prisma.shoeModel.update({ where: { id: model.id }, data: { imageKey: key } });
+    for (const doc of ["summary", "production"]) {
+      expect(await hasImage(await get(order.id, `doc=${doc}&lang=he`))).toBe(true);
+    }
+  });
+
+  it("still renders when a model's image is gone from storage", async () => {
+    const { user, order, model } = await setup();
+    const key = productImageKey(user.id, randomUUID());
+    await prisma.shoeModel.update({ where: { id: model.id }, data: { imageKey: key } });
+    const res = await get(order.id, "doc=summary&lang=en");
+    expect(res.status).toBe(200);
+    expect(await hasImage(res)).toBe(false);
   });
 
   it("refuses a bad query, another User's order and no session", async () => {

@@ -26,6 +26,11 @@ export function useBlockText(models: ModelOption[]) {
       if (block.mode === "custom") return block.customDescription.trim() || t("addCustomItem");
       return models.find((m) => m.id === block.shoeModelId)?.name ?? t("selectModel");
     },
+    /** The block's Product image: its model's, never a custom item's. */
+    image(block: BlockForm) {
+      if (block.mode === "custom") return null;
+      return models.find((m) => m.id === block.shoeModelId)?.imageUrl ?? null;
+    },
     /** Whether the block has its model or description yet (else `name` is a placeholder). */
     named(block: BlockForm) {
       return block.mode === "custom" ? !!block.customDescription.trim() : !!block.shoeModelId;
@@ -83,7 +88,7 @@ export function OrderBlockRow({
           roomy.press,
         )}
       >
-        <ModelThumb />
+        <ModelThumb src={text.image(block)} />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span
             className={cn("truncate font-semibold", !text.named(block) && "text-muted-foreground")}

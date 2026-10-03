@@ -19,7 +19,10 @@
     "db:migrate": "pnpm --filter @repo/db migrate",
     "db:seed": "pnpm --filter @repo/db seed",
     "db:studio": "pnpm --filter @repo/db studio",
-    "db:seed:demo": "pnpm --filter @repo/db seed:demo"
+    "db:seed:demo": "pnpm --filter @repo/db seed:demo",
+    "storage:check": "pnpm --filter web storage:check",
+    "storage:reset": "docker compose exec -T storage sh -c \"echo 's3.bucket.delete -name product-images' | weed shell -master=localhost:9333\" && docker compose run --rm storage-init",
+    "dev:reset": "pnpm --filter @repo/db reset && pnpm db:seed && pnpm storage:reset"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1",

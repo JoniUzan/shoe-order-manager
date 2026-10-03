@@ -126,6 +126,31 @@ export class ModelForm {
     return this.page.locator("#name");
   }
 
+  /**
+   * Pick a Product image the way the screen offers it: the upload square on
+   * a computer, the Gallery button on a phone; Replace once there is one.
+   */
+  async pickImage(file: string) {
+    const replace = this.page.getByRole("button", { name: this.t("catalog.productImageReplace") });
+    const button = (await replace.isVisible())
+      ? replace
+      : this.page.getByRole("button", {
+          name: this.t(this.isPhone() ? "catalog.productImageGallery" : "catalog.productImageUpload"),
+        });
+    const chooser = this.page.waitForEvent("filechooser");
+    await button.click();
+    await (await chooser).setFiles(file);
+  }
+
+  async removeImage() {
+    await this.page.getByRole("button", { name: this.t("catalog.productImageRemove") }).click();
+  }
+
+  /** The picked or stored image, in the Details step. */
+  image() {
+    return this.page.getByRole("img", { name: this.t("catalog.productImage") });
+  }
+
   /** Enter in the name field: the form's primary button, so it continues. */
   async pressEnterInName() {
     await this.nameField().press("Enter");

@@ -9,6 +9,7 @@ import { useCallback, useMemo } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
+import { ModelThumb } from "@/components/orders/model-thumb";
 import {
   ORDER_ITEM_LIST_DEFAULTS,
   orderItemListToQuery,
@@ -83,6 +84,12 @@ export function OrderItemsTable({
         ),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
+            {row.original.imageUrl && (
+              <ModelThumb
+                src={row.original.imageUrl}
+                className="size-9 rounded-lg md:size-9"
+              />
+            )}
             <span className="font-medium">{row.original.name}</span>
             {/* A free-text line has no catalog model behind it, which is worth
                 seeing: it will not appear in any catalog report. */}

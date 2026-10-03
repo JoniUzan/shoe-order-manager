@@ -3,6 +3,7 @@ export * from "./status";
 export * from "./phone";
 export * from "./customer";
 export * from "./catalog";
+export * from "./product-image";
 export * from "./order";
 export * from "./document";
 export * from "./settings";

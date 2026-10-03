@@ -6,7 +6,7 @@ English. Data lives in Postgres: Neon in production (used as plain Postgres), Do
 
 Each package has its own `CLAUDE.md` with the rules for working inside it: `apps/web`,
 `apps/e2e`, `packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
-in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010.
+in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011.
 
 ## Commands
 
@@ -16,15 +16,18 @@ pnpm dev                     # the web app on http://localhost:3000
 pnpm typecheck               # tsc --noEmit across the workspace
 pnpm lint                    # eslint (web)
 pnpm build                   # build everything
-pnpm test                    # unit + integration tests (integration needs Docker Postgres)
+pnpm test                    # unit + integration tests (integration needs docker compose up)
 pnpm test:coverage           # the same, failing below the coverage floors
 pnpm test:e2e                # build, then Playwright on :3100 in he/en × desktop/phone
 
-docker compose up -d         # local Postgres 17 on localhost:5432
+docker compose up -d         # local Postgres 17 on :5432 + S3 storage for images on :8333
 docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login)
 pnpm db:migrate              # create/apply migrations (prisma migrate dev)
 pnpm db:seed                 # order statuses + admin user; db:seed:demo adds demo data
 pnpm db:generate             # regenerate the Prisma client after schema edits
+pnpm storage:check           # prove image storage works: write, read, public fetch, delete (--env <file>)
+pnpm storage:reset           # delete every local Product image (empties the product-images bucket)
+pnpm dev:reset               # wipe the local database and images, re-migrate and re-seed
 ```
 
 Tests come in three layers (ADR 0006), and a change adds tests at the layer it touches:
@@ -41,7 +44,8 @@ for looking at a change by hand. For a new feature from schema to screen, follow
 
 `apps/web/.env.local` and `packages/db/.env`, each copied from the `.env.example` next to it:
 `DATABASE_URL` + `DIRECT_URL` (the same Docker URL twice locally), plus `AUTH_SECRET`
-(`openssl rand -base64 33`) and `AUTH_TRUST_HOST=true` for the web app. Dev login:
+(`openssl rand -base64 33`), `AUTH_TRUST_HOST=true` and the `S3_*` / `IMAGE_BASE_URL` storage
+block (as in the example) for the web app. Dev login:
 `admin@example.com` / `changeme123` (override with `ADMIN_EMAIL`/`ADMIN_PASSWORD` before
 `db:seed`).
 
@@ -70,6 +74,9 @@ code, not in Postgres RLS (ADR 0003).
 - **Derived writes lock the order row first.** Postgres runs READ COMMITTED, so a transaction
   that reads an order's payments and writes a derived value back first touches the order row
   and checks values read after that lock (`lockOrder` in `actions/payments.ts`).
+- **Images are stored by key** (ADRs 0008, 0011): the database holds the object key, and
+  `imageUrl()` in `apps/web/src/lib/storage.ts` adds `IMAGE_BASE_URL` at render time. Storage is
+  reached only through the S3 API.
 - **Packs are line items with a snapshot** (ADR 0004). The order form sends which pack and how
   many; the server builds the items from the stored curve.
 - **RTL by construction**: Tailwind logical utilities only (`ms-`, `pe-`, `text-start`), and

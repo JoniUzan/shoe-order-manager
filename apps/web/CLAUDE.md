@@ -75,6 +75,19 @@ on blur). A language change does a full `window.location` load to the same page 
 user's `locale` and `theme` are stored on `User`: login redirects to the saved locale, and
 `ThemeSync` applies the saved theme once per load.
 
+## Product images
+
+`lib/storage.ts` is the only code that talks to object storage (S3 API, `S3_*` env; R2 in
+production, the compose `storage` service locally). The catalog form crops a picked photo to a
+square JPEG in the browser (`components/catalog/crop-image.ts`) and uploads it with
+`uploadProductImage` when the model is saved; `createShoeModel`/`updateShoeModel` take the key,
+check it is the User's own, and delete a replaced file after the write commits (ADR 0011).
+Pages pass `imageUrl(key)` down; `ModelThumb` shows it, or the shoe outline without one. The
+PDFs read the bytes with `getObject`, never the public URL. The S3 client sends checksums only
+where an operation needs them, which R2 and the local server both accept. `pnpm storage:check`
+(`scripts/check-storage.mts`) runs a probe object through the same module: write, read, public
+fetch, delete. Run it with new storage settings before deploying them.
+
 ## Order PDFs
 
 The Order summary and the Production sheet are built on the server with `@react-pdf/renderer`
@@ -95,6 +108,8 @@ login and the app.
 - **Server Actions** have an integration test next to them (`src/lib/actions/<area>.test.ts`),
   run by Vitest against the real `shoe_test` Postgres.
   - `test/setup.ts` mocks `@/lib/auth`, `next/cache` and `next/headers`.
+  - Global setup also makes the `shoe-test` bucket on the local S3 server, so
+    `docker compose up -d` has to be running.
   - `createUser()` from `test/factories.ts` makes a fresh User and signs in as them;
     `signInAs(id)` switches User. Each test makes its own data and never cleans up: `ownerId`
     scoping keeps tests apart.

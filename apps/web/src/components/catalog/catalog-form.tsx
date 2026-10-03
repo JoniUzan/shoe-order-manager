@@ -19,9 +19,8 @@ import {
 import { Switch } from "@repo/ui/components/switch";
 import { Textarea } from "@repo/ui/components/textarea";
 import { cn } from "@repo/ui/lib/utils";
-import { ImagePlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -32,12 +31,21 @@ import {
   packErrors,
   type PackFormValue,
 } from "@/components/catalog/pack-editor";
+import {
+  ProductImageField,
+  type ProductImageValue,
+} from "@/components/catalog/product-image-field";
 import { SizeListInput } from "@/components/catalog/size-list-input";
+import { ShoeOutline } from "@/components/orders/model-thumb";
 import { roomy } from "@/components/step-form/roomy";
 import { StepForm, useStepForm } from "@/components/step-form/step-form";
-import { Illustration, type IllustrationName } from "@/components/ui/illustration";
+import type { IllustrationName } from "@/components/ui/illustration";
 import { useRouter } from "@/i18n/navigation";
-import { createShoeModel, updateShoeModel } from "@/lib/actions/catalog";
+import {
+  createShoeModel,
+  updateShoeModel,
+  uploadProductImage,
+} from "@/lib/actions/catalog";
 
 export interface FormValues {
   name: string;
@@ -76,9 +84,12 @@ const LAST = STEPS.length - 1;
 export function CatalogForm({
   modelId,
   defaultValues,
+  defaultImage = null,
 }: {
   modelId?: string;
   defaultValues?: FormValues;
+  /** The stored Product image, when the model has one. */
+  defaultImage?: { key: string; url: string } | null;
 }) {
   const t = useTranslations("catalog");
   const tv = useTranslations("validation");
@@ -89,6 +100,20 @@ export function CatalogForm({
   // Pack errors are derived from the live values (see packErrors) and only
   // shown once a save has been tried, so a half-typed pack isn't shouted at.
   const [showPackErrors, setShowPackErrors] = useState(false);
+  // Kept outside react-hook-form: it holds a Blob, and the form only needs
+  // to know whether it changed.
+  const [image, setImage] = useState<ProductImageValue>(
+    defaultImage && { kind: "stored", ...defaultImage },
+  );
+  // The last upload, so a save retried after a failure doesn't upload the
+  // same photo twice.
+  const uploaded = useRef<{ blob: Blob; key: string } | null>(null);
+
+  // A picked image's object URL lives until it is replaced or the form goes.
+  useEffect(() => {
+    if (image?.kind !== "new") return;
+    return () => URL.revokeObjectURL(image.url);
+  }, [image]);
 
   const form = useForm<FormValues>({
     defaultValues: defaultValues ?? EMPTY,
@@ -112,6 +137,13 @@ export function CatalogForm({
       toast.error(t("errorPacks"));
       return;
     }
+    setPending(true);
+    const imageKey = await saveImage();
+    if (imageKey === false) {
+      toast.error(t("productImageUploadFailed"));
+      setPending(false);
+      return;
+    }
     const priceText = values.price.trim();
     const input: ShoeModelInput = {
       name: values.name.trim(),
@@ -126,8 +158,8 @@ export function CatalogForm({
         name: pack.name.trim(),
         curve: packCurve(pack),
       })),
+      ...(imageKey !== undefined && { imageKey }),
     };
-    setPending(true);
     const res = modelId
       ? await updateShoeModel(modelId, input)
       : await createShoeModel(input);
@@ -140,7 +172,25 @@ export function CatalogForm({
     }
   }
 
+  /**
+   * The `imageKey` to save: a new image's key once it's uploaded, null to
+   * remove the stored one, undefined to leave it; false when the upload
+   * failed.
+   */
+  async function saveImage(): Promise<string | null | undefined | false> {
+    if (image === null) return defaultImage ? null : undefined;
+    if (image.kind === "stored") return undefined;
+    if (uploaded.current?.blob === image.blob) return uploaded.current.key;
+    const data = new FormData();
+    data.set("image", image.blob, "product.jpg");
+    const res = await uploadProductImage(data).catch(() => null);
+    if (!res?.ok) return false;
+    uploaded.current = { blob: image.blob, key: res.key };
+    return res.key;
+  }
+
   const nameError = form.formState.errors.name;
+  const imageChanged = image === null ? defaultImage !== null : image.kind === "new";
 
   return (
     <StepForm
@@ -148,7 +198,7 @@ export function CatalogForm({
       // A missing name can only be on the details step: go there.
       onSave={(e) => void form.handleSubmit(save, () => flow.goTo(0))(e)}
       cancelHref="/catalog"
-      dirty={form.formState.isDirty}
+      dirty={form.formState.isDirty || imageChanged}
       pending={pending}
     >
       <StepForm.Header title={editing ? t("edit") : t("new")} />
@@ -163,7 +213,7 @@ export function CatalogForm({
             />
             {s.key === "Details" && (
               <div className="flex flex-col gap-5 @xl:grid @xl:grid-cols-[13.75rem_minmax(0,1fr)] @xl:items-start @xl:gap-7">
-                <ImageSlot />
+                <ProductImageField value={image} onChange={setImage} />
                 <div className="flex flex-col gap-4.5">
                   <StepForm.Field
                     label={t("name")}
@@ -280,36 +330,21 @@ export function CatalogForm({
         ))}
       </StepForm.Pane>
 
-      <ModelPreview values={values} />
+      <ModelPreview values={values} imageUrl={image?.url ?? null} />
 
       <StepForm.Actions saveLabel={tc("save")} />
     </StepForm>
   );
 }
 
-/**
- * Where the Product image will be uploaded. Until uploads land it only holds
- * the place, so the step already has its final shape.
- */
-function ImageSlot() {
-  const t = useTranslations("catalog");
-  return (
-    <div
-      className={cn(
-        "flex h-24 flex-col items-center justify-center gap-1.5 rounded-[1.25rem] px-4 text-center",
-        "border-[1.5px] border-dashed border-foreground/20 text-muted-foreground",
-        "@xl:aspect-square @xl:h-auto @xl:gap-2.5",
-      )}
-    >
-      <ImagePlus className="size-6 md:size-7" aria-hidden />
-      <span className="font-medium text-foreground">{t("productImage")}</span>
-      <span className="text-[0.8125rem]">{t("productImageSoon")}</span>
-    </div>
-  );
-}
-
 /** The model as it will read in the catalog, filled in as the steps are. */
-function ModelPreview({ values }: { values: FormValues }) {
+function ModelPreview({
+  values,
+  imageUrl,
+}: {
+  values: FormValues;
+  imageUrl: string | null;
+}) {
   const t = useTranslations("catalog");
   const locale = useLocale();
   const price = values.price.trim();
@@ -319,8 +354,13 @@ function ModelPreview({ values }: { values: FormValues }) {
   return (
     <StepForm.Preview label={t("preview")}>
       <StepForm.PreviewImage>
-        {/* The step illustration until the model has a Product image. */}
-        <Illustration name="sneaker" sizes="320px" className="size-3/5 md:size-3/5" />
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- already a small square JPEG
+          <img src={imageUrl} alt="" className="size-full object-cover" />
+        ) : (
+          // The same outline as a model without a Product image anywhere else.
+          <ShoeOutline className="size-2/5 text-muted-foreground opacity-70" />
+        )}
       </StepForm.PreviewImage>
       <StepForm.PreviewTitle
         placeholder={t("new")}
