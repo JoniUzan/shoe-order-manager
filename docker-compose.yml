@@ -1,8 +1,8 @@
 # Local Postgres for development: `docker compose up -d`.
 # Matches the DATABASE_URL / DIRECT_URL in packages/db/.env.example and
-# apps/web/.env.example. Production uses Supabase; this never touches it.
+# apps/web/.env.example. Production uses Neon; this never touches it.
 #
-# Major version 17 to match Supabase, so local behaves like production.
+# Major version 17 to match Neon, so local behaves like production.
 # Upgrading from a 16 volume: `docker compose down -v`, then up again and
 # re-run `pnpm db:migrate && pnpm db:seed` (a data directory can't be opened
 # by a different major version).

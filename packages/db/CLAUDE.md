@@ -31,7 +31,7 @@ Prisma 7 schema, client and seeds. Exports `prisma` plus the model types.
   itself; `dotenv` loads it.
 - Because the driver is node-postgres, Prisma 6's URL knobs (`pgbouncer=true`,
   `connection_limit`) do nothing. Pool size is `DATABASE_POOL_MAX` (set `1` on serverless);
-  Supabase needs `?sslmode=no-verify` to keep TLS on. `.env.example` has both URLs.
+  the URL's `sslmode` keeps TLS on. `.env.example` has both Neon URLs.
 - `src/browser.ts` is what client bundles get: same names, a `prisma` that throws. Client
   components can then import constants from server query modules without pulling in `pg`.
 

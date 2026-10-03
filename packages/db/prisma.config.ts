@@ -13,8 +13,8 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    // The CLI talks to the database directly (on Supabase, the session pooler
-    // on port 5432): migrations can't run through a transaction-mode pooler.
+    // The CLI talks to the database directly (on Neon, the direct host,
+    // not `-pooler`): migrations can't run through a transaction-mode pooler.
     // The app itself uses DATABASE_URL, see src/client.ts.
     // Not `env("DIRECT_URL")`: that throws when unset, and `prisma generate`
     // (run by `pnpm build`) must work where no database URL is configured.

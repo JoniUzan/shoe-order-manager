@@ -2,11 +2,11 @@
 
 A Turborepo monorepo for a B2B wholesale **shoe order manager**: a User sells shoes to retail
 stores (Customers) and tracks their orders and payments. Hebrew (RTL, the primary locale) +
-English. Data lives in Postgres: Supabase in production (used as plain Postgres), Docker locally.
+English. Data lives in Postgres: Neon in production (used as plain Postgres), Docker locally.
 
 Each package has its own `CLAUDE.md` with the rules for working inside it: `apps/web`,
 `apps/e2e`, `packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
-in `docs/adr/`.
+in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010.
 
 ## Commands
 
@@ -83,7 +83,7 @@ Use these words in code, UI copy, commits and conversation. Hebrew is the UI wor
 
 | Term | Hebrew | Meaning | Avoid |
 |---|---|---|---|
-| **User** | | A person who signs in and runs one business; owns all their data. `ownerId` in code. | owner, account, tenant |
+| **User** | | A person who signs in and runs one business; owns all their data. `ownerId` in code. Several people per business may come later (ADR 0003). | owner, account, tenant |
 | **Customer** | לקוח | A retail store that buys from the User. Never signs in. | client, store (as the entity) |
 | **Business details** | פרטי העסק | The User's name, phone, address and tax ID, printed on every order and WhatsApp message. | |
 | **Shoe model** | דגם | A catalog entry: name, SKU, default price, size run. The catalog (קטלוג) is all of them. | |

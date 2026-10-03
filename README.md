@@ -7,7 +7,7 @@ Order-management web app for a B2B wholesale shoe business — track customers, 
 
 - **Turborepo** (pnpm) monorepo
 - **Next.js 16** (App Router) + **React 19** + **shadcn/ui** + **Tailwind CSS 4**
-- **Prisma** ORM over **Postgres** (Supabase in production, Docker locally)
+- **Prisma** ORM over **Postgres** (Neon in production, Docker locally)
 - **Auth.js v5** (email/password), **next-intl** (he/en, RTL), dark mode
 
 ## Structure
@@ -38,16 +38,16 @@ To browse the local database, `docker compose --profile studio up -d` also start
 http://localhost:5050 with no login screen and the local database already registered
 (`pnpm db:studio` works too).
 
-### Supabase (production database)
+### Neon (production database)
 
-Supabase is used as **plain Postgres** — no Supabase Auth, RLS or storage — so moving to
-any other Postgres host later is a `pg_dump` / `pg_restore` plus a new `DATABASE_URL`.
+Neon is used as **plain Postgres** (ADR 0008), so moving to any other Postgres host later is a
+`pg_dump` / `pg_restore` plus a new `DATABASE_URL`.
 
-1. Create a project; from **Connect → ORMs → Prisma** take the two URLs:
-   `DATABASE_URL` = transaction pooler (port 6543) with `?sslmode=no-verify` (the app connects
-   through node-postgres, which needs it for TLS; Prisma 6's `pgbouncer=true&connection_limit=1`
-   no longer apply), `DIRECT_URL` = session pooler (port 5432), used by the Prisma CLI
-   (migrations, studio, seed). On serverless hosting also set `DATABASE_POOL_MAX=1`.
+1. Create a project in `eu-central-1`; from **Connect** take the two URLs:
+   `DATABASE_URL` = the pooled connection (host ends in `-pooler`), `DIRECT_URL` = the direct
+   one, used by the Prisma CLI (migrations, studio, seed). Both with `?sslmode=verify-full`
+   (the app connects through node-postgres; Prisma 6's `pgbouncer=true&connection_limit=1` no
+   longer apply). On Vercel also set `DATABASE_POOL_MAX=1`.
 2. With those in `packages/db/.env`: `pnpm --filter @repo/db migrate:deploy`, then
    `pnpm db:seed` (and `pnpm db:seed:demo` for demo data).
 
