@@ -18,6 +18,10 @@ model ShoeModel {
   // valid size. Kept as a String rather than an enum to stay portable.
   sizeFormat        String   @default("eu")
   isActive          Boolean  @default(true)
+  // The Product image's key in object storage ("products/<ownerId>/<name>.jpg",
+  // see @repo/domain's product-image.ts). The key, never the URL: the base
+  // URL comes from IMAGE_BASE_URL, so moving the bucket never touches data.
+  imageKey          String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
