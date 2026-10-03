@@ -143,6 +143,9 @@ export function OrderForm({
   const editing = orderId !== undefined;
   const isPhone = useIsMobile();
   const [pending, setPending] = useState(false);
+  // Customers added from the Customer step's sheet, newest first.
+  const [added, setAdded] = useState<CustomerOption[]>([]);
+  const allCustomers = [...added, ...customers];
 
   /**
    * Validation runs as a resolver, not as `setError` calls in the submit
@@ -394,7 +397,7 @@ export function OrderForm({
   }
 
   const itemsError = errors.blocks?.root?.message ?? errors.blocks?.message;
-  const customer = customers.find((c) => c.id === values.customerId);
+  const customer = allCustomers.find((c) => c.id === values.customerId);
   const totals = orderTotals(values);
   const openBlockValues = open !== null ? values.blocks[open] : undefined;
   const modelOptions = (() => {
@@ -436,12 +439,13 @@ export function OrderForm({
 
             {s.key === "Customer" && (
               <OrderCustomerPicker
-                customers={customers}
+                customers={allCustomers}
                 value={values.customerId}
                 onChange={(id) => {
                   form.setValue("customerId", id, { shouldDirty: true });
                   form.clearErrors("customerId");
                 }}
+                onCreate={(c) => setAdded((list) => [c, ...list])}
                 error={errors.customerId?.message}
               />
             )}

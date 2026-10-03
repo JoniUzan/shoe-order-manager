@@ -2,10 +2,14 @@
 
 import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
-import { CheckIcon, Search } from "lucide-react";
+import { CheckIcon, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type KeyboardEvent } from "react";
 
+import {
+  NewCustomerSheet,
+  type CreatedCustomer,
+} from "@/components/customers/new-customer-sheet";
 import { roomy } from "@/components/step-form/roomy";
 
 export interface PickerCustomer {
@@ -23,21 +27,27 @@ export function customerLine(c: Pick<PickerCustomer, "phone" | "address">) {
 /**
  * The Customer step: a search box over the list of Customers, each one a
  * radio. Enter in the search with a single match picks it, so typing a few
- * letters and Enter is a whole step.
+ * letters and Enter is a whole step. "New customer" at the end of the list
+ * adds one in a sheet, starting from what was searched, and picks it.
  */
 export function OrderCustomerPicker({
   customers,
   value,
   onChange,
+  onCreate,
   error,
 }: {
   customers: PickerCustomer[];
   value: string;
   onChange: (id: string) => void;
+  /** A Customer was added in the sheet; it's picked right after. */
+  onCreate: (customer: CreatedCustomer) => void;
   error?: string;
 }) {
   const t = useTranslations("orders");
+  const tc = useTranslations("customers");
   const [query, setQuery] = useState("");
+  const [adding, setAdding] = useState(false);
   const q = query.trim().toLocaleLowerCase();
   const shown = q
     ? customers.filter((c) =>
@@ -125,8 +135,37 @@ export function OrderCustomerPicker({
         {shown.length === 0 && (
           <p className="px-3.5 py-3 text-muted-foreground">{t("noMatches")}</p>
         )}
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className={cn(
+            "flex min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 text-start font-medium",
+            "outline-none hover:bg-surface focus-visible:ring-[3px] focus-visible:ring-ring/50",
+            roomy.press,
+          )}
+        >
+          <span
+            aria-hidden
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-dashed border-foreground/20"
+          >
+            <Plus className="size-4.5" />
+          </span>
+          {tc("new")}
+        </button>
       </div>
 
+      <NewCustomerSheet
+        open={adding}
+        onOpenChange={setAdding}
+        defaultName={query.trim()}
+        onCreated={(customer) => {
+          // The search may not match the new name: clear it so the new
+          // Customer shows, picked.
+          setQuery("");
+          onCreate(customer);
+          onChange(customer.id);
+        }}
+      />
     </div>
   );
 }
