@@ -76,7 +76,8 @@ export function NewCustomerSheet({
       toast.error(t("errorGeneric"));
       return;
     }
-    toast.success(t("created"));
+    // No success toast: the Customer showing up picked says it, and on a
+    // phone a toast would sit over the bottom bar's Continue.
     const clean = (s?: string) => s?.trim() || null;
     onCreated({
       id: res.id,
