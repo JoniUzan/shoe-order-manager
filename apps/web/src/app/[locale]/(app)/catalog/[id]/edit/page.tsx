@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 
 import { CatalogForm } from "@/components/catalog/catalog-form";
 import { requireUser } from "@/lib/session";
+import { imageUrl } from "@/lib/storage";
 
 export default async function EditModelPage({
   params,
@@ -28,10 +29,12 @@ export default async function EditModelPage({
     },
   });
   if (!model) notFound();
+  const url = imageUrl(model.imageKey);
 
   return (
     <CatalogForm
       modelId={model.id}
+      defaultImage={model.imageKey && url ? { key: model.imageKey, url } : null}
       defaultValues={{
         name: model.name,
         sku: model.sku ?? "",
