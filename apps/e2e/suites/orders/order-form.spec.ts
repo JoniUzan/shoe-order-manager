@@ -1,5 +1,6 @@
 import { prisma } from "@repo/db";
 
+import { unique } from "../../fixtures/db.ts";
 import { expect, test } from "../../fixtures/index.ts";
 
 import { OrderForm, OrderPage } from "./locators.ts";
@@ -48,6 +49,35 @@ test("Enter in the Customer search picks the only match and continues", async ({
   await expect(form.stepTitle("Items")).toBeVisible();
   await form.goToStep("Customer");
   await expect(page.getByRole("radio", { checked: true })).toHaveCount(1);
+});
+
+test("a new Customer is added from the Customer step and picked", async ({ page, t, appLocale, user }) => {
+  await orderPrerequisites(user.id);
+  const name = unique("New store");
+  const form = new OrderForm(page, t);
+  await form.gotoNew(appLocale);
+
+  // The search that found nothing starts the name.
+  await form.customerSearch().fill(name);
+  await form.newCustomer();
+  await expect(form.newCustomerName()).toHaveValue(name);
+
+  await form.newCustomerName().fill("");
+  await form.saveNewCustomer();
+  await expect(form.newCustomerSheet().getByText(t("validation.required"))).toBeVisible();
+
+  await form.newCustomerName().fill(name);
+  await form.saveNewCustomer();
+  await expect(form.newCustomerSheet()).toBeHidden();
+  // Saving the sheet doesn't submit the order form under it.
+  await expect(form.stepTitle("Customer")).toBeVisible();
+  await expect(form.pickedCustomer()).toHaveAccessibleName(new RegExp(name));
+  await expect
+    .poll(() => prisma.customer.count({ where: { ownerId: user.id, name } }))
+    .toBe(1);
+
+  await form.continue();
+  await expect(form.stepTitle("Items")).toBeVisible();
 });
 
 test("a finished step can be opened again and keeps what was typed; one not reached is locked", async ({ page, t, appLocale, user }) => {

@@ -42,6 +42,31 @@ export class OrderForm {
     return this.page.getByRole("searchbox", { name: this.t("orders.searchCustomer") });
   }
 
+  /** The Customer picked on the Customer step, if any. */
+  pickedCustomer() {
+    return this.page.getByRole("radio", { checked: true });
+  }
+
+  /** "New customer" at the end of the Customer list: opens the sheet. */
+  async newCustomer() {
+    await this.page.getByRole("button", { name: this.t("customers.new") }).click();
+  }
+
+  /** The New customer sheet: a dialog on a computer, a drawer on a phone. */
+  newCustomerSheet() {
+    return this.page.getByRole("dialog", { name: this.t("customers.new") });
+  }
+
+  newCustomerName() {
+    return this.newCustomerSheet().getByLabel(this.t("customers.storeName"));
+  }
+
+  async saveNewCustomer() {
+    await this.newCustomerSheet()
+      .getByRole("button", { name: this.t("customers.saveCustomer") })
+      .click();
+  }
+
   /** Add a model from the catalog and pick it. */
   async addModel(name: string) {
     await this.page.getByRole("button", { name: this.t("orders.addModel") }).click();
