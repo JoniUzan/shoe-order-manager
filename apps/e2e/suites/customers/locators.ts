@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 
 import type { T } from "../../fixtures/index.ts";
 
-/** The new/edit Customer form. */
+/** The new/edit Customer form: one page on StepForm. */
 export class CustomerForm {
   constructor(
     private page: Page,
@@ -11,6 +11,17 @@ export class CustomerForm {
 
   async gotoNew(locale: string) {
     await this.page.goto(`/${locale}/customers/new`);
+    await this.ready();
+  }
+
+  async gotoEdit(locale: string, id: string) {
+    await this.page.goto(`/${locale}/customers/${id}/edit`);
+    await this.ready();
+  }
+
+  /** Until it hydrates, react-hook-form writes saved values over anything typed. */
+  async ready() {
+    await this.page.locator("form[data-ready]").waitFor();
   }
 
   async fill(fields: { name?: string; contactName?: string; phone?: string; address?: string }) {
@@ -19,8 +30,34 @@ export class CustomerForm {
     }
   }
 
+  nameRequired() {
+    return this.page.getByText(this.t("validation.required"));
+  }
+
+  /** Enter in the name field: submits, like the Save button. */
+  async pressEnterInName() {
+    await this.page.locator("#name").press("Enter");
+  }
+
+  /** ✕ Cancel: a labelled button on a computer, an icon on a phone; same name. */
+  async cancel() {
+    await this.page.getByRole("button", { name: this.t("common.cancel"), exact: true }).click();
+  }
+
+  discardDialog() {
+    return this.page.getByRole("alertdialog");
+  }
+
+  async keepEditing() {
+    await this.discardDialog().getByRole("button", { name: this.t("common.keepEditing") }).click();
+  }
+
+  async discard() {
+    await this.discardDialog().getByRole("button", { name: this.t("common.discard") }).click();
+  }
+
   async save() {
-    await this.page.getByRole("button", { name: this.t("common.save") }).click();
+    await this.page.getByRole("button", { name: this.t("customers.saveCustomer") }).click();
   }
 }
 
@@ -41,8 +78,10 @@ export class CustomerPage {
     return this.page.getByRole("heading", { name });
   }
 
+  /** Open the edit form, and wait for it to be ready for typing. */
   async edit() {
     await this.page.getByRole("link", { name: this.t("customers.edit") }).click();
+    await this.page.locator("form[data-ready]").waitFor();
   }
 
   /** Delete, and confirm in the dialog. */

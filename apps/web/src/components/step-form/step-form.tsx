@@ -192,6 +192,11 @@ function Root({
             // keep a row of its own, or the buttons' row takes the stretch.
             "@5xl:has-[>[data-slot=step-form-preview]]:grid-rows-[auto_minmax(0,1fr)_auto]",
             "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
+            // A one-page form is short: a narrower column, centred, and a
+            // card only as tall as its fields (still scrolling once the
+            // window is shorter than that).
+            flow.steps.length === 0 &&
+              "md:mx-auto md:w-full md:max-w-[45rem] md:grid-rows-[auto_minmax(0,auto)_auto] md:content-start",
             className,
           )}
         >

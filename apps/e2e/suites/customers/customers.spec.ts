@@ -66,3 +66,58 @@ test("a filter that matches no orders keeps the toolbar and can be cleared", asy
   await expect(customerPage.noMatch()).toBeHidden();
   await expect(customerPage.rowCount(1)).toBeVisible();
 });
+
+test("a Customer can't be saved without a name", async ({ page, t, appLocale, user }) => {
+  const form = new CustomerForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ contactName: "Dana" });
+  await form.save();
+  await expect(form.nameRequired()).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/customers/new$`));
+
+  await form.fill({ name: unique("Store") });
+  await expect(form.nameRequired()).toBeHidden();
+  expect(await prisma.customer.count({ where: { ownerId: user.id } })).toBe(0);
+});
+
+test("Enter in a field saves the Customer", async ({ page, t, appLocale, user }) => {
+  const name = unique("Store");
+  const form = new CustomerForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name });
+  await form.pressEnterInName();
+
+  await page.waitForURL(CustomerPage.URL);
+  await expect(new CustomerPage(page, t).heading(name)).toBeVisible();
+  expect(await prisma.customer.count({ where: { ownerId: user.id } })).toBe(1);
+});
+
+test("Cancel leaves at once when nothing was typed", async ({ page, t, appLocale, user }) => {
+  const form = new CustomerForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.cancel();
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/customers$`));
+
+  // Editing, it goes back to the Customer.
+  const customer = await createCustomer(user.id);
+  await form.gotoEdit(appLocale, customer.id);
+  await form.cancel();
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/customers/${customer.id}$`));
+});
+
+test("Cancel asks first once something was typed", async ({ page, t, appLocale, user }) => {
+  const form = new CustomerForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.fill({ name: "Half typed" });
+
+  await form.cancel();
+  await expect(form.discardDialog()).toBeVisible();
+  await form.keepEditing();
+  await expect(form.discardDialog()).toBeHidden();
+  await expect(page.locator("#name")).toHaveValue("Half typed");
+
+  await form.cancel();
+  await form.discard();
+  await expect(page).toHaveURL(new RegExp(`/${appLocale}/customers$`));
+  expect(await prisma.customer.count({ where: { ownerId: user.id } })).toBe(0);
+});

@@ -45,7 +45,9 @@ const flow = useStepForm({
   a bar under the header reading a name and a total that opens to the same facts. Put it
   before `Preview` in JSX: it hides itself when a later Preview sibling has its column.
 - **A one-page form** (the Customer form): `steps: []`. The bar disappears and Actions shows
-  only Save. Skip `Step` and put the content straight in `Pane`.
+  only Save. Skip `Step` and put the content straight in `Pane`, starting with a
+  `StepHeader`. On a computer the form is a centred 720px column and the card is only as tall
+  as its fields.
 - **Actions** picks Back / Continue / Save from the state; `aside` puts a short line (the
   order's counts) at the row's start on a computer. Compose `<StepForm.Back />`,
   `<StepForm.Next />`, `<StepForm.Submit>` inside `<StepForm.Actions>` only for a different set.

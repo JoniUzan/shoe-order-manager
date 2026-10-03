@@ -2,26 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { customerSchema, type CustomerInput } from "@repo/domain";
-import { Button } from "@repo/ui/components/button";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
-import { Textarea } from "@repo/ui/components/textarea";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { CustomerFields, EMPTY_CUSTOMER } from "@/components/customers/customer-fields";
+import { StepForm, useStepForm } from "@/components/step-form/step-form";
 import { useRouter } from "@/i18n/navigation";
 import { createCustomer, updateCustomer } from "@/lib/actions/customers";
 
-const EMPTY: CustomerInput = {
-  name: "",
-  contactName: "",
-  phone: "",
-  address: "",
-  notes: "",
-};
-
+/** A Customer on one page: StepForm with no steps. */
 export function CustomerForm({
   customerId,
   defaultValues,
@@ -30,17 +21,17 @@ export function CustomerForm({
   defaultValues?: CustomerInput;
 }) {
   const t = useTranslations("customers");
-  const tv = useTranslations("validation");
-  const tc = useTranslations("common");
   const router = useRouter();
+  const editing = customerId !== undefined;
   const [pending, setPending] = useState(false);
 
   const form = useForm<CustomerInput>({
     resolver: zodResolver(customerSchema),
-    defaultValues: defaultValues ?? EMPTY,
+    defaultValues: defaultValues ?? EMPTY_CUSTOMER,
   });
+  const flow = useStepForm({ steps: [], editing });
 
-  async function onSubmit(values: CustomerInput) {
+  async function save(values: CustomerInput) {
     setPending(true);
     const res = customerId
       ? await updateCustomer(customerId, values)
@@ -55,57 +46,23 @@ export function CustomerForm({
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex max-w-xl flex-col gap-5"
+    <StepForm
+      flow={flow}
+      onSave={(e) => void form.handleSubmit(save)(e)}
+      cancelHref={customerId ? `/customers/${customerId}` : "/customers"}
+      dirty={form.formState.isDirty}
+      pending={pending}
     >
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="name">{t("name")}</Label>
-        <Input
-          id="name"
-          placeholder={t("namePlaceholder")}
-          aria-invalid={!!form.formState.errors.name}
-          {...form.register("name")}
+      <StepForm.Header title={editing ? t("edit") : t("new")} />
+      <StepForm.Pane>
+        <StepForm.StepHeader
+          illustration="store"
+          title={editing ? t("edit") : t("new")}
+          hint={editing ? t("editHint") : t("formHint")}
         />
-        {form.formState.errors.name && (
-          <p className="text-sm text-destructive">{tv("required")}</p>
-        )}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contactName">{t("contactName")}</Label>
-          <Input id="contactName" {...form.register("contactName")} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="phone">{t("phone")}</Label>
-          <Input id="phone" type="tel" dir="ltr" {...form.register("phone")} />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="address">{t("address")}</Label>
-        <Input id="address" {...form.register("address")} />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="notes">{t("notes")}</Label>
-        <Textarea id="notes" rows={3} {...form.register("notes")} />
-      </div>
-
-      <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>
-          {tc("save")}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pending}
-          onClick={() => router.back()}
-        >
-          {tc("cancel")}
-        </Button>
-      </div>
-    </form>
+        <CustomerFields form={form} />
+      </StepForm.Pane>
+      <StepForm.Actions saveLabel={t("saveCustomer")} />
+    </StepForm>
   );
 }
