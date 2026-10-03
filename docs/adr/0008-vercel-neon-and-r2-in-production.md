@@ -4,9 +4,9 @@ Before the first deploy we chose managed platforms over one big cloud, with a la
 about $0–25 a month and an EU region (Frankfurt; Israeli data residency isn't required). The web
 app runs on Vercel (`fra1`). Postgres is Neon (`eu-central-1`). Product images, and the nightly
 database dumps, go to Cloudflare R2. Each one is reached only through an interface that other
-providers also speak: a plain `DATABASE_URL` for Postgres and the S3 API for storage (MinIO
-locally). No `@vercel/postgres`, `@vercel/blob`, Edge Config or provider auth. Leaving any one of
-them is then a config change plus a data copy, not a rewrite.
+providers also speak: a plain `DATABASE_URL` for Postgres and the S3 API for storage (a local
+S3 server in development, ADR 0011). No `@vercel/postgres`, `@vercel/blob`, Edge Config or
+provider auth. Leaving any one of them is then a config change plus a data copy, not a rewrite.
 
 **Neon over Supabase.** ADR 0002 picked Supabase, but nothing had been deployed when we looked
 again. We already use only Postgres from it: ADR 0002 rules out Supabase Auth, RLS and storage,
