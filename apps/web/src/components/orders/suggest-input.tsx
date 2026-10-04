@@ -94,9 +94,7 @@ export function SuggestInput({
         onInteractOutside={(e) => {
           if (e.target === inputRef.current) e.preventDefault();
         }}
-        // As wide as the field. Inline, because the class merge keeps the
-        // popover's own w-72 beside a w-(--var) class, and w-72 wins.
-        style={{ width: "var(--radix-popper-anchor-width)" }}
+        // The popover's own 288px width, like the Combobox lists.
         className="rounded-2xl p-1.5"
       >
         <ul id={listId} role="listbox" className="flex max-h-64 flex-col overflow-y-auto">
