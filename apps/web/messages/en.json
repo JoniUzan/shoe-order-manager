@@ -596,6 +596,8 @@
     "item": "Item",
     "model": "Model",
     "color": "Color",
+    "material": "Material",
+    "sole": "Sole",
     "sizes": "Sizes (pairs)",
     "size": "Size",
     "pairs": "Pairs",

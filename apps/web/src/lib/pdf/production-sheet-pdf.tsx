@@ -17,7 +17,7 @@ import { clean, directional, styles } from "./theme";
 
 /**
  * The Production sheet (דף ייצור): an order as sent to the factory. One row
- * per model and color with pairs per size. Deliberately absent: packs, every
+ * per model, color, Material and Sole with pairs per size. Deliberately absent: packs, every
  * price and total, payments, the regular notes, and everything about the
  * Customer but their name.
  */
@@ -32,8 +32,13 @@ export function ProductionSheetPdf({
 }) {
   const d = directional(data.locale === "he");
   const { rows, pairs } = buildProductionRows(data.items);
-  // An order where no line has a color doesn't get an empty Color column.
+  // An order where no line has a color, Material or Sole doesn't get an empty
+  // column for it. Each one shown takes two sizes off the grid's width.
   const hasColor = rows.some((r) => r.color);
+  const hasMaterial = rows.some((r) => r.material);
+  const hasSole = rows.some((r) => r.sole);
+  const sizeColumns =
+    12 - 2 * [hasColor, hasMaterial, hasSole].filter(Boolean).length;
   const withImages = rows.some(
     (r) => r.shoeModelId && data.images.has(r.shoeModelId),
   );
@@ -66,6 +71,16 @@ export function ProductionSheetPdf({
           {hasColor && (
             <Cell width="12%">
               <Text style={[styles.label, d.text]}>{t("color")}</Text>
+            </Cell>
+          )}
+          {hasMaterial && (
+            <Cell width="12%">
+              <Text style={[styles.label, d.text]}>{t("material")}</Text>
+            </Cell>
+          )}
+          {hasSole && (
+            <Cell width="10%">
+              <Text style={[styles.label, d.text]}>{t("sole")}</Text>
             </Cell>
           )}
           <Cell>
@@ -117,12 +132,26 @@ export function ProductionSheetPdf({
                 </Text>
               </Cell>
             )}
+            {hasMaterial && (
+              <Cell width="12%">
+                <Text style={valueStyle(d, row.material ?? "")}>
+                  {row.material ?? ""}
+                </Text>
+              </Cell>
+            )}
+            {hasSole && (
+              <Cell width="10%">
+                <Text style={valueStyle(d, row.sole ?? "")}>
+                  {row.sole ?? ""}
+                </Text>
+              </Cell>
+            )}
             <Cell>
               <SizeGrid
                 d={d}
                 t={t}
                 sizes={row.sizes}
-                columns={hasColor ? 10 : 12}
+                columns={sizeColumns}
               />
             </Cell>
             <Cell width="10%" align="center">
