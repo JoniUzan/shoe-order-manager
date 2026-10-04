@@ -59,6 +59,10 @@ model OrderItem {
   customDescription String?
   size              String // text: supports "42", "42.5", "US 9"
   color             String?
+  // Material (upper) and Sole: free text per order block like color, printed
+  // on the Production sheet and never on the Order summary.
+  material          String?
+  sole              String?
   quantity          Int
   unitPriceAgorot   Int     @default(0)
   // Set when this size row is part of a pack taken on the order; null for
