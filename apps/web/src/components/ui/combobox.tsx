@@ -95,7 +95,10 @@ export function Combobox({
       <PopoverContent
         align="start"
         // Match the trigger so the list never looks detached from its control.
-        className="w-(--radix-popover-trigger-width) p-0"
+        // Inline, because the class merge keeps PopoverContent's own w-72 beside
+        // a w-(--var) class, and w-72 wins.
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+        className="p-0"
       >
         <Command
           // Search the label only. `value` is a cuid, and letting cmdk match
