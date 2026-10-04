@@ -349,6 +349,8 @@
     "customDescription": "תיאור",
     "size": "מידה",
     "color": "צבע",
+    "material": "חומר",
+    "sole": "סוליה",
     "quantity": "כמות",
     "unitPrice": "מחיר יחידה",
     "lineTotal": "סכום שורה",

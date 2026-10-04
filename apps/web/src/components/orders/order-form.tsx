@@ -69,6 +69,7 @@ import {
   type BlockForm,
   type OrderFormValues,
 } from "@/lib/order-blocks";
+import type { ItemSuggestions } from "@/lib/item-suggestions";
 
 export type { OrderFormValues } from "@/lib/order-blocks";
 
@@ -113,6 +114,8 @@ function isBlank(block: BlockForm) {
     !block.shoeModelId &&
     !block.customDescription.trim() &&
     !block.color.trim() &&
+    !block.material.trim() &&
+    !block.sole.trim() &&
     block.packs.length === 0 &&
     blockPairs(block) === 0
   );
@@ -131,9 +134,12 @@ export function OrderForm({
   orderId,
   orderNumber,
   defaultValues,
+  suggestions,
 }: {
   customers: CustomerOption[];
   models: ModelOption[];
+  /** Earlier values for a block's Color, Material and Sole. */
+  suggestions: ItemSuggestions;
   orderId?: string;
   orderNumber?: number;
   defaultValues?: OrderFormValues;
@@ -353,6 +359,8 @@ export function OrderForm({
             // store beside the catalog's "42" as a second size.
             size: normalizeSize(row.size),
             color: block.color,
+            material: block.material,
+            sole: block.sole,
             quantity: pairsOf(row),
             unitPriceAgorot: shekelsToAgorot(Number(block.unitPrice) || 0),
           })),
@@ -365,6 +373,8 @@ export function OrderForm({
           sizePackId: pack.sizePackId || undefined,
           shoeModelId: block.shoeModelId,
           color: block.color,
+          material: block.material,
+          sole: block.sole,
           unitPriceAgorot: shekelsToAgorot(Number(block.unitPrice) || 0),
           count: packCountOf(pack),
         })),
@@ -508,6 +518,7 @@ export function OrderForm({
                           block={block}
                           models={models}
                           blocks={blocks}
+                          suggestions={suggestions}
                         />
                       </div>
                     );
@@ -691,6 +702,7 @@ export function OrderForm({
                     block={openBlockValues}
                     models={models}
                     blocks={blocks}
+                    suggestions={suggestions}
                   />
                 </div>
                 <DrawerFooter className="flex-row gap-2.5 px-4 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">

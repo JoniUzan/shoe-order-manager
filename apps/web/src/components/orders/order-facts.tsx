@@ -60,8 +60,12 @@ export function OrderFacts({
               <ModelThumb src={text.image(block)} className="size-11 rounded-xl md:size-11" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium">{text.name(block)}</span>
-                <span className="text-[0.8125rem] text-muted-foreground">
-                  {t("pairsCount", { count: blockPairs(block) })}
+                <span className="truncate text-[0.8125rem] text-muted-foreground">
+                  {[block.color, block.material, block.sole]
+                    .map((v) => v.trim())
+                    .filter(Boolean)
+                    .concat(t("pairsCount", { count: blockPairs(block) }))
+                    .join(" · ")}
                 </span>
               </div>
               <span className="text-sm tabular-nums">{formatMoney(blockAgorot(block), locale)}</span>

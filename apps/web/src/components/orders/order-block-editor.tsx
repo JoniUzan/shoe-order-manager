@@ -13,10 +13,11 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 import { Minus, Package, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { UseFormReturn } from "react-hook-form";
+import { Controller, type UseFormReturn } from "react-hook-form";
 
 import { CurveText } from "@/components/catalog/curve-text";
 import type { ModelOption } from "@/components/orders/order-form";
+import { SuggestInput } from "@/components/orders/suggest-input";
 import type { OrderBlocks } from "@/components/orders/use-order-blocks";
 import { roomy } from "@/components/step-form/roomy";
 import { StepForm } from "@/components/step-form/step-form";
@@ -29,6 +30,7 @@ import {
   type BlockForm,
   type OrderFormValues,
 } from "@/lib/order-blocks";
+import type { ItemSuggestions } from "@/lib/item-suggestions";
 
 /** The Combobox at the editor's size: a 48px field with a 16px corner. */
 const PICKER = "h-12 rounded-2xl px-3.5 text-base md:h-12 md:text-base";
@@ -126,12 +128,14 @@ export function OrderBlockFields({
   block,
   models,
   blocks,
+  suggestions,
 }: {
   form: UseFormReturn<OrderFormValues>;
   index: number;
   block: BlockForm;
   models: ModelOption[];
   blocks: OrderBlocks;
+  suggestions: ItemSuggestions;
 }) {
   const t = useTranslations("orders");
   const addedPack = useAddedItem();
@@ -411,13 +415,7 @@ export function OrderBlockFields({
       </section>
 
       <div className="grid grid-cols-2 gap-3">
-        <StepForm.Field label={t("color")} htmlFor={`block-${index}-color`}>
-          <Input
-            id={`block-${index}-color`}
-            className={roomy.field}
-            {...form.register(`blocks.${index}.color`)}
-          />
-        </StepForm.Field>
+        <TextField form={form} index={index} name="color" label={t("color")} suggestions={suggestions} />
         <StepForm.Field label={t("pricePerPair")} htmlFor={`block-${index}-price`}>
           <Input
             id={`block-${index}-price`}
@@ -432,7 +430,49 @@ export function OrderBlockFields({
         </StepForm.Field>
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <TextField form={form} index={index} name="material" label={t("material")} suggestions={suggestions} />
+        <TextField form={form} index={index} name="sole" label={t("sole")} suggestions={suggestions} />
+      </div>
+
       {error}
     </div>
+  );
+}
+
+/** A block's Color, Material or Sole: free text with this User's earlier values offered. */
+function TextField({
+  form,
+  index,
+  name,
+  label,
+  suggestions,
+}: {
+  form: UseFormReturn<OrderFormValues>;
+  index: number;
+  name: keyof ItemSuggestions;
+  label: string;
+  suggestions: ItemSuggestions;
+}) {
+  const id = `block-${index}-${name}`;
+  return (
+    <StepForm.Field label={label} htmlFor={id}>
+      <Controller
+        control={form.control}
+        name={`blocks.${index}.${name}`}
+        render={({ field }) => (
+          <SuggestInput
+            id={id}
+            name={field.name}
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            suggestions={suggestions[name]}
+            maxLength={100}
+            className={roomy.field}
+          />
+        )}
+      />
+    </StepForm.Field>
   );
 }

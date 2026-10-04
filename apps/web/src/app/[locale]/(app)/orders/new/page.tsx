@@ -8,6 +8,7 @@ import { Plus, Users } from "lucide-react";
 import { OrderForm } from "@/components/orders/order-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Link } from "@/i18n/navigation";
+import { loadItemSuggestions } from "@/lib/item-suggestions";
 import { requireUser } from "@/lib/session";
 import { imageUrl } from "@/lib/storage";
 
@@ -21,7 +22,7 @@ export default async function NewOrderPage({
   const t = await getTranslations({ locale, namespace: "orders" });
   const tCustomers = await getTranslations({ locale, namespace: "customers" });
 
-  const [customers, models] = await Promise.all([
+  const [customers, models, suggestions] = await Promise.all([
     prisma.customer.findMany({
       where: { ownerId: user.id },
       orderBy: { name: "asc" },
@@ -43,12 +44,14 @@ export default async function NewOrderPage({
         },
       },
     }),
+    loadItemSuggestions(user.id),
   ]);
 
   if (customers.length > 0) {
     return (
       <OrderForm
         customers={customers}
+        suggestions={suggestions}
         models={models.map((m) => ({
           ...m,
           imageUrl: imageUrl(m.imageKey),

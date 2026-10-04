@@ -46,6 +46,8 @@ export interface BlockForm {
   shoeModelId: string;
   customDescription: string;
   color: string;
+  material: string;
+  sole: string;
   unitPrice: string; // shekels
   /** Packs taken of this model (catalog blocks only). */
   packs: PackRow[];
@@ -66,6 +68,8 @@ export const EMPTY_BLOCK: BlockForm = {
   shoeModelId: "",
   customDescription: "",
   color: "",
+  material: "",
+  sole: "",
   unitPrice: "",
   packs: [],
   rows: [],
@@ -103,6 +107,8 @@ export interface StoredItem {
   customDescription: string | null;
   size: string;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   quantity: number;
   unitPriceAgorot: number;
 }
@@ -119,7 +125,7 @@ export interface StoredPack {
  * Reassemble stored items into the blocks they were entered as.
  *
  * Two items merge into one block when they share model (or description),
- * colour *and* price — the three things a block holds once. That is a real
+ * colour, Material, Sole *and* price — the things a block holds once. That is a real
  * behaviour change: items that happened to match are now edited together.
  *
  * The size columns are the model's catalog run first, in catalog order, then
@@ -128,8 +134,8 @@ export interface StoredPack {
  * order.
  *
  * Items with a `packId` are a pack's pairs, not loose ones: they rebuild that
- * pack (from its own saved snapshot) on the block with the same model, colour
- * and price, creating the block if the order has no loose pairs of it.
+ * pack (from its own saved snapshot) on the block with the same model, colour,
+ * Material, Sole and price, creating the block if the order has no loose pairs of it.
  */
 export function groupItemsIntoBlocks(
   items: StoredItem[],
@@ -145,11 +151,13 @@ export function groupItemsIntoBlocks(
 
   for (const item of items) {
     const identity = item.shoeModelId ?? `custom:${item.customDescription ?? ""}`;
-    // NUL-delimited: two of the three parts are free text, so a printable
+    // NUL-delimited: most of the parts are free text, so a printable
     // separator could be forged. Joined on a space, {"Sandal", "blue x"} and
     // {"Sandal blue", "x"} would collide at the same price and merge two
     // unrelated line items into one block.
-    const key = `${identity}\u0000${item.color ?? ""}\u0000${item.unitPriceAgorot}`;
+    const key = [identity, item.color, item.material, item.sole, item.unitPriceAgorot]
+      .map((v) => v ?? "")
+      .join("\u0000");
     let group = groups.get(key);
     if (!group) {
       group = { item, pairsBySize: new Map(), packs: [] };
@@ -190,6 +198,8 @@ export function groupItemsIntoBlocks(
       shoeModelId: item.shoeModelId ?? "",
       customDescription: item.customDescription ?? "",
       color: item.color ?? "",
+      material: item.material ?? "",
+      sole: item.sole ?? "",
       unitPrice: String(agorotToShekels(item.unitPriceAgorot)),
       packs,
       rows: [...catalogSizes, ...extras].map((size) => ({

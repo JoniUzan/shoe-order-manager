@@ -349,6 +349,8 @@
     "customDescription": "Description",
     "size": "Size",
     "color": "Color",
+    "material": "Material",
+    "sole": "Sole",
     "quantity": "Qty",
     "unitPrice": "Unit price",
     "lineTotal": "Line total",
