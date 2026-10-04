@@ -30,8 +30,11 @@ server code alike.
   (`parseCurve`/`serializeCurve`/`expandPack`). Stored sizes and curves only ever pass through
   these, so their canonical string form stays in one place.
 - `document.ts`: the rows of an order's two PDFs. `buildOrderSummaryRows` groups by model, color
-  and unit price and keeps the cartons; `buildProductionRows` groups by model and color and
-  drops packs and money. Both add pairs up per size.
+  and unit price and keeps the cartons; `buildProductionRows` groups by model, color, Material and Sole and
+  drops packs and money. Both add pairs up per size. Material and Sole are factory-only: the
+  Order summary never shows or splits by them.
+- `suggestions.ts`: the values offered under a block's Color, Material and Sole
+  (`recentDistinct` from past orders, `matchSuggestions` for what's typed).
 - `product-image.ts`: the Product image's limits, its storage key (`productImageKey`, and
   `isOwnProductImageKey` for the ownership check), the JPEG check and the centre-square crop.
 - `status.ts`: order and payment status codes. Order statuses also live as DB rows, so

@@ -13,6 +13,8 @@ function item(over: Partial<DocumentItem>): DocumentItem {
     sku: "DN-204",
     size: "38",
     color: "Black",
+    material: null,
+    sole: null,
     quantity: 1,
     unitPriceAgorot: 12000,
     packId: null,
@@ -44,6 +46,18 @@ describe("buildOrderSummaryRows", () => {
       ["Roni", "Beige", 15000],
       ["Gold slipper", "Gold", 18000],
     ]);
+  });
+
+  it("never splits a row by Material or Sole, which the Customer doesn't see", () => {
+    const { rows } = buildOrderSummaryRows(
+      [
+        item({ material: "Leather", sole: "Rubber", quantity: 3 }),
+        item({ material: "Suede", sole: "EVA", quantity: 2 }),
+      ],
+      [],
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.pairs).toBe(5);
   });
 
   it("adds pack and loose pairs per size, sizes ascending", () => {
@@ -128,6 +142,18 @@ describe("buildProductionRows", () => {
     ]);
     expect(production.rows.map((r) => r.pairs)).toEqual([19, 3, 2]);
     expect(production.pairs).toBe(24);
+  });
+
+  it("splits a model and color by Material and Sole", () => {
+    const { rows } = buildProductionRows([
+      item({ material: "Leather", sole: "Rubber", size: "38", quantity: 3 }),
+      item({ material: "Leather", sole: "EVA", size: "38", quantity: 2 }),
+      item({ material: "Leather", sole: "Rubber", size: "39", quantity: 1 }),
+    ]);
+    expect(rows.map((r) => [r.material, r.sole, r.pairs])).toEqual([
+      ["Leather", "Rubber", 4],
+      ["Leather", "EVA", 2],
+    ]);
   });
 
   it("keeps each row's model, null for a custom item", () => {

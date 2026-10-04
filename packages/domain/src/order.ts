@@ -17,6 +17,8 @@ export const orderItemSchema = z
     customDescription: z.string().trim().max(500).nullish(),
     size: z.string().trim().min(1, { message: "size_required" }).max(20),
     color: z.string().trim().max(100).optional().or(z.literal("")),
+    material: z.string().trim().max(100).optional().or(z.literal("")),
+    sole: z.string().trim().max(100).optional().or(z.literal("")),
     // The cap is a typo guard, not a business rule: 10000 typed for 10 is
     // caught, and an order total stays well inside a Postgres Int of agorot.
     quantity: z
@@ -49,6 +51,8 @@ export const orderPackSchema = z
     sizePackId: z.string().min(1).optional(),
     shoeModelId: z.string().min(1),
     color: z.string().trim().max(100).optional().or(z.literal("")),
+    material: z.string().trim().max(100).optional().or(z.literal("")),
+    sole: z.string().trim().max(100).optional().or(z.literal("")),
     unitPriceAgorot: z.number().int().min(0),
     count: z
       .number()
