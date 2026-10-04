@@ -82,6 +82,8 @@ interface ResolvedPack {
     customDescription: null;
     size: string;
     color: string | null;
+    material: string | null;
+    sole: string | null;
     quantity: number;
     unitPriceAgorot: number;
   }[];
@@ -168,6 +170,8 @@ async function resolvePacks(
         customDescription: null,
         size: s.size,
         color: nullify(pack.color),
+        material: nullify(pack.material),
+        sole: nullify(pack.sole),
         quantity: s.quantity,
         unitPriceAgorot: pack.unitPriceAgorot,
       })),
@@ -199,6 +203,8 @@ function itemCreateData(input: OrderInput) {
     customDescription: i.customDescription ?? null,
     size: i.size,
     color: nullify(i.color),
+    material: nullify(i.material),
+    sole: nullify(i.sole),
     quantity: i.quantity,
     unitPriceAgorot: i.unitPriceAgorot,
   }));
