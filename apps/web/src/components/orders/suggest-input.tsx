@@ -84,6 +84,9 @@ export function SuggestInput({
       </PopoverAnchor>
       <PopoverContent
         align="start"
+        // Room for the form's bottom bar of buttons: near it, the list opens
+        // upward instead of under the buttons.
+        collisionPadding={{ bottom: 104 }}
         // Typing stays in the field: the list never takes focus.
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
@@ -91,7 +94,10 @@ export function SuggestInput({
         onInteractOutside={(e) => {
           if (e.target === inputRef.current) e.preventDefault();
         }}
-        className="w-(--radix-popover-trigger-width) rounded-2xl p-1.5"
+        // As wide as the field. Inline, because the class merge keeps the
+        // popover's own w-72 beside a w-(--var) class, and w-72 wins.
+        style={{ width: "var(--radix-popper-anchor-width)" }}
+        className="rounded-2xl p-1.5"
       >
         <ul id={listId} role="listbox" className="flex max-h-64 flex-col overflow-y-auto">
           {matches.map((m, i) => (
