@@ -98,6 +98,8 @@ Use these words in code, UI copy, commits and conversation. Hebrew is the UI wor
 | **Pack** | סדרה | A shoe model's fixed pairs-per-size, e.g. 38×3, 39×2, 40×3 (its **curve**). | series, set |
 | **Cartons** | קרטונים | How many of a pack an order takes. | packs (for the count) |
 | **Loose pairs** | זוגות בודדים | Pairs ordered outside any pack. | extra items |
+| **Material** | חומר | What a line item's upper is made of (e.g. leather, synthetic), chosen per order block like color. | upper, fabric |
+| **Sole** | סוליה | What a line item's sole is made of (e.g. rubber, EVA), chosen per order block like color. Neither Material nor Sole changes the price, and neither reaches the Customer (not on the Order summary or WhatsApp). | material sole |
 | **Order** | הזמנה | What a Customer buys, numbered per User (#1, #2, …). | invoice |
 | **Line item** | שורה / פריט | One size of one model (or a free-text item) with quantity and unit price. | |
 | **Custom item** | מותאם | A line item described in free text instead of a catalog model. An order with any custom item is a **custom order**. | |
