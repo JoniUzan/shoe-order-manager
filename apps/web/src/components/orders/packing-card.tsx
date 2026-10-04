@@ -10,6 +10,7 @@ import { Package } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 
 import { CurveText } from "@/components/catalog/curve-text";
+import { itemDetails } from "@/lib/item-details";
 import type { PackingSummary } from "@/lib/packing";
 
 /**
@@ -52,8 +53,8 @@ export async function PackingCard({
                   }
                 >
                   <span className="font-medium">{group.name}</span>
-                  {group.color && (
-                    <span className="text-muted-foreground">{group.color}</span>
+                  {itemDetails(group) && (
+                    <span className="text-muted-foreground">{itemDetails(group)}</span>
                   )}
                   <span className="ms-auto text-xs text-muted-foreground tabular-nums">
                     {t("pairsCount", { count: pairs })}

@@ -1,7 +1,8 @@
 import { parseCurve, type Curve } from "@repo/domain";
 
 /**
- * What whoever packs an order needs to pick: per model, colour and price, the
+ * What whoever packs an order needs to pick: per model, colour, Material, Sole
+ * and price (the order form's blocks), the
  * packs (N × a named box) and the loose pairs on top — rather than the flat
  * per-size lines, where a pack's pairs are spread over one row per size.
  *
@@ -16,6 +17,8 @@ export interface PackingItem {
   name: string;
   size: string;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   quantity: number;
   unitPriceAgorot: number;
 }
@@ -30,6 +33,8 @@ export interface PackingPack {
 export interface PackingGroup {
   name: string;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   packs: { name: string; count: number; curve: Curve }[];
   /** Loose pairs by size, sizes ascending. */
   extras: { size: string; quantity: number }[];
@@ -58,12 +63,16 @@ export function buildPackingSummary(
   for (const item of items) {
     // Same identity as the order form's blocks (see order-blocks.ts).
     const identity = item.shoeModelId ?? `custom:${item.name}`;
-    const key = `${identity}\u0000${item.color ?? ""}\u0000${item.unitPriceAgorot}`;
+    const key = [identity, item.color, item.material, item.sole, item.unitPriceAgorot]
+      .map((v) => v ?? "")
+      .join("\u0000");
     let group = groups.get(key);
     if (!group) {
       group = {
         name: item.name,
         color: item.color,
+        material: item.material,
+        sole: item.sole,
         packs: [],
         extras: [],
         extrasBySize: new Map(),

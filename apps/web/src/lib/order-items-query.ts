@@ -62,6 +62,8 @@ export type OrderItemRow = {
   imageUrl: string | null;
   size: string;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   quantity: number;
   unitPriceAgorot: number;
   lineTotalAgorot: number;
@@ -122,6 +124,8 @@ export async function listOrderItems(
       customDescription: true,
       size: true,
       color: true,
+      material: true,
+      sole: true,
       quantity: true,
       unitPriceAgorot: true,
       shoeModel: { select: { name: true, sizeFormat: true, imageKey: true } },
@@ -136,6 +140,8 @@ export async function listOrderItems(
     imageUrl: imageUrl(it.shoeModel?.imageKey),
     size: it.size,
     color: it.color,
+    material: it.material,
+    sole: it.sole,
     quantity: it.quantity,
     unitPriceAgorot: it.unitPriceAgorot,
     lineTotalAgorot: it.unitPriceAgorot * it.quantity,
@@ -149,7 +155,7 @@ export async function listOrderItems(
   if (params.q) {
     const needle = params.q.toLowerCase();
     rows = rows.filter((r) =>
-      [r.name, r.size, r.color ?? ""].some((v) =>
+      [r.name, r.size, r.color ?? "", r.material ?? "", r.sole ?? ""].some((v) =>
         v.toLowerCase().includes(needle),
       ),
     );
