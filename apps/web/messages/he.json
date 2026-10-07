@@ -88,7 +88,18 @@
     "getStartedTitleNamed": "הכל מוכן, {name}",
     "getStartedSubtitle": "מה נוסיף קודם?",
     "addCustomer": "הוספת לקוח",
-    "addShoeModel": "הוספת דגם"
+    "addShoeModel": "הוספת דגם",
+    "cardBalanceDue": "יתרה לגבייה",
+    "keyUnpaid": "לא שולם",
+    "keyPartial": "שולם חלקית",
+    "cardOpenOrders": "הזמנות פתוחות",
+    "ageFresh": "עד שבועיים",
+    "ageAging": "15–30 יום",
+    "ageOld": "מעל 30 יום",
+    "cardRecent": "הזמנות חדשות · 7 ימים",
+    "ordersUnit": "{count, plural, one {הזמנה} other {הזמנות}}",
+    "keyOrdered": "הוזמן",
+    "keyPrevious7": "7 הימים שלפני"
   },
   "list": {
     "columns": "עמודות",
@@ -424,7 +435,8 @@
     "previewNoItems": "עוד אין פריטים",
     "notesCount": "{count, plural, =0 {טרם נוספו} one {הערה אחת} two {# הערות} other {# הערות}}",
     "editSection": "עריכת {section}",
-    "saveOrder": "שמירת הזמנה"
+    "saveOrder": "שמירת הזמנה",
+    "filterRecent": "7 ימים אחרונים"
   },
   "errors": {
     "loading": "טוען…",

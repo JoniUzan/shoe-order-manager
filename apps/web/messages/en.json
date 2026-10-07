@@ -88,7 +88,18 @@
     "getStartedTitleNamed": "You’re all set, {name}",
     "getStartedSubtitle": "What should we add first?",
     "addCustomer": "Add a customer",
-    "addShoeModel": "Add a shoe model"
+    "addShoeModel": "Add a shoe model",
+    "cardBalanceDue": "Balance due",
+    "keyUnpaid": "Unpaid",
+    "keyPartial": "Partial",
+    "cardOpenOrders": "Open orders",
+    "ageFresh": "Up to 2 weeks",
+    "ageAging": "15–30 days",
+    "ageOld": "Over 30 days",
+    "cardRecent": "New orders · 7 days",
+    "ordersUnit": "{count, plural, one {order} other {orders}}",
+    "keyOrdered": "Ordered",
+    "keyPrevious7": "Previous 7 days"
   },
   "list": {
     "columns": "Columns",
@@ -424,7 +435,8 @@
     "previewNoItems": "No items yet",
     "notesCount": "{count, plural, =0 {None yet} one {# note} other {# notes}}",
     "editSection": "Edit {section}",
-    "saveOrder": "Save order"
+    "saveOrder": "Save order",
+    "filterRecent": "Last 7 days"
   },
   "errors": {
     "loading": "Loading…",

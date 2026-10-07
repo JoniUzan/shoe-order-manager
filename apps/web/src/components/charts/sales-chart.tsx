@@ -1,6 +1,6 @@
 "use client";
 
-import { formatMoney, formatMoneyCompact } from "@repo/domain";
+import { formatMoney, formatMoneyCompact, type SalesPoint } from "@repo/domain";
 import {
   ChartContainer,
   ChartTooltip,
@@ -18,14 +18,7 @@ import {
   YAxis,
 } from "recharts";
 
-export type SalesPoint = {
-  /** ISO start of the day or week, e.g. "2026-08-08" */
-  start: string;
-  /** agorot ordered in the period */
-  ordered: number;
-  /** agorot collected in the period */
-  collected: number;
-};
+export type { SalesPoint };
 
 export type SalesChartKind = "area" | "bars" | "line";
 
@@ -57,7 +50,11 @@ export function SalesChart({
   } satisfies ChartConfig;
 
   const shortDate = (value: string) =>
-    new Date(value).toLocaleDateString(locale, { month: "short", day: "numeric" });
+    // "YYYY-MM-DD" alone parses as UTC midnight, the day before west of it
+    new Date(`${value}T00:00`).toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+    });
   const periodLabel = (value: string) =>
     period === "week" ? t("weekOf", { date: shortDate(value) }) : shortDate(value);
 

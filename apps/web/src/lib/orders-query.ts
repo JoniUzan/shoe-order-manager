@@ -1,5 +1,5 @@
 import { prisma, type Prisma } from "@repo/db";
-import { computeOwedAgorot } from "@repo/domain";
+import { addDays, computeOwedAgorot, startOfDay } from "@repo/domain";
 
 import {
   LIST_PAGE_SIZES,
@@ -18,7 +18,8 @@ import {
  * from here — `import type` is erased, so no client bundle pulls in the client.
  */
 
-export const ORDER_FILTERS = ["all", "open", "unpaid"] as const;
+/** `recent` is the last 7 days, today included: the dashboard's third card. */
+export const ORDER_FILTERS = ["all", "open", "unpaid", "recent"] as const;
 export type OrderFilter = (typeof ORDER_FILTERS)[number];
 
 /**
@@ -100,6 +101,9 @@ function buildWhere(
   if (scope.customerId) where.customerId = scope.customerId;
   if (p.filter === "open") where.statusCode = "not_done";
   if (p.filter === "unpaid") where.paymentStatus = { not: "paid" };
+  if (p.filter === "recent") {
+    where.createdAt = { gte: addDays(startOfDay(new Date()), -6) };
+  }
 
   if (p.q) {
     // Postgres `contains` is case-sensitive, so ask for ILIKE explicitly

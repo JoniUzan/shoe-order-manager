@@ -88,6 +88,10 @@
   --tint-caution-foreground: oklch(0.478 0.093 77.1);
   --tint-critical: oklch(0.62 0.18 22 / 12%);
   --tint-critical-foreground: oklch(0.492 0.142 30.8);
+  /* the same payment hues as solid-enough fills for a breakdown bar, where a
+     12% tint would vanish into its track */
+  --tint-caution-bar: oklch(0.72 0.15 72 / 55%);
+  --tint-critical-bar: oklch(0.62 0.18 22 / 50%);
   --border: oklch(0.192 0.02 195.6 / 10%);
   --input: oklch(0.913 0.02 103.7);
   --ring: oklch(0.461 0.072 209.4);
@@ -170,6 +174,8 @@
   --tint-caution-foreground: oklch(0.804 0.109 82);
   --tint-critical: oklch(0.65 0.19 22 / 17%);
   --tint-critical-foreground: oklch(0.75 0.109 29.6);
+  --tint-caution-bar: oklch(0.75 0.15 72 / 60%);
+  --tint-critical-bar: oklch(0.65 0.19 22 / 60%);
   --border: oklch(0.952 0.012 91.5 / 10%);
   --input: oklch(0.952 0.012 91.5 / 13%);
   --ring: oklch(0.623 0.095 206.9);
@@ -238,6 +244,8 @@
   --color-tint-caution-foreground: var(--tint-caution-foreground);
   --color-tint-critical: var(--tint-critical);
   --color-tint-critical-foreground: var(--tint-critical-foreground);
+  --color-tint-caution-bar: var(--tint-caution-bar);
+  --color-tint-critical-bar: var(--tint-critical-bar);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

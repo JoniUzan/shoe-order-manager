@@ -374,6 +374,7 @@ export function OrdersTable({
           { value: "all", label: tOrders("filterAll") },
           { value: "open", label: tOrders("filterOpen") },
           { value: "unpaid", label: tOrders("filterUnpaid") },
+          { value: "recent", label: tOrders("filterRecent") },
         ]}
         columnLabels={{
           orderNumber: t("colOrder"),
