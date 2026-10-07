@@ -81,11 +81,22 @@ export async function StatCards({
       </StatCard>
 
       <StatCard index={2} href="/orders?filter=recent" label={t("cardRecent")}>
-        <div className="flex items-baseline gap-2.5">
-          <Big>{recent.count}</Big>
-          <span className="text-muted-foreground">
-            {t("ordersUnit", { count: recent.count })}
-          </span>
+        {/* The totals sit beside the number, so this card has one key line
+            under its bar, like the other two, and they all stay one height. */}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <div className="flex items-baseline gap-2.5">
+            <Big>{recent.count}</Big>
+            <span className="text-muted-foreground">
+              {t("ordersUnit", { count: recent.count })}
+            </span>
+          </div>
+          <Key>
+            <KeyItem
+              label={t("keyOrdered")}
+              value={money(recent.orderedAgorot)}
+            />
+            <KeyItem label={t("keyPrevious7")} value={recent.previousCount} />
+          </Key>
         </div>
         {/* One cell per day, oldest first: in RTL today sits on the left, as
             the newest point does on every chart. */}
@@ -102,13 +113,6 @@ export async function StatCards({
           <KeyItem dot={INK[0]} label={t("dayNone")} />
           <KeyItem dot={INK[1]} label={t("dayOne")} />
           <KeyItem dot={INK[2]} label={t("dayMany")} />
-        </Key>
-        <Key>
-          <KeyItem
-            label={t("keyOrdered")}
-            value={money(recent.orderedAgorot)}
-          />
-          <KeyItem label={t("keyPrevious7")} value={recent.previousCount} />
         </Key>
       </StatCard>
     </div>
