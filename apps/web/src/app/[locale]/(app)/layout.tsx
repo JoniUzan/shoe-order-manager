@@ -39,9 +39,9 @@ export default async function AppLayout({
           inset's 8px margins) on those pages only. */}
       <SidebarInset className="md:has-[[data-slot=step-form]]:h-[calc(100svh-1rem)]">
         <SiteHeader />
-        {/* On a phone, room under the last row for the quick-action button
-            (except on a form, which hides it). A computer has space beside it. */}
-        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-24 has-[[data-slot=step-form]]:pb-4 md:p-6">
+        {/* Room under the last row for the quick-action button, except on a
+            form, which hides the button and owns its bottom edge. */}
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-24 has-[[data-slot=step-form]]:pb-4 md:p-6 md:pb-24 md:has-[[data-slot=step-form]]:pb-6">
           {children}
         </div>
       </SidebarInset>
