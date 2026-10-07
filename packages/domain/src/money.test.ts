@@ -27,7 +27,10 @@ describe("formatMoneyCompact", () => {
     expect(formatMoneyCompact(150_000, "en")).toBe("₪1.5K");
     expect(formatMoneyCompact(125_000_000, "en")).toBe("₪1.3M");
     expect(formatMoneyCompact(0, "en")).toBe("₪0");
-    expect(formatMoneyCompact(4_000_000, "he")).toContain("₪40K");
+    // Where Hebrew puts the ₪ depends on the ICU data (Node 22 puts it last).
+    const he = formatMoneyCompact(4_000_000, "he");
+    expect(he).toContain("40K");
+    expect(he).toContain("₪");
   });
 });
 

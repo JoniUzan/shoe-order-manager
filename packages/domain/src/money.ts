@@ -46,6 +46,9 @@ export function formatMoneyCompact(agorot: number, locale: string = "he"): strin
     style: "currency",
     currency: "ILS",
     notation: "compact",
+    // Both bounds set: with only the maximum, some ICU builds (Node 22 on CI)
+    // keep a trailing ".0" ("₪40.0K").
+    minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(agorotToShekels(agorot));
 }
