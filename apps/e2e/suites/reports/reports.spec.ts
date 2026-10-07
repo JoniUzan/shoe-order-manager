@@ -24,3 +24,21 @@ test("who owes lists the Customer's Balance; sales shows the order", async ({ pa
   await expect(month).toContainText("300.00");
   await expect(month).toContainText("700.00");
 });
+
+test("sales shows the charts: ranked Customers, and no models for custom items", async ({
+  page,
+  t,
+  appLocale,
+  user,
+}) => {
+  const customer = await customerOwing700(user.id);
+  const reports = new ReportsPage(page, t);
+
+  await reports.goto(appLocale, "sales");
+  await expect(reports.heading("reports.trendTitle")).toBeVisible();
+  await expect(reports.heading("reports.debtTitle")).toBeVisible();
+  await expect(reports.rank("reports.topCustomersTitle")).toContainText(customer.name);
+  // The only order is a custom item, so no Shoe model has sold.
+  await expect(reports.rank("reports.topModelsTitle")).toContainText(t("reports.rankEmpty"));
+  expect(user.id).toBeTruthy();
+});

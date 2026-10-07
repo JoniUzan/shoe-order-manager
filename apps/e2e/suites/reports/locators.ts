@@ -24,6 +24,15 @@ export class ReportsPage {
     return this.page.getByRole("row").filter({ hasText: text });
   }
 
+  heading(key: string) {
+    return this.page.getByRole("heading", { name: this.t(key) });
+  }
+
+  /** A ranking card on the sales tab, found by its title. */
+  rank(titleKey: string) {
+    return this.page.locator("section").filter({ has: this.heading(titleKey) });
+  }
+
   owedEmpty() {
     return this.page.getByText(this.t("reports.owedEmpty"));
   }
