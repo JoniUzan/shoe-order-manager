@@ -7,12 +7,14 @@ import { getTranslations } from "next-intl/server";
 
 import { SalesChart } from "@/components/charts/sales-chart";
 import { GetStarted } from "@/components/dashboard/get-started";
-import { OpenOrders } from "@/components/dashboard/open-orders";
 import { StatCards } from "@/components/dashboard/stat-cards";
 import { PageHeader } from "@/components/layout/page-header";
+import { OrdersTable } from "@/components/orders/orders-table";
 import { avatarOf } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import { loadDashboard } from "@/lib/dashboard-query";
+import type { RawSearchParams } from "@/lib/list-params";
+import { listOrders, parseDashboardOrderParams } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
 
 /**
@@ -21,13 +23,19 @@ import { requireUser } from "@/lib/session";
  */
 export default async function DashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<RawSearchParams>;
 }) {
   const { locale } = await params;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "dashboard" });
-  const data = await loadDashboard(user.id);
+  const tNav = await getTranslations({ locale, namespace: "nav" });
+  const [data, orderList] = await Promise.all([
+    loadDashboard(user.id),
+    listOrders(user.id, parseDashboardOrderParams(await searchParams)),
+  ]);
 
   const today = new Date().toLocaleDateString(locale, {
     weekday: "long",
@@ -108,7 +116,17 @@ export default async function DashboardPage({
         </GlassCard>
       </div>
 
-      <OpenOrders locale={locale} rows={data.openOrders} total={data.open.count} />
+      {/* The Orders list, opening on the open ones. A solid table, not glass. */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold">{tNav("orders")}</h2>
+        <OrdersTable
+          rows={orderList.rows}
+          total={orderList.total}
+          pageCount={orderList.pageCount}
+          params={orderList.params}
+          onDashboard
+        />
+      </section>
     </div>
   );
 }

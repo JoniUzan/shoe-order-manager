@@ -24,5 +24,5 @@ export async function businessWithOrders(ownerId: string) {
       createdAt: twentyDaysAgo,
     },
   });
-  return { customer, open };
+  return { customer, open, done };
 }

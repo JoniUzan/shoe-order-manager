@@ -20,10 +20,13 @@ export class DashboardPage {
     return this.page.getByRole("link").filter({ hasText: this.t(`dashboard.${card}`) });
   }
 
-  openOrder(number: number, customer: string) {
-    return this.page.getByRole("link", {
-      name: this.t("dashboard.openRowLabel", { number, customer }),
-    });
+  /** A row of the Orders table at the bottom, by what it shows. */
+  orderRow(text: string) {
+    return this.page.getByRole("row").filter({ hasText: text });
+  }
+
+  filterTab(key: "filterAll" | "filterOpen") {
+    return this.page.getByRole("tab", { name: this.t(`orders.${key}`) });
   }
 
   getStarted() {

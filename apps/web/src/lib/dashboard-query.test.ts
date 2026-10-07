@@ -60,7 +60,7 @@ describe("loadDashboard", () => {
 
     await order(user.id, shop.id, { daysAgo: 0, total: 1000 }); // fresh, unpaid
     await order(user.id, shop.id, { daysAgo: 20, total: 1000, paid: 400 }); // aging, partial
-    const oldest = await order(user.id, boutique.id, { daysAgo: 40, total: 500 }); // old, unpaid
+    await order(user.id, boutique.id, { daysAgo: 40, total: 500 }); // old, unpaid
     // Done and overpaid: not open, and not a credit against the rest.
     await order(user.id, boutique.id, { daysAgo: 10, total: 100, paid: 300, status: "done" });
     await order(user.id, boutique.id, { daysAgo: 3, total: 200, paid: 200, status: "done" });
@@ -85,9 +85,6 @@ describe("loadDashboard", () => {
       { customerId: shop.id, name: "Shop", owedAgorot: 1600 },
       { customerId: boutique.id, name: "Boutique", owedAgorot: 500 },
     ]);
-    expect(d.openOrders.map((o) => o.id)[0]).toBe(oldest.id);
-    expect(d.openOrders[0]).toMatchObject({ customerName: "Boutique", daysOpen: 40 });
-    expect(d.openOrders).toHaveLength(3);
     // Weeks start on Monday: Sunday 4 October's order and payment are last week's.
     expect(d.weeks.slice(-2)).toEqual([
       { start: "2026-09-28", ordered: 200, collected: 200 },

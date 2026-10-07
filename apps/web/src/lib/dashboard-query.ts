@@ -3,7 +3,6 @@ import {
   addDays,
   computeOwedAgorot,
   dailyCounts,
-  daysBetween,
   orderAge,
   startOfDay,
   weekStart,
@@ -21,20 +20,8 @@ import {
 
 /** Weeks in the dashboard's small chart. */
 export const DASHBOARD_WEEKS = 4;
-/** Rows in the open-orders list, oldest first. */
-export const OPEN_ORDERS_SHOWN = 8;
 /** Rows in "who owes money". */
 export const OWED_SHOWN = 6;
-
-export type OpenOrderRow = {
-  id: string;
-  orderNumber: number;
-  customerName: string;
-  createdAt: string;
-  daysOpen: number;
-  paymentStatus: string;
-  totalAgorot: number;
-};
 
 export type Dashboard = {
   orderCount: number;
@@ -54,7 +41,6 @@ export type Dashboard = {
   };
   weeks: SalesPoint[];
   owed: { customerId: string; name: string; owedAgorot: number }[];
-  openOrders: OpenOrderRow[];
 };
 
 export async function loadDashboard(
@@ -73,7 +59,6 @@ export async function loadDashboard(
     modelCount,
     owing,
     openDates,
-    openOrders,
     recentOrders,
     chartOrders,
     chartPayments,
@@ -93,19 +78,6 @@ export async function loadDashboard(
       },
     }),
     prisma.order.findMany({ where: openWhere, select: { createdAt: true } }),
-    prisma.order.findMany({
-      where: openWhere,
-      orderBy: [{ createdAt: "asc" }, { orderNumber: "asc" }],
-      take: OPEN_ORDERS_SHOWN,
-      select: {
-        id: true,
-        orderNumber: true,
-        createdAt: true,
-        paymentStatus: true,
-        totalAgorot: true,
-        customer: { select: { name: true } },
-      },
-    }),
     prisma.order.findMany({
       where: { ownerId, createdAt: { gte: previousStart } },
       select: { createdAt: true, totalAgorot: true },
@@ -168,14 +140,5 @@ export async function loadDashboard(
     owed: [...owedBy.values()]
       .sort((a, b) => b.owedAgorot - a.owedAgorot || a.customerId.localeCompare(b.customerId))
       .slice(0, OWED_SHOWN),
-    openOrders: openOrders.map((o) => ({
-      id: o.id,
-      orderNumber: o.orderNumber,
-      customerName: o.customer.name,
-      createdAt: o.createdAt.toISOString(),
-      daysOpen: daysBetween(o.createdAt, now),
-      paymentStatus: o.paymentStatus,
-      totalAgorot: o.totalAgorot,
-    })),
   };
 }

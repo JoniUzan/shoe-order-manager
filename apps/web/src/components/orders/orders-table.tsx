@@ -38,6 +38,8 @@ import { OrderRowActions } from "@/components/orders/order-row-actions";
 import { Link, useRouter } from "@/i18n/navigation";
 import { deleteOrders, setOrdersStatus } from "@/lib/actions/orders";
 import {
+  dashboardOrderListToQuery,
+  DASHBOARD_ORDER_DEFAULTS,
   ORDER_LIST_DEFAULTS,
   orderListToQuery,
   type OrderListParams,
@@ -67,6 +69,7 @@ export function OrdersTable({
   pageCount,
   params,
   scopedToCustomer = false,
+  onDashboard = false,
 }: {
   rows: OrderRow[];
   total: number;
@@ -80,6 +83,8 @@ export function OrdersTable({
    * placeholder to match.
    */
   scopedToCustomer?: boolean;
+  /** On the dashboard the list opens on Open orders (see orders-query). */
+  onDashboard?: boolean;
 }) {
   const t = useTranslations("dashboard");
   const tOrders = useTranslations("orders");
@@ -89,7 +94,10 @@ export function OrdersTable({
 
   const router = useRouter();
   const { setParams, isPending, startTransition, search, setSearch, viewKey } =
-    useListParams(params, orderListToQuery);
+    useListParams(
+      params,
+      onDashboard ? dashboardOrderListToQuery : orderListToQuery,
+    );
 
   const [active, setActive] = useState<OrderRow | null>(null);
 
@@ -364,7 +372,9 @@ export function OrdersTable({
         total={total}
         pageCount={pageCount}
         params={params}
-        defaultFilter={ORDER_LIST_DEFAULTS.filter}
+        defaultFilter={
+          (onDashboard ? DASHBOARD_ORDER_DEFAULTS : ORDER_LIST_DEFAULTS).filter
+        }
         setParams={setParams}
         startTransition={startTransition}
         isPending={isPending}

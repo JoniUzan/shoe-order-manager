@@ -87,6 +87,29 @@ export function orderListToQuery(p: OrderListParams): string {
 }
 
 /**
+ * The same list on the dashboard, which opens on the Open orders: what's
+ * still to go out. "All" is then the one written to the URL.
+ */
+export const DASHBOARD_ORDER_DEFAULTS: OrderListParams = {
+  ...ORDER_LIST_DEFAULTS,
+  filter: "open",
+};
+
+const dashboardOrderParams = makeListParams({
+  filters: ORDER_FILTERS,
+  sorts: ORDER_SORTS,
+  defaults: DASHBOARD_ORDER_DEFAULTS,
+});
+
+export function parseDashboardOrderParams(sp: RawSearchParams): OrderListParams {
+  return dashboardOrderParams.parse(sp);
+}
+
+export function dashboardOrderListToQuery(p: OrderListParams): string {
+  return dashboardOrderParams.toQuery(p);
+}
+
+/**
  * Narrows the list to a subset of what the owner can see. Applied on top of
  * `ownerId`, never instead of it — scoping is a view, not an authorization.
  */

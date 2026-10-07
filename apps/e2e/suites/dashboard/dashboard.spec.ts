@@ -19,14 +19,13 @@ test("the cards count what's owed, open and new, and open their lists", async ({
   appLocale,
   user,
 }) => {
-  const { customer, open } = await businessWithOrders(user.id);
+  const { customer } = await businessWithOrders(user.id);
   const dashboard = new DashboardPage(page, t);
   await dashboard.goto(appLocale);
 
   await expect(dashboard.card("cardBalanceDue")).toContainText("1,300.00");
   await expect(dashboard.card("cardOpenOrders")).toContainText("1");
   await expect(dashboard.card("cardRecent")).toContainText("1,000.00");
-  await expect(dashboard.openOrder(open.orderNumber, customer.name)).toBeVisible();
 
   await dashboard.card("cardOpenOrders").click();
   await expect(page).toHaveURL(/\/orders\?filter=open$/);
@@ -36,6 +35,26 @@ test("the cards count what's owed, open and new, and open their lists", async ({
   await dashboard.card("cardRecent").click();
   await expect(page).toHaveURL(/\/orders\?filter=recent$/);
   await expect(page.getByRole("row").filter({ hasText: customer.name })).toHaveCount(1);
+});
+
+test("the Orders table on the dashboard opens on the open ones", async ({
+  page,
+  t,
+  appLocale,
+  user,
+}) => {
+  const { customer } = await businessWithOrders(user.id);
+  const dashboard = new DashboardPage(page, t);
+  await dashboard.goto(appLocale);
+
+  // Only #1 is open; #2 is done.
+  await expect(dashboard.filterTab("filterOpen")).toHaveAttribute("aria-selected", "true");
+  await expect(dashboard.orderRow(customer.name)).toHaveCount(1);
+  await expect(dashboard.orderRow("1,000.00")).toHaveCount(1);
+
+  await dashboard.filterTab("filterAll").click();
+  await expect(page).toHaveURL(/[?&]filter=all/);
+  await expect(dashboard.orderRow(customer.name)).toHaveCount(2);
 });
 
 test("New order from a Customer's page starts with that Customer", async ({
