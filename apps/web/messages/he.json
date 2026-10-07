@@ -664,5 +664,11 @@
     "ordered": "הוזמן",
     "collected": "נגבה",
     "weekOf": "שבוע של {date}"
+  },
+  "quickActions": {
+    "label": "פעולות מהירות",
+    "newOrder": "הזמנה חדשה",
+    "newCustomer": "לקוח חדש",
+    "newShoeModel": "דגם חדש"
   }
 }

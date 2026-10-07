@@ -57,7 +57,7 @@ export default async function DashboardPage({
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-20">
+    <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} subtitle={today} />
 
       <StatCards locale={locale} data={data} />

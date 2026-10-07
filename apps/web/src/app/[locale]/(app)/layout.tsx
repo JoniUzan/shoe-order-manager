@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { HashSync } from "@/components/layout/hash-sync";
+import { QuickActions } from "@/components/layout/quick-actions";
 import { SiteHeader } from "@/components/layout/site-header";
 import { OnboardingHost } from "@/components/onboarding/onboarding-host";
 import { SettingsHost } from "@/components/settings/settings-host";
@@ -38,8 +39,14 @@ export default async function AppLayout({
           inset's 8px margins) on those pages only. */}
       <SidebarInset className="md:has-[[data-slot=step-form]]:h-[calc(100svh-1rem)]">
         <SiteHeader />
-        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
+        {/* Room under the last row for the quick-action button, except on a
+            form, which hides the button and owns its bottom edge. */}
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 pb-24 has-[[data-slot=step-form]]:pb-4 md:p-6 md:pb-24 md:has-[[data-slot=step-form]]:pb-6">
+          {children}
+        </div>
       </SidebarInset>
+      {/* New order / Customer / Shoe model, from any page but a form. */}
+      <QuickActions />
       {/* The settings dialog, which any page can open (`#settings/…`). */}
       <SettingsHost data={settings} />
       {/* A new User's welcome dialog, until they finish it. */}

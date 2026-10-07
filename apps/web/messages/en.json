@@ -664,5 +664,11 @@
     "ordered": "Ordered",
     "collected": "Collected",
     "weekOf": "Week of {date}"
+  },
+  "quickActions": {
+    "label": "Quick actions",
+    "newOrder": "New order",
+    "newCustomer": "New customer",
+    "newShoeModel": "New shoe model"
   }
 }
