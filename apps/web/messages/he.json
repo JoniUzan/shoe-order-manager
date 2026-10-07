@@ -207,7 +207,26 @@
     "colCollected": "נגבה",
     "colOutstanding": "יתרה",
     "salesEmpty": "אין עדיין מכירות",
-    "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}"
+    "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}",
+    "trendTitle": "הוזמן מול נגבה",
+    "trendByWeek": "לפי שבוע",
+    "kindLabel": "סוג גרף",
+    "kind_area": "שטח",
+    "kind_bars": "עמודות",
+    "kind_line": "קו",
+    "rangeLabel": "טווח תאריכים",
+    "range_13": "3 חודשים",
+    "range_8": "חודשיים",
+    "range_4": "חודש",
+    "topModelsTitle": "הדגמים הנמכרים ביותר",
+    "topModelsDesc": "זוגות שהוזמנו · 3 חודשים",
+    "topCustomersTitle": "הלקוחות הגדולים",
+    "topCustomersDesc": "סך הזמנות ב־₪ · 3 חודשים",
+    "rankEmpty": "אין עדיין הזמנות בתקופה",
+    "debtTitle": "החוב לאורך זמן",
+    "debtDesc": "סך היתרה לגבייה בסוף כל שבוע · 3 חודשים",
+    "debtSeries": "יתרה לגבייה",
+    "debtChange": "{amount} מתחילת התקופה"
   },
   "share": {
     "messageHeader": "סיכום הזמנה"

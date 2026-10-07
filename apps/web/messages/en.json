@@ -207,7 +207,26 @@
     "colCollected": "Collected",
     "colOutstanding": "Outstanding",
     "salesEmpty": "No sales yet",
-    "salesRowCount": "{count, plural, one {# period} other {# periods}}"
+    "salesRowCount": "{count, plural, one {# period} other {# periods}}",
+    "trendTitle": "Ordered vs collected",
+    "trendByWeek": "By week",
+    "kindLabel": "Chart type",
+    "kind_area": "Area",
+    "kind_bars": "Bars",
+    "kind_line": "Line",
+    "rangeLabel": "Date range",
+    "range_13": "3 months",
+    "range_8": "2 months",
+    "range_4": "1 month",
+    "topModelsTitle": "Best-selling models",
+    "topModelsDesc": "Pairs ordered · 3 months",
+    "topCustomersTitle": "Biggest customers",
+    "topCustomersDesc": "Ordered in ₪ · 3 months",
+    "rankEmpty": "No orders in this period yet",
+    "debtTitle": "Debt over time",
+    "debtDesc": "Balance due at each week's end · 3 months",
+    "debtSeries": "Balance due",
+    "debtChange": "{amount} since the start"
   },
   "share": {
     "messageHeader": "Order summary"
