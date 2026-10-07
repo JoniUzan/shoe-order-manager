@@ -62,3 +62,31 @@ export async function threeOrders(ownerId: string) {
   for (let i = 0; i < 3; i++) await createOrder(ownerId, customer.id, 1);
   return customer;
 }
+
+/**
+ * orderPrerequisites plus an earlier Order #1 whose line has Material
+ * "Leather" and Sole "EVA", so the order form suggests both.
+ */
+export async function orderWithMaterials(ownerId: string) {
+  const { customer, model } = await orderPrerequisites(ownerId);
+  await prisma.order.create({
+    data: {
+      ownerId,
+      customerId: customer.id,
+      orderNumber: 1,
+      totalAgorot: 10_000,
+      items: {
+        create: {
+          shoeModelId: model.id,
+          size: "40",
+          color: "Black",
+          material: "Leather",
+          sole: "EVA",
+          quantity: 1,
+          unitPriceAgorot: 10_000,
+        },
+      },
+    },
+  });
+  return { customer, model };
+}

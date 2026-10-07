@@ -6,8 +6,11 @@
  *
  * - the Order summary (for the Customer) has one row per model, color and unit
  *   price, and says which cartons and loose pairs the row is made of;
- * - the Production sheet (for the factory) has one row per model and color,
- *   with no packs and no money.
+ * - the Production sheet (for the factory) has one row per model, color,
+ *   Material and Sole, with no packs and no money.
+ *
+ * Material and Sole are for the factory only, so the Order summary neither
+ * shows nor splits rows by them.
  */
 
 export interface DocumentItem {
@@ -17,6 +20,8 @@ export interface DocumentItem {
   sku: string | null;
   size: string;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   quantity: number;
   unitPriceAgorot: number;
   packId: string | null;
@@ -55,6 +60,8 @@ export interface ProductionRow {
   name: string;
   sku: string | null;
   color: string | null;
+  material: string | null;
+  sole: string | null;
   custom: boolean;
   sizes: SizePairs[];
   pairs: number;
@@ -145,7 +152,9 @@ export function buildProductionRows(items: DocumentItem[]): ProductionRows {
     Omit<ProductionRow, "sizes" | "pairs"> & { bySize: Map<string, number> }
   >();
   for (const item of items) {
-    const key = `${identity(item)}\u0000${item.color ?? ""}`;
+    const key = [identity(item), item.color, item.material, item.sole]
+      .map((v) => v ?? "")
+      .join("\u0000");
     let group = groups.get(key);
     if (!group) {
       group = {
@@ -153,6 +162,8 @@ export function buildProductionRows(items: DocumentItem[]): ProductionRows {
         name: item.name,
         sku: item.sku,
         color: item.color,
+        material: item.material,
+        sole: item.sole,
         custom: !item.shoeModelId,
         bySize: new Map(),
       };

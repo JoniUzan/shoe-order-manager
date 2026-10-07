@@ -174,6 +174,23 @@ export class OrderForm {
     return this.page.getByLabel(this.t("orders.factoryNote"));
   }
 
+  color() {
+    return this.page.getByLabel(this.t("orders.color"), { exact: true });
+  }
+
+  material() {
+    return this.page.getByLabel(this.t("orders.material"), { exact: true });
+  }
+
+  sole() {
+    return this.page.getByLabel(this.t("orders.sole"), { exact: true });
+  }
+
+  /** A value a Color, Material or Sole field offers from earlier orders. */
+  suggestion(value: string) {
+    return this.page.getByRole("option", { name: value, exact: true });
+  }
+
   /** A field's or the step's error, by its words. */
   error(key: string, values?: Record<string, string | number>) {
     return this.page.getByText(this.t(key, values)).first();
@@ -306,6 +323,11 @@ export class OrderPage {
 
   async edit() {
     await this.page.getByRole("link", { name: this.t("orders.edit") }).click();
+  }
+
+  /** The Color · Material · Sole line under a row's model name. */
+  itemDetails(text: string) {
+    return this.page.getByText(text, { exact: true }).first();
   }
 
   markDone() {

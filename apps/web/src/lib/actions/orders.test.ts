@@ -239,6 +239,52 @@ describe("factory note", () => {
   });
 });
 
+describe("material and sole", () => {
+  /** packOrder with Material and Sole on both the pack and the loose pair. */
+  function withMaterials(s: Setup, material: string, sole: string): OrderInput {
+    const input = packOrder(s);
+    return {
+      ...input,
+      items: input.items.map((i) => ({ ...i, material, sole })),
+      packs: input.packs.map((p) => ({ ...p, material, sole })),
+    };
+  }
+
+  async function itemsOf(id: string) {
+    return prisma.orderItem.findMany({
+      where: { orderId: id },
+      select: { material: true, sole: true },
+    });
+  }
+
+  it("saves them on pack and loose items, changes them on update and clears blanks", async () => {
+    const s = await setup();
+    const id = await created(withMaterials(s, " Leather ", "EVA"));
+    const items = await itemsOf(id);
+    // 3 pack sizes + 1 loose pair.
+    expect(items).toHaveLength(4);
+    expect(items.every((i) => i.material === "Leather" && i.sole === "EVA")).toBe(true);
+
+    await updateOrder(id, withMaterials(s, "Suede", "Rubber"));
+    expect((await itemsOf(id)).every((i) => i.material === "Suede" && i.sole === "Rubber")).toBe(true);
+
+    await updateOrder(id, withMaterials(s, "  ", ""));
+    expect((await itemsOf(id)).every((i) => i.material === null && i.sole === null)).toBe(true);
+  });
+
+  it("refuses one over 100 characters", async () => {
+    const s = await setup();
+    expect(await createOrder(withMaterials(s, "x".repeat(101), "EVA"))).toEqual({
+      ok: false,
+      error: "invalid",
+    });
+    expect(await createOrder(withMaterials(s, "Leather", "x".repeat(101)))).toEqual({
+      ok: false,
+      error: "invalid",
+    });
+  });
+});
+
 describe("status", () => {
   it("is saved by updateOrder, as the order form's Review step sends it", async () => {
     const s = await setup();

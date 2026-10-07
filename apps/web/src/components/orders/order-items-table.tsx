@@ -10,6 +10,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import { ModelThumb } from "@/components/orders/model-thumb";
+import { itemDetails } from "@/lib/item-details";
 import {
   ORDER_ITEM_LIST_DEFAULTS,
   orderItemListToQuery,
@@ -90,12 +91,23 @@ export function OrderItemsTable({
                 className="size-9 rounded-lg md:size-9"
               />
             )}
-            <span className="font-medium">{row.original.name}</span>
-            {/* A free-text line has no catalog model behind it, which is worth
-                seeing: it will not appear in any catalog report. */}
-            {row.original.shoeModelId === null && (
-              <Badge variant="secondary">{t("customItem")}</Badge>
-            )}
+            <div className="flex min-w-0 flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{row.original.name}</span>
+                {/* A free-text line has no catalog model behind it, which is
+                    worth seeing: it will not appear in any catalog report. */}
+                {row.original.shoeModelId === null && (
+                  <Badge variant="secondary">{t("customItem")}</Badge>
+                )}
+              </div>
+              {/* Under the name rather than in a column of their own, so they
+                  still show on a phone. */}
+              {itemDetails(row.original) && (
+                <span className="text-xs text-muted-foreground">
+                  {itemDetails(row.original)}
+                </span>
+              )}
+            </div>
           </div>
         ),
       },
@@ -114,16 +126,6 @@ export function OrderItemsTable({
         cell: ({ row }) => (
           <span className="tabular-nums">
             {formatSize(row.original.size, row.original.sizeFormat ?? undefined)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "color",
-        meta: { cellClassName: "hidden sm:table-cell" },
-        header: t("color"),
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">
-            {row.original.color ?? "—"}
           </span>
         ),
       },
@@ -211,7 +213,6 @@ export function OrderItemsTable({
         { value: "custom", label: t("itemsFilterCustom") },
       ]}
       columnLabels={{
-        color: t("color"),
         unitPriceAgorot: t("unitPrice"),
       }}
       strings={{

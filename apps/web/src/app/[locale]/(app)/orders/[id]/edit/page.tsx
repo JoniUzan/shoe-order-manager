@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { OrderForm } from "@/components/orders/order-form";
 import { groupItemsIntoBlocks } from "@/lib/order-blocks";
+import { loadItemSuggestions } from "@/lib/item-suggestions";
 import { requireUser } from "@/lib/session";
 import { imageUrl } from "@/lib/storage";
 
@@ -15,7 +16,7 @@ export default async function EditOrderPage({
   const { locale, id } = await params;
   const user = await requireUser(locale);
 
-  const [order, customers, models] = await Promise.all([
+  const [order, customers, models, suggestions] = await Promise.all([
     prisma.order.findFirst({
       where: { id, ownerId: user.id },
       include: { items: { orderBy: { id: "asc" } }, packs: true },
@@ -43,6 +44,7 @@ export default async function EditOrderPage({
         },
       },
     }),
+    loadItemSuggestions(user.id),
   ]);
   if (!order) notFound();
 
@@ -60,6 +62,7 @@ export default async function EditOrderPage({
         orderNumber={order.orderNumber}
         customers={customers}
         models={modelOptions}
+        suggestions={suggestions}
         defaultValues={{
           customerId: order.customerId,
           notes: order.notes ?? "",

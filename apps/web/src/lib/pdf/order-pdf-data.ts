@@ -102,6 +102,8 @@ export async function loadOrderPdfData(
       sku: it.shoeModel?.sku ?? null,
       size: it.size,
       color: it.color,
+      material: it.material,
+      sole: it.sole,
       quantity: it.quantity,
       unitPriceAgorot: it.unitPriceAgorot,
       packId: it.packId,

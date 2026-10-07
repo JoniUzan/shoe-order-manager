@@ -97,6 +97,9 @@ const curveOf = (sizes: string[], pairs: number[]) =>
     .join(",");
 
 const COLORS = ["שחור", "לבן", "חום", "בז׳", "אפור", "נייבי", "בורדו", "טאופ"];
+// Material and Sole are optional, so some lines leave them out.
+const MATERIALS = ["עור", "דמוי עור", "זמש", "בד", null];
+const SOLES = ["גומי", "EVA", "PU", "TPR", null];
 const SIZES = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
 const CUSTOM = [
   "דגם מיוחד לפי בקשת הלקוחה",
@@ -257,6 +260,8 @@ async function main() {
               ((model.defaultPriceAgorot ?? 15000) * (0.9 + rand() * 0.25)) / 50,
             ) * 50;
           const color = pick(COLORS);
+          const material = pick(MATERIALS);
+          const sole = pick(SOLES);
           const packItems = pack.curve.split(",").map((part) => {
             const [size, pairs] = part.split(":");
             return {
@@ -264,6 +269,8 @@ async function main() {
               customDescription: null,
               size: size!,
               color,
+              material,
+              sole,
               quantity: Number(pairs) * count,
               unitPriceAgorot: unit,
             };
@@ -285,6 +292,8 @@ async function main() {
               customDescription: null,
               size: pick(sizes),
               color,
+              material,
+              sole,
               quantity,
               unitPriceAgorot: unit,
             });
@@ -306,6 +315,8 @@ async function main() {
           customDescription: useCatalog ? null : pick(CUSTOM),
           size: pick(SIZES),
           color: pick(COLORS),
+          material: pick(MATERIALS),
+          sole: pick(SOLES),
           quantity,
           unitPriceAgorot: unit,
         });

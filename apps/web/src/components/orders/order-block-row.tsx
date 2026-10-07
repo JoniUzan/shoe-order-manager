@@ -40,6 +40,8 @@ export function useBlockText(models: ModelOption[]) {
       const loose = loosePairs(block);
       return [
         block.color.trim(),
+        block.material.trim(),
+        block.sole.trim(),
         cartons > 0 && t("cartonsCount", { count: cartons }),
         cartons > 0 && loose > 0 && t("looseCount", { count: loose }),
         t("pairsCount", { count: blockPairs(block) }),
