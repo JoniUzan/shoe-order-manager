@@ -104,6 +104,17 @@
     rgba(0, 0, 0, 0.04) 0 1px 4px;
   --blur-card: 0px;
 
+  /* Glass, for the dashboard's cards only: a translucent fill under a lit top
+     edge and a three-layer shadow. See .glass-card below. */
+  --glass-fill: oklch(0.99 0.006 98.9 / 62%);
+  --glass-edge: rgb(255 255 255 / 80%);
+  --glass-rim: oklch(0.192 0.02 195.6 / 7%);
+  --glass-shadow:
+    0 1px 1px rgb(0 0 0 / 3%), 0 2px 6px rgb(20 30 30 / 5%),
+    0 12px 32px rgb(20 30 30 / 8%);
+  --glass-spec: rgb(255 255 255 / 60%);
+  --glass-track: oklch(0.192 0.02 195.6 / 6%);
+
   /* Chart series, in the order a chart takes them. Ordered is blue and
      collected orange; Reports' customers are green and debt over time purple.
      Sampled from the user's reference and used exactly — do not tune them. */
@@ -170,6 +181,13 @@
     rgb(242 239 230 / 0.07) 0 -1px 3px, rgba(0, 0, 0, 0.3) 0 24px 40px,
     rgba(0, 0, 0, 0.2) 0 4px 18px, rgba(0, 0, 0, 0.16) 0 7px 7px,
     rgba(0, 0, 0, 0.3) 0 1px 4px;
+
+  --glass-fill: oklch(0.26 0.014 196.2 / 50%);
+  --glass-edge: rgb(255 255 255 / 10%);
+  --glass-rim: rgb(255 255 255 / 6%);
+  --glass-shadow: 0 1px 1px rgb(0 0 0 / 20%), 0 12px 32px rgb(0 0 0 / 45%);
+  --glass-spec: rgb(255 255 255 / 10%);
+  --glass-track: rgb(255 255 255 / 7%);
 
   /* --chart-* is not redefined: the series keep their hue in the dark. */
 
@@ -278,6 +296,117 @@
     box-shadow:
       0 0 0 0.5px var(--hairline),
       var(--shadow-card);
+  }
+
+  /* Glass: the dashboard's cards, and nowhere else (the open-orders table there
+     stays .surface-raised). Translucent and blurred, lit along the top edge,
+     held up by three shadows. There is no wash behind it: on the plain sheet
+     the blur is quiet, which is the point. The pointer's specular highlight is
+     a ::before under the content (isolation keeps it above the fill), moved by
+     GlassCard through --spec-x/--spec-y, mouse only. */
+  .glass-card {
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--radius-card);
+    background: var(--glass-fill);
+    color: var(--card-foreground);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    backdrop-filter: blur(28px) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge),
+      inset 0 0 0 1px var(--glass-rim),
+      var(--glass-shadow);
+  }
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      160px circle at var(--spec-x, 50%) var(--spec-y, 0),
+      var(--glass-spec),
+      transparent
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .glass-card:hover::before {
+      opacity: 0.7;
+    }
+    .glass-card[data-pressable]:hover::before {
+      opacity: 1;
+    }
+  }
+  /* Press in fast, settle slow, no bounce. */
+  .glass-card[data-pressable] {
+    transition: scale 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .glass-card[data-pressable]:active {
+    scale: 0.98;
+    transition-duration: 100ms;
+  }
+  /* Once, on load: out of a blur into place. --stagger is the card's index. */
+  .glass-materialize {
+    animation: glass-materialize 520ms var(--ease-out-quint) both;
+    animation-delay: calc(var(--stagger, 0) * 50ms);
+  }
+
+  /* A recessed track for a breakdown bar; its segments grow from the reading
+     side and catch the same top light as the card. */
+  .glass-track {
+    display: flex;
+    gap: 2px;
+    height: 10px;
+    padding: 2px;
+    border-radius: 7px;
+    background: var(--glass-track);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 6%);
+  }
+  .glass-track > * {
+    border-radius: 4px;
+    background-image: linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 28%),
+      transparent 60%
+    );
+    transform-origin: left center;
+    animation: glass-grow 700ms var(--ease-out-quint) 180ms both;
+  }
+  [dir="rtl"] .glass-track > * {
+    transform-origin: right center;
+  }
+}
+
+@keyframes glass-materialize {
+  from {
+    opacity: 0;
+    scale: 0.97;
+    filter: blur(8px);
+  }
+}
+@keyframes glass-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-materialize,
+  .glass-track > * {
+    animation: none;
+  }
+  .glass-card[data-pressable]:active {
+    scale: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass-card {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 
