@@ -7,6 +7,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@repo/ui/components/chart";
+import { cn } from "@repo/ui/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Area,
@@ -83,7 +84,18 @@ export function SalesChart({
           </li>
         ))}
       </ul>
-      <ChartContainer config={config} className="aspect-auto w-full" style={{ height }}>
+      {/* The SVG is drawn left to right in both languages (RTL is done by
+          reversing the axis). Under the page's RTL its axis labels would
+          anchor at their far edge and run into the plot. */}
+      <ChartContainer
+        config={config}
+        className={cn(
+          "aspect-auto w-full [&_.recharts-surface]:[direction:ltr]",
+          // Hebrew dates read right to left; centered, they stay in place.
+          isRtl && "[&_.recharts-xAxis_text]:[direction:rtl]",
+        )}
+        style={{ height }}
+      >
         <ComposedChart
           data={data}
           margin={{ top: 8, left: 0, right: 0, bottom: 0 }}

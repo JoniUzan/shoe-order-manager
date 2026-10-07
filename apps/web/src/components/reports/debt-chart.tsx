@@ -7,6 +7,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@repo/ui/components/chart";
+import { cn } from "@repo/ui/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -45,7 +46,15 @@ export function DebtChart({ data }: { data: DebtPoint[] }) {
           </span>
         </div>
       </div>
-      <ChartContainer config={config} className="aspect-auto h-[200px] w-full">
+      {/* Drawn left to right, as SalesChart is, so RTL labels stay off the plot. */}
+      <ChartContainer
+        config={config}
+        className={cn(
+          "aspect-auto h-[200px] w-full [&_.recharts-surface]:[direction:ltr]",
+          // Hebrew dates read right to left; centered, they stay in place.
+          isRtl && "[&_.recharts-xAxis_text]:[direction:rtl]",
+        )}
+      >
         <AreaChart data={data} margin={{ top: 8, left: 0, right: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis
