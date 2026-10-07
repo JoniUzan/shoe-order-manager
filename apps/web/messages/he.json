@@ -615,5 +615,10 @@
     "factoryNote": "הערה למפעל",
     "taxId": "ח.פ / ע.מ",
     "page": "עמוד {page} מתוך {total}"
+  },
+  "charts": {
+    "ordered": "הוזמן",
+    "collected": "נגבה",
+    "weekOf": "שבוע של {date}"
   }
 }

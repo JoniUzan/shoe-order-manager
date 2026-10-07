@@ -615,5 +615,10 @@
     "factoryNote": "Factory note",
     "taxId": "Tax ID",
     "page": "Page {page} of {total}"
+  },
+  "charts": {
+    "ordered": "Ordered",
+    "collected": "Collected",
+    "weekOf": "Week of {date}"
   }
 }

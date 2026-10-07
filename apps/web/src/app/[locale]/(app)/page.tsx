@@ -101,7 +101,7 @@ export default async function DashboardPage({
     d.setDate(d.getDate() + i);
     const k = dayKey(d);
     return {
-      date: k,
+      start: k,
       ordered: orderedByDay.get(k) ?? 0,
       collected: collectedByDay.get(k) ?? 0,
     };
