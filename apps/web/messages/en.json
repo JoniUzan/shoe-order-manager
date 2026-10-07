@@ -101,7 +101,10 @@
     "colPayment": "Payment",
     "daysOpen": "{count, plural, =0 {today} one {1 day} other {# days}}",
     "openFor": "open {days}",
-    "openRowLabel": "Order #{number}, {customer}"
+    "openRowLabel": "Order #{number}, {customer}",
+    "dayNone": "No orders",
+    "dayOne": "1 order",
+    "dayMany": "2 or more"
   },
   "list": {
     "columns": "Columns",

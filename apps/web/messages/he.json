@@ -101,7 +101,10 @@
     "colPayment": "תשלום",
     "daysOpen": "{count, plural, =0 {היום} one {יום אחד} two {יומיים} other {# ימים}}",
     "openFor": "פתוחה {days}",
-    "openRowLabel": "הזמנה #{number}, {customer}"
+    "openRowLabel": "הזמנה #{number}, {customer}",
+    "dayNone": "אין הזמנות",
+    "dayOne": "הזמנה אחת",
+    "dayMany": "2 ומעלה"
   },
   "list": {
     "columns": "עמודות",

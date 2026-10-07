@@ -72,6 +72,10 @@ export function DebtChart({ data }: { data: DebtPoint[] }) {
                 labelFormatter={(value) => tc("weekOf", { date: shortDate(String(value)) })}
                 formatter={(value) => (
                   <>
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-[2px] bg-(--color-debt)"
+                    />
                     <span className="text-muted-foreground">{config.debt.label}</span>
                     <span className="ms-auto font-medium tabular-nums">
                       {formatMoney(Number(value), locale)}

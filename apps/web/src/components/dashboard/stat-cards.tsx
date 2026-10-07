@@ -7,6 +7,9 @@ import type { ReactNode } from "react";
 import { GlassLink } from "@/components/dashboard/glass-link";
 import type { Dashboard } from "@/lib/dashboard-query";
 
+/** Ink at three densities: the light-to-dark scale both count cards use. */
+const INK = ["bg-foreground/15", "bg-foreground/45", "bg-foreground"] as const;
+
 /**
  * The dashboard's three cards, each a link to the list it counts: Balance
  * due, open Orders, and new Orders over the last 7 days. Under each number a
@@ -65,15 +68,15 @@ export async function StatCards({
         <Big>{open.count}</Big>
         <Track
           parts={[
-            { value: open.fresh, className: "bg-foreground/15" },
-            { value: open.aging, className: "bg-foreground/45" },
-            { value: open.old, className: "bg-foreground" },
+            { value: open.fresh, className: INK[0] },
+            { value: open.aging, className: INK[1] },
+            { value: open.old, className: INK[2] },
           ]}
         />
         <Key>
-          <KeyItem label={t("ageFresh")} value={open.fresh} />
-          <KeyItem label={t("ageAging")} value={open.aging} />
-          <KeyItem label={t("ageOld")} value={open.old} />
+          <KeyItem dot={INK[0]} label={t("ageFresh")} value={open.fresh} />
+          <KeyItem dot={INK[1]} label={t("ageAging")} value={open.aging} />
+          <KeyItem dot={INK[2]} label={t("ageOld")} value={open.old} />
         </Key>
       </StatCard>
 
@@ -90,17 +93,16 @@ export async function StatCards({
           {recent.perDay.map((n, i) => (
             <span
               key={i}
-              className={cn(
-                "flex-1 rounded-full",
-                n === 0
-                  ? "bg-foreground/15"
-                  : n === 1
-                    ? "bg-foreground/45"
-                    : "bg-foreground",
-              )}
+              className={cn("flex-1 rounded-full", INK[Math.min(n, 2)])}
             />
           ))}
         </div>
+        {/* What a cell's shade means: orders that day. */}
+        <Key>
+          <KeyItem dot={INK[0]} label={t("dayNone")} />
+          <KeyItem dot={INK[1]} label={t("dayOne")} />
+          <KeyItem dot={INK[2]} label={t("dayMany")} />
+        </Key>
         <Key>
           <KeyItem
             label={t("keyOrdered")}
@@ -182,15 +184,17 @@ function KeyItem({
 }: {
   dot?: string;
   label: string;
-  value: ReactNode;
+  value?: ReactNode;
 }) {
   return (
     <span className="flex items-center">
       {dot && (
         <i aria-hidden className={cn("me-1.5 size-2 rounded-[2px]", dot)} />
       )}
-      {label}&nbsp;
-      <b className="font-semibold text-foreground tabular-nums">{value}</b>
+      {label}
+      {value !== undefined && (
+        <b className="ms-1 font-semibold text-foreground tabular-nums">{value}</b>
+      )}
     </span>
   );
 }

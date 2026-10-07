@@ -115,11 +115,25 @@ export function SalesChart({
                 ? { fill: "var(--hairline)", radius: 6 }
                 : { stroke: "var(--muted-foreground)", strokeWidth: 1 }
             }
-            content={
+            content={(props) => (
               <ChartTooltipContent
+                active={props.active}
+                label={props.label}
+                // Ordered first, as in the legend, whatever order the bars are drawn in
+                payload={[...(props.payload ?? [])].sort(
+                  (a, b) =>
+                    SERIES.indexOf(a.dataKey as (typeof SERIES)[number]) -
+                    SERIES.indexOf(b.dataKey as (typeof SERIES)[number]),
+                )}
                 labelFormatter={(value) => periodLabel(String(value))}
                 formatter={(value, name) => (
                   <>
+                    {/* A custom formatter replaces the row, color mark included. */}
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-[2px]"
+                      style={{ background: `var(--color-${name})` }}
+                    />
                     <span className="text-muted-foreground">
                       {config[name as keyof typeof config]?.label}
                     </span>
@@ -130,7 +144,7 @@ export function SalesChart({
                 )}
                 indicator="dot"
               />
-            }
+            )}
           />
           {kind === "bars" &&
             order.map((key) => (
