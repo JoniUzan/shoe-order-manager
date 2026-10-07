@@ -1,216 +1,114 @@
-import { prisma } from "@repo/db";
 import { formatMoney } from "@repo/domain";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/components/card";
+import { Button } from "@repo/ui/components/button";
+import { Card } from "@repo/ui/components/card";
+import { GlassCard } from "@repo/ui/components/glass-card";
+import { Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { SalesChart } from "@/components/charts/sales-chart";
 import { GetStarted } from "@/components/dashboard/get-started";
-import {
-  SalesChart,
-  type SalesPoint,
-} from "@/components/dashboard/sales-chart";
-import { OrdersTable } from "@/components/orders/orders-table";
+import { OpenOrders } from "@/components/dashboard/open-orders";
+import { StatCards } from "@/components/dashboard/stat-cards";
+import { PageHeader } from "@/components/layout/page-header";
 import { avatarOf } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
-import { listOrders, parseOrderListParams } from "@/lib/orders-query";
+import { loadDashboard } from "@/lib/dashboard-query";
 import { requireUser } from "@/lib/session";
 
+/**
+ * Today's to-do: what's owed, which Orders are still open, what came in this
+ * week. Trends and analysis live in Reports; the small chart links there.
+ */
 export default async function DashboardPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "dashboard" });
-  const listParams = parseOrderListParams(await searchParams);
+  const data = await loadDashboard(user.id);
 
-  // 90-day window for the sales chart. Bucketing happens in JS, not SQL —
-  // the schema stays portable (no DB date functions) across Postgres hosts.
-  const windowStart = new Date();
-  windowStart.setHours(0, 0, 0, 0);
-  windowStart.setDate(windowStart.getDate() - 89);
-
-  const openWhere = { ownerId: user.id, paymentStatus: { not: "paid" } };
-
-  const [
-    openOrderCount,
-    owedGroups,
-    orderList,
-    totalOrders,
-    customerCount,
-    modelCount,
-    windowOrders,
-    windowPayments,
-  ] = await Promise.all([
-    prisma.order.count({ where: openWhere }),
-    // What each customer owes, summed in the database. Only orders that still
-    // owe something (total > deposit) are summed: an overpaid or zero order is
-    // settled, not a credit against the customer's other orders. That filter
-    // is the per-order clamp, so within it sum(total) - sum(deposit) equals
-    // the sum of the orders' balances.
-    prisma.order.groupBy({
-      by: ["customerId"],
-      where: {
-        ...openWhere,
-        totalAgorot: { gt: prisma.order.fields.depositAgorot },
-      },
-      _sum: { totalAgorot: true, depositAgorot: true },
-    }),
-    listOrders(user.id, listParams),
-    prisma.order.count({ where: { ownerId: user.id } }),
-    prisma.customer.count({ where: { ownerId: user.id } }),
-    prisma.shoeModel.count({ where: { ownerId: user.id } }),
-    prisma.order.findMany({
-      where: { ownerId: user.id, createdAt: { gte: windowStart } },
-      select: { createdAt: true, totalAgorot: true },
-    }),
-    prisma.payment.findMany({
-      where: { ownerId: user.id, paidAt: { gte: windowStart } },
-      select: { paidAt: true, amountAgorot: true },
-    }),
-  ]);
-
-  const dayKey = (d: Date) => {
-    const local = new Date(d);
-    local.setHours(0, 0, 0, 0);
-    return local.toISOString().slice(0, 10);
-  };
-
-  const orderedByDay = new Map<string, number>();
-  for (const o of windowOrders) {
-    const k = dayKey(o.createdAt);
-    orderedByDay.set(k, (orderedByDay.get(k) ?? 0) + o.totalAgorot);
-  }
-  const collectedByDay = new Map<string, number>();
-  for (const p of windowPayments) {
-    const k = dayKey(p.paidAt);
-    collectedByDay.set(k, (collectedByDay.get(k) ?? 0) + p.amountAgorot);
-  }
-
-  // Every day in the window, zeros included — gaps would misdraw the area.
-  const series: SalesPoint[] = Array.from({ length: 90 }, (_, i) => {
-    const d = new Date(windowStart);
-    d.setDate(d.getDate() + i);
-    const k = dayKey(d);
-    return {
-      start: k,
-      ordered: orderedByDay.get(k) ?? 0,
-      collected: collectedByDay.get(k) ?? 0,
-    };
+  const today = new Date().toLocaleDateString(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
   });
 
-  // One row per owing customer — bounded by customers, not orders. The sort
-  // key is a difference of two sums, which groupBy's orderBy can't express,
-  // so the rows are ranked here and names are read for the shown rows only.
-  const owedByCustomer = owedGroups.map((g) => ({
-    customerId: g.customerId,
-    owed: (g._sum.totalAgorot ?? 0) - (g._sum.depositAgorot ?? 0),
-  }));
-  const totalOutstanding = owedByCustomer.reduce((sum, c) => sum + c.owed, 0);
-  const owedTop = owedByCustomer
-    .sort((a, b) => b.owed - a.owed || a.customerId.localeCompare(b.customerId))
-    .slice(0, 8);
-  const owedNames = new Map(
-    (
-      await prisma.customer.findMany({
-        where: { id: { in: owedTop.map((c) => c.customerId) }, ownerId: user.id },
-        select: { id: true, name: true },
-      })
-    ).map((c) => [c.id, c.name]),
-  );
-  const owedList = owedTop.map((c) => ({
-    ...c,
-    name: owedNames.get(c.customerId) ?? "",
-  }));
-
-  const stats = [
-    { label: t("statOutstanding"), value: formatMoney(totalOutstanding, locale) },
-    { label: t("statOpenOrders"), value: String(openOrderCount) },
-    { label: t("statTotalOrders"), value: String(totalOrders) },
-    { label: t("statCustomers"), value: String(customerCount) },
-  ];
+  // Until the first Order there is nothing to count: no zero cards, no empty
+  // chart. A new business gets the nudge to add its first Customer and model.
+  if (data.orderCount === 0) {
+    if (data.customerCount === 0 && data.modelCount === 0) {
+      return (
+        <GetStarted locale={locale} name={user.name ?? ""} avatar={avatarOf(user)} />
+      );
+    }
+    return (
+      <Card className="items-center gap-3 px-6 py-10 text-center">
+        <p className="text-sm text-muted-foreground">{t("recentEmpty")}</p>
+        <Button asChild>
+          <Link href="/orders/new">
+            <Plus />
+            {t("newOrder")}
+          </Link>
+        </Button>
+      </Card>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      {customerCount === 0 && modelCount === 0 && (
-        <GetStarted
-          locale={locale}
-          name={user.name ?? ""}
-          avatar={avatarOf(user)}
-        />
-      )}
+    <div className="flex flex-col gap-6 pb-20">
+      <PageHeader title={t("title")} subtitle={today} />
 
-      {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <Card key={s.label}>
-            <CardHeader>
-              <CardDescription>{s.label}</CardDescription>
-              <CardTitle className="text-2xl tabular-nums">{s.value}</CardTitle>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      <StatCards locale={locale} data={data} />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Sales over time */}
-        <div className="@container/card lg:col-span-2">
-          <SalesChart data={series} />
-        </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <GlassCard className="flex min-w-0 flex-col gap-3 px-5 pt-5 pb-4 sm:px-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-[17px] font-semibold">{t("chartTitle")}</h2>
+              <p className="text-sm text-muted-foreground">{t("chartDesc")}</p>
+            </div>
+            <Link
+              href="/reports?tab=sales"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              {t("chartFull")}
+            </Link>
+          </div>
+          <SalesChart data={data.weeks} kind="bars" period="week" height={200} />
+        </GlassCard>
 
-        {/* Who owes money */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>{t("owedTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {owedList.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                {t("owedEmpty")}
-              </p>
-            ) : (
-              <ul className="flex flex-col divide-y">
-                {owedList.map((c) => (
-                  <li
-                    key={c.customerId}
-                    className="flex items-center justify-between gap-2 py-2.5 text-sm"
+        <GlassCard className="flex flex-col px-5 pt-5 pb-3 sm:px-6">
+          <div className="flex items-baseline justify-between gap-3 pb-2">
+            <h2 className="text-[17px] font-semibold">{t("owedTitle")}</h2>
+            <Link href="/reports" className="text-sm text-muted-foreground hover:text-foreground">
+              {t("owedAll")}
+            </Link>
+          </div>
+          {data.owed.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">{t("owedEmpty")}</p>
+          ) : (
+            <ul className="flex flex-col">
+              {data.owed.map((c) => (
+                <li key={c.customerId} className="border-t border-(--hairline) first:border-t-0">
+                  <Link
+                    href={`/customers/${c.customerId}`}
+                    className="-mx-2.5 flex h-11 items-center justify-between gap-3 rounded-xl px-2.5 transition-colors duration-150 pointer-fine:hover:bg-(--glass-track)"
                   >
-                    <Link
-                      href={`/customers/${c.customerId}`}
-                      className="truncate hover:underline"
-                    >
-                      {c.name}
-                    </Link>
-                    <span className="tabular-nums font-medium">
-                      {formatMoney(c.owed, locale)}
+                    <span className="truncate">{c.name}</span>
+                    <span className="font-semibold tabular-nums">
+                      {formatMoney(c.owedAgorot, locale)}
                     </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </GlassCard>
       </div>
 
-      {/* All orders */}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">{t("recentOrders")}</h2>
-        <OrdersTable
-          rows={orderList.rows}
-          total={orderList.total}
-          pageCount={orderList.pageCount}
-          params={orderList.params}
-        />
-      </section>
+      <OpenOrders locale={locale} rows={data.openOrders} total={data.open.count} />
     </div>
   );
 }

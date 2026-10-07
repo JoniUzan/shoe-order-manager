@@ -1,11 +1,10 @@
 import { formatMoney } from "@repo/domain";
-import { GlassCard } from "@repo/ui/components/glass-card";
 import { cn } from "@repo/ui/lib/utils";
 import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
-import { Link } from "@/i18n/navigation";
+import { GlassLink } from "@/components/dashboard/glass-link";
 import type { Dashboard } from "@/lib/dashboard-query";
 
 /**
@@ -26,21 +25,43 @@ export async function StatCards({
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <StatCard index={0} href="/orders?filter=unpaid" label={t("cardBalanceDue")}>
+      <StatCard
+        index={0}
+        href="/orders?filter=unpaid"
+        label={t("cardBalanceDue")}
+      >
         <Big>{money(balanceDue.totalAgorot)}</Big>
         <Track
           parts={[
-            { value: balanceDue.unpaidAgorot, className: "bg-tint-critical-bar" },
-            { value: balanceDue.partialAgorot, className: "bg-tint-caution-bar" },
+            {
+              value: balanceDue.unpaidAgorot,
+              className: "bg-tint-critical-bar",
+            },
+            {
+              value: balanceDue.partialAgorot,
+              className: "bg-tint-caution-bar",
+            },
           ]}
         />
         <Key>
-          <KeyItem dot="bg-tint-critical-bar" label={t("keyUnpaid")} value={money(balanceDue.unpaidAgorot)} />
-          <KeyItem dot="bg-tint-caution-bar" label={t("keyPartial")} value={money(balanceDue.partialAgorot)} />
+          <KeyItem
+            dot="bg-tint-critical-bar"
+            label={t("keyUnpaid")}
+            value={money(balanceDue.unpaidAgorot)}
+          />
+          <KeyItem
+            dot="bg-tint-caution-bar"
+            label={t("keyPartial")}
+            value={money(balanceDue.partialAgorot)}
+          />
         </Key>
       </StatCard>
 
-      <StatCard index={1} href="/orders?filter=open" label={t("cardOpenOrders")}>
+      <StatCard
+        index={1}
+        href="/orders?filter=open"
+        label={t("cardOpenOrders")}
+      >
         <Big>{open.count}</Big>
         <Track
           parts={[
@@ -71,13 +92,20 @@ export async function StatCards({
               key={i}
               className={cn(
                 "flex-1 rounded-full",
-                n === 0 ? "bg-foreground/15" : n === 1 ? "bg-foreground/45" : "bg-foreground",
+                n === 0
+                  ? "bg-foreground/15"
+                  : n === 1
+                    ? "bg-foreground/45"
+                    : "bg-foreground",
               )}
             />
           ))}
         </div>
         <Key>
-          <KeyItem label={t("keyOrdered")} value={money(recent.orderedAgorot)} />
+          <KeyItem
+            label={t("keyOrdered")}
+            value={money(recent.orderedAgorot)}
+          />
           <KeyItem label={t("keyPrevious7")} value={recent.previousCount} />
         </Key>
       </StatCard>
@@ -97,21 +125,20 @@ function StatCard({
   children: ReactNode;
 }) {
   return (
-    <GlassCard asChild pressable materialize stagger={index}>
-      <Link
-        href={href}
-        className="group flex flex-col gap-3 px-6 py-5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-      >
-        <span className="flex items-center justify-between gap-2 text-sm font-medium text-muted-foreground">
-          {label}
-          <ChevronRight
-            aria-hidden
-            className="size-4.5 transition-[translate,color] duration-150 ease-(--ease-out-quint) rtl:rotate-180 group-hover:text-foreground pointer-fine:group-hover:translate-x-0.75 rtl:pointer-fine:group-hover:-translate-x-0.75"
-          />
-        </span>
-        {children}
-      </Link>
-    </GlassCard>
+    <GlassLink
+      stagger={index}
+      href={href}
+      className="group flex flex-col gap-3 px-6 py-5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+    >
+      <span className="flex items-center justify-between gap-2 text-sm font-medium text-muted-foreground">
+        {label}
+        <ChevronRight
+          aria-hidden
+          className="size-4.5 transition-[translate,color] duration-150 ease-(--ease-out-quint) rtl:rotate-180 group-hover:text-foreground pointer-fine:group-hover:translate-x-0.75 rtl:pointer-fine:group-hover:-translate-x-0.75"
+        />
+      </span>
+      {children}
+    </GlassLink>
   );
 }
 
@@ -130,7 +157,11 @@ function Track({ parts }: { parts: { value: number; className: string }[] }) {
       {parts
         .filter((p) => p.value > 0)
         .map((p, i) => (
-          <span key={i} className={p.className} style={{ flex: `${p.value} 1 0` }} />
+          <span
+            key={i}
+            className={p.className}
+            style={{ flex: `${p.value} 1 0` }}
+          />
         ))}
     </div>
   );
@@ -155,7 +186,9 @@ function KeyItem({
 }) {
   return (
     <span className="flex items-center">
-      {dot && <i aria-hidden className={cn("me-1.5 size-2 rounded-[2px]", dot)} />}
+      {dot && (
+        <i aria-hidden className={cn("me-1.5 size-2 rounded-[2px]", dot)} />
+      )}
       {label}&nbsp;
       <b className="font-semibold text-foreground tabular-nums">{value}</b>
     </span>
