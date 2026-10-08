@@ -31,7 +31,7 @@ shadcn/ui primitives (new-york style, Radix, lucide icons) and the whole theme. 
   screen, `--destructive` only for irreversible actions, `--tint-*` only for payment state,
   `--chart-*` only for chart series. Everything else stays ink on paper, and gradients stay where they already are (card sheen,
   ambient light, chart fills, the sign-up wash).
-- `.glass-card` (`GlassCard`) is the dashboard's material and nowhere else; the rest of the
-  app stays `.surface-raised`.
+- `.glass-card` (`GlassCard`) is for the dashboard's cards and the quick-action menu (which
+  floats over every page) and nowhere else; the rest of the app stays `.surface-raised`.
 - New or redesigned UI is designed on a Claude Design canvas and approved before it's built
   (see the root `CLAUDE.md`).

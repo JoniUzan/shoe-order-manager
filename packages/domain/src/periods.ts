@@ -1,3 +1,5 @@
+import { computeOwedAgorot } from "./order";
+
 /**
  * Time buckets for the dashboard and Reports. They are computed here, in JS,
  * and never in SQL: the schema stays portable (no DB date functions, ADR
@@ -134,7 +136,7 @@ export function debtAtWeekEnds({
     }
     let debt = 0;
     for (const o of orders) {
-      if (o.createdAt < end) debt += Math.max(0, o.totalAgorot - (paid.get(o.id) ?? 0));
+      if (o.createdAt < end) debt += computeOwedAgorot(o.totalAgorot, paid.get(o.id) ?? 0);
     }
     return { start: isoDay(start), debt };
   });

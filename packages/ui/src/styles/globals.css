@@ -108,7 +108,7 @@
     rgba(0, 0, 0, 0.04) 0 1px 4px;
   --blur-card: 0px;
 
-  /* Glass, for the dashboard's cards only: a translucent fill under a lit top
+  /* Glass, for the dashboard's cards and the quick-action menu: a translucent fill under a lit top
      edge and a three-layer shadow. See .glass-card below. */
   --glass-fill: oklch(0.99 0.006 98.9 / 62%);
   --glass-edge: rgb(255 255 255 / 80%);
@@ -306,8 +306,8 @@
       var(--shadow-card);
   }
 
-  /* Glass: the dashboard's cards, and nowhere else (the open-orders table there
-     stays .surface-raised). Translucent and blurred, lit along the top edge,
+  /* Glass: the dashboard's cards and the quick-action menu, and nowhere else
+     (the dashboard's Orders table stays .surface-raised). Translucent and blurred, lit along the top edge,
      held up by three shadows. There is no wash behind it: on the plain sheet
      the blur is quiet, which is the point. The pointer's specular highlight is
      a ::before under the content (isolation keeps it above the fill), moved by
