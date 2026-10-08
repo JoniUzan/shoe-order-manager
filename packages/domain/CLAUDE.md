@@ -37,6 +37,9 @@ server code alike.
   (`recentDistinct` from past orders, `matchSuggestions` for what's typed).
 - `product-image.ts`: the Product image's limits, its storage key (`productImageKey`, and
   `isOwnProductImageKey` for the ownership check), the JPEG check and the centre-square crop.
+- `periods.ts`: the dashboard's and Reports' time buckets, in local time with Monday-start
+  weeks: `weeklySales` (ordered vs collected), `dailyCounts`, `orderAge` (≤14 / 15–30 / 30+
+  days open) and `debtAtWeekEnds` (Balance due as it stood at each week's end).
 - `status.ts`: order and payment status codes. Order statuses also live as DB rows, so
   `OrderStatusCode` is `string`, not a union.
 - `phone.ts`: normalizing Israeli numbers for WhatsApp links. `settings.ts`: locales, themes,

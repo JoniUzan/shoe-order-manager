@@ -47,25 +47,14 @@
     "welcome": "Welcome",
     "owedTitle": "Who owes money",
     "owedEmpty": "No outstanding balances",
-    "recentOrders": "Recent orders",
     "recentEmpty": "No orders yet",
     "totalOutstanding": "Total outstanding",
-    "statOutstanding": "Outstanding balance",
-    "statOpenOrders": "Open orders",
-    "statTotalOrders": "Total orders",
-    "statCustomers": "Customers",
     "colOrder": "Order",
     "colCustomer": "Customer",
     "colStatus": "Status",
     "colTotal": "Total",
-    "chartTitle": "Sales",
-    "chartDesc": "Last {days} days",
-    "chartRangeLabel": "Date range",
-    "range90": "3 months",
-    "range30": "30 days",
-    "range7": "7 days",
-    "seriesOrdered": "Ordered",
-    "seriesCollected": "Collected",
+    "chartTitle": "This month",
+    "chartDesc": "Last 4 weeks",
     "colItems": "Items",
     "colBalance": "Balance",
     "noResults": "No results",
@@ -88,7 +77,24 @@
     "getStartedTitleNamed": "You’re all set, {name}",
     "getStartedSubtitle": "What should we add first?",
     "addCustomer": "Add a customer",
-    "addShoeModel": "Add a shoe model"
+    "addShoeModel": "Add a shoe model",
+    "cardBalanceDue": "Balance due",
+    "keyUnpaid": "Unpaid",
+    "keyPartial": "Partial",
+    "cardOpenOrders": "Open orders",
+    "ageFresh": "Up to 2 weeks",
+    "ageAging": "15–30 days",
+    "ageOld": "Over 30 days",
+    "cardRecent": "New orders · 7 days",
+    "ordersUnit": "{count, plural, one {order} other {orders}}",
+    "keyOrdered": "Ordered",
+    "keyPrevious7": "Previous 7 days",
+    "chartFull": "Full chart in Reports",
+    "owedAll": "All",
+    "newOrder": "New order",
+    "dayNone": "No orders",
+    "dayOne": "1 order",
+    "dayMany": "2 or more"
   },
   "list": {
     "columns": "Columns",
@@ -183,7 +189,26 @@
     "colCollected": "Collected",
     "colOutstanding": "Outstanding",
     "salesEmpty": "No sales yet",
-    "salesRowCount": "{count, plural, one {# period} other {# periods}}"
+    "salesRowCount": "{count, plural, one {# period} other {# periods}}",
+    "trendTitle": "Ordered vs collected",
+    "trendByWeek": "By week",
+    "kindLabel": "Chart type",
+    "kind_area": "Area",
+    "kind_bars": "Bars",
+    "kind_line": "Line",
+    "rangeLabel": "Date range",
+    "range_13": "3 months",
+    "range_8": "2 months",
+    "range_4": "1 month",
+    "topModelsTitle": "Best-selling models",
+    "topModelsDesc": "Pairs ordered · 3 months",
+    "topCustomersTitle": "Biggest customers",
+    "topCustomersDesc": "Ordered in ₪ · 3 months",
+    "rankEmpty": "No orders in this period yet",
+    "debtTitle": "Debt over time",
+    "debtDesc": "Balance due at each week's end · 3 months",
+    "debtSeries": "Balance due",
+    "debtChange": "{amount} since the start"
   },
   "share": {
     "messageHeader": "Order summary"
@@ -424,7 +449,8 @@
     "previewNoItems": "No items yet",
     "notesCount": "{count, plural, =0 {None yet} one {# note} other {# notes}}",
     "editSection": "Edit {section}",
-    "saveOrder": "Save order"
+    "saveOrder": "Save order",
+    "filterRecent": "Last 7 days"
   },
   "errors": {
     "loading": "Loading…",
@@ -615,5 +641,16 @@
     "factoryNote": "Factory note",
     "taxId": "Tax ID",
     "page": "Page {page} of {total}"
+  },
+  "charts": {
+    "ordered": "Ordered",
+    "collected": "Collected",
+    "weekOf": "Week of {date}"
+  },
+  "quickActions": {
+    "label": "Quick actions",
+    "newOrder": "New order",
+    "newCustomer": "New customer",
+    "newShoeModel": "New shoe model"
   }
 }

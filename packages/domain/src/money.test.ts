@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   agorotToShekels,
   formatMoney,
+  formatMoneyCompact,
   parseShekelInput,
   shekelsToAgorot,
 } from "./money";
@@ -17,6 +18,19 @@ describe("agorot ⇄ shekels", () => {
     // 0.1 + 0.2 = 0.30000000000000004
     expect(shekelsToAgorot(0.1 + 0.2)).toBe(30);
     expect(shekelsToAgorot(1.005)).toBe(100);
+  });
+});
+
+describe("formatMoneyCompact", () => {
+  it("shortens thousands and millions", () => {
+    expect(formatMoneyCompact(4_000_000, "en")).toBe("₪40K");
+    expect(formatMoneyCompact(150_000, "en")).toBe("₪1.5K");
+    expect(formatMoneyCompact(125_000_000, "en")).toBe("₪1.3M");
+    expect(formatMoneyCompact(0, "en")).toBe("₪0");
+    // Where Hebrew puts the ₪ depends on the ICU data (Node 22 puts it last).
+    const he = formatMoneyCompact(4_000_000, "he");
+    expect(he).toContain("40K");
+    expect(he).toContain("₪");
   });
 });
 

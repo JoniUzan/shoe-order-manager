@@ -1,5 +1,9 @@
 import { prisma } from "@repo/db";
-import { computeBalanceAgorot, formatMoney } from "@repo/domain";
+import {
+  computeBalanceAgorot,
+  formatMoney,
+  formatMoneyCompact,
+} from "@repo/domain";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
@@ -7,14 +11,18 @@ import type { ReactNode } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
+import { DebtChart } from "@/components/reports/debt-chart";
 import { OwedTable } from "@/components/reports/owed-table";
+import { RankBars } from "@/components/reports/rank-bars";
 import { ReportCustomerSelect } from "@/components/reports/report-customer-select";
 import { SalesTable } from "@/components/reports/sales-table";
+import { SalesTrend } from "@/components/reports/sales-trend";
 import { Link } from "@/i18n/navigation";
 import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { listOwed, parseOwedListParams } from "@/lib/owed-query";
 import type { RawSearchParams } from "@/lib/list-params";
 import { listSales, parseSalesListParams } from "@/lib/sales-query";
+import { loadSalesTrends } from "@/lib/sales-trends-query";
 import { requireUser } from "@/lib/session";
 
 /**
@@ -86,7 +94,9 @@ export default async function ReportsPage({
           t={t}
         />
       )}
-      {tab === "sales" && <SalesReport ownerId={user.id} sp={sp} />}
+      {tab === "sales" && (
+        <SalesReport locale={locale} ownerId={user.id} sp={sp} t={t} />
+      )}
     </div>
   );
 }
@@ -212,21 +222,58 @@ async function CustomersReport({
 }
 
 async function SalesReport({
+  locale,
   ownerId,
   sp,
+  t,
 }: {
+  locale: string;
   ownerId: string;
   sp: RawSearchParams;
+  t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
-  const list = await listSales(ownerId, parseSalesListParams(sp));
+  const [list, trends] = await Promise.all([
+    listSales(ownerId, parseSalesListParams(sp)),
+    loadSalesTrends(ownerId),
+  ]);
 
   return (
-    <SalesTable
-      rows={list.rows}
-      total={list.total}
-      pageCount={list.pageCount}
-      params={list.params}
-    />
+    <div className="flex flex-col gap-4">
+      <SalesTrend weeks={trends.weeks} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RankBars
+          title={t("topModelsTitle")}
+          description={t("topModelsDesc")}
+          empty={t("rankEmpty")}
+          fill="bg-chart-1"
+          rows={trends.topModels.map((m) => ({
+            id: m.id,
+            name: m.name,
+            value: m.pairs,
+            label: m.pairs,
+          }))}
+        />
+        <RankBars
+          title={t("topCustomersTitle")}
+          description={t("topCustomersDesc")}
+          empty={t("rankEmpty")}
+          fill="bg-chart-5"
+          rows={trends.topCustomers.map((c) => ({
+            id: c.id,
+            name: c.name,
+            value: c.orderedAgorot,
+            label: formatMoneyCompact(c.orderedAgorot, locale),
+          }))}
+        />
+      </div>
+      <DebtChart data={trends.debt} />
+      <SalesTable
+        rows={list.rows}
+        total={list.total}
+        pageCount={list.pageCount}
+        params={list.params}
+      />
+    </div>
   );
 }
 

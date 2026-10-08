@@ -47,25 +47,14 @@
     "welcome": "ברוך הבא",
     "owedTitle": "מי חייב כסף",
     "owedEmpty": "אין יתרות פתוחות",
-    "recentOrders": "הזמנות אחרונות",
     "recentEmpty": "אין עדיין הזמנות",
     "totalOutstanding": "סך יתרה לגבייה",
-    "statOutstanding": "יתרה לגבייה",
-    "statOpenOrders": "הזמנות פתוחות",
-    "statTotalOrders": "סך הזמנות",
-    "statCustomers": "לקוחות",
     "colOrder": "הזמנה",
     "colCustomer": "לקוח",
     "colStatus": "סטטוס",
     "colTotal": "סה״כ",
-    "chartTitle": "מכירות",
-    "chartDesc": "{days} הימים האחרונים",
-    "chartRangeLabel": "טווח תאריכים",
-    "range90": "3 חודשים",
-    "range30": "30 יום",
-    "range7": "7 ימים",
-    "seriesOrdered": "הוזמן",
-    "seriesCollected": "נגבה",
+    "chartTitle": "החודש",
+    "chartDesc": "4 השבועות האחרונים",
     "colItems": "פריטים",
     "colBalance": "יתרה",
     "noResults": "אין תוצאות",
@@ -88,7 +77,24 @@
     "getStartedTitleNamed": "הכל מוכן, {name}",
     "getStartedSubtitle": "מה נוסיף קודם?",
     "addCustomer": "הוספת לקוח",
-    "addShoeModel": "הוספת דגם"
+    "addShoeModel": "הוספת דגם",
+    "cardBalanceDue": "יתרה לגבייה",
+    "keyUnpaid": "לא שולם",
+    "keyPartial": "שולם חלקית",
+    "cardOpenOrders": "הזמנות פתוחות",
+    "ageFresh": "עד שבועיים",
+    "ageAging": "15–30 יום",
+    "ageOld": "מעל 30 יום",
+    "cardRecent": "הזמנות חדשות · 7 ימים",
+    "ordersUnit": "{count, plural, one {הזמנה} other {הזמנות}}",
+    "keyOrdered": "הוזמן",
+    "keyPrevious7": "7 הימים שלפני",
+    "chartFull": "לגרף המלא בדוחות",
+    "owedAll": "הכול",
+    "newOrder": "הזמנה חדשה",
+    "dayNone": "אין הזמנות",
+    "dayOne": "הזמנה אחת",
+    "dayMany": "2 ומעלה"
   },
   "list": {
     "columns": "עמודות",
@@ -183,7 +189,26 @@
     "colCollected": "נגבה",
     "colOutstanding": "יתרה",
     "salesEmpty": "אין עדיין מכירות",
-    "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}"
+    "salesRowCount": "{count, plural, one {תקופה אחת} two {שתי תקופות} other {# תקופות}}",
+    "trendTitle": "הוזמן מול נגבה",
+    "trendByWeek": "לפי שבוע",
+    "kindLabel": "סוג גרף",
+    "kind_area": "שטח",
+    "kind_bars": "עמודות",
+    "kind_line": "קו",
+    "rangeLabel": "טווח תאריכים",
+    "range_13": "3 חודשים",
+    "range_8": "חודשיים",
+    "range_4": "חודש",
+    "topModelsTitle": "הדגמים הנמכרים ביותר",
+    "topModelsDesc": "זוגות שהוזמנו · 3 חודשים",
+    "topCustomersTitle": "הלקוחות הגדולים",
+    "topCustomersDesc": "סך הזמנות ב־₪ · 3 חודשים",
+    "rankEmpty": "אין עדיין הזמנות בתקופה",
+    "debtTitle": "החוב לאורך זמן",
+    "debtDesc": "סך היתרה לגבייה בסוף כל שבוע · 3 חודשים",
+    "debtSeries": "יתרה לגבייה",
+    "debtChange": "{amount} מתחילת התקופה"
   },
   "share": {
     "messageHeader": "סיכום הזמנה"
@@ -424,7 +449,8 @@
     "previewNoItems": "עוד אין פריטים",
     "notesCount": "{count, plural, =0 {טרם נוספו} one {הערה אחת} two {# הערות} other {# הערות}}",
     "editSection": "עריכת {section}",
-    "saveOrder": "שמירת הזמנה"
+    "saveOrder": "שמירת הזמנה",
+    "filterRecent": "7 ימים אחרונים"
   },
   "errors": {
     "loading": "טוען…",
@@ -615,5 +641,16 @@
     "factoryNote": "הערה למפעל",
     "taxId": "ח.פ / ע.מ",
     "page": "עמוד {page} מתוך {total}"
+  },
+  "charts": {
+    "ordered": "הוזמן",
+    "collected": "נגבה",
+    "weekOf": "שבוע של {date}"
+  },
+  "quickActions": {
+    "label": "פעולות מהירות",
+    "newOrder": "הזמנה חדשה",
+    "newCustomer": "לקוח חדש",
+    "newShoeModel": "דגם חדש"
   }
 }

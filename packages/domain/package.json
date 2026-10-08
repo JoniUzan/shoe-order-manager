@@ -14,7 +14,8 @@
     "./phone": "./src/phone.ts",
     "./product-image": "./src/product-image.ts",
     "./settings": "./src/settings.ts",
-    "./suggestions": "./src/suggestions.ts"
+    "./suggestions": "./src/suggestions.ts",
+    "./periods": "./src/periods.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -79,6 +79,9 @@ code, not in Postgres RLS (ADR 0003).
   reached only through the S3 API.
 - **Packs are line items with a snapshot** (ADR 0004). The order form sends which pack and how
   many; the server builds the items from the stored curve.
+- **Chart colors are the user's reference hexes** (`--chart-1..6` in `packages/ui`), the same in
+  light and dark, used exactly and never tuned. Ordered is blue, collected orange. Ordered and
+  collected are never stacked: their sum means nothing.
 - **RTL by construction**: Tailwind logical utilities only (`ms-`, `pe-`, `text-start`), and
   every string goes into both `messages/en.json` and `messages/he.json`.
 - **cuid ids start with `c`.** When a browser check matches a detail URL, require that
@@ -103,6 +106,7 @@ Use these words in code, UI copy, commits and conversation. Hebrew is the UI wor
 | **Order** | הזמנה | What a Customer buys, numbered per User (#1, #2, …). | invoice |
 | **Line item** | שורה / פריט | One size of one model (or a free-text item) with quantity and unit price. | |
 | **Custom item** | מותאם | A line item described in free text instead of a catalog model. An order with any custom item is a **custom order**. | |
+| **Open order** | הזמנה פתוחה | An Order whose Order status is `not_done`: still to be made or delivered. About fulfilment, not money; an unpaid Order can be done. The dashboard lists them oldest first. | unpaid order |
 | **Order status** | סטטוס | Fulfilment stage: `not_done` / `done` (rows, so more can be added). | |
 | **Payment** | תשלום | One amount a Customer paid toward an order. | |
 | **Paid** | שולם | The sum of an order's Payments. The column `depositAgorot` and the UI label "מקדמה" mean this same total, not only an up-front payment. | deposit (as a separate concept) |

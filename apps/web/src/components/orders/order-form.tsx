@@ -134,6 +134,7 @@ export function OrderForm({
   orderId,
   orderNumber,
   defaultValues,
+  customerId,
   suggestions,
 }: {
   customers: CustomerOption[];
@@ -143,6 +144,8 @@ export function OrderForm({
   orderId?: string;
   orderNumber?: number;
   defaultValues?: OrderFormValues;
+  /** A new order's Customer, already chosen: it opens on Items. */
+  customerId?: string;
 }) {
   const t = useTranslations("orders");
   const tc = useTranslations("common");
@@ -241,7 +244,7 @@ export function OrderForm({
 
   const form = useForm<OrderFormValues>({
     resolver,
-    defaultValues: defaultValues ?? EMPTY,
+    defaultValues: defaultValues ?? { ...EMPTY, customerId: customerId ?? "" },
   });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -316,7 +319,7 @@ export function OrderForm({
 
   const flow = useStepForm({
     editing,
-    start: editing ? LAST : 0,
+    start: editing ? LAST : customerId ? ITEMS : 0,
     steps: STEPS.map((s) => ({
       label: t(`step${s.key}`),
       canLeave:

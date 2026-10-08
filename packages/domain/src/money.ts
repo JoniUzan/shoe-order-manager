@@ -37,6 +37,22 @@ export function formatMoney(
   }).format(agorotToShekels(agorot));
 }
 
+/**
+ * Format agorot short, for a chart axis: "₪40K", "₪1.3M". Whole shekels below
+ * a thousand, one decimal at most above.
+ */
+export function formatMoneyCompact(agorot: number, locale: string = "he"): string {
+  return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
+    style: "currency",
+    currency: "ILS",
+    notation: "compact",
+    // Both bounds set: with only the maximum, some ICU builds (Node 22 on CI)
+    // keep a trailing ".0" ("₪40.0K").
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(agorotToShekels(agorot));
+}
+
 /** Parse a user-entered shekel string ("123.45", "1,234.5") into agorot. */
 export function parseShekelInput(input: string): number | null {
   const cleaned = input.replace(/[^\d.-]/g, "");

@@ -23,8 +23,7 @@
    Hue is rationed, and every use is named here:
 
    1. --primary is the teal. One action per screen — the thing you came to do.
-      Nav, links, tabs and charts stay ink; spending it twice makes it mean
-      nothing.
+      Nav, links and tabs stay ink; spending it twice makes it mean nothing.
    2. --destructive stays red, because an irreversible action must not rely on
       weight alone. Reserved for actions; never used as a status colour.
    3. --tint-* carries payment state (unpaid / partial / paid). Scanning ten
@@ -32,8 +31,11 @@
       density. These are low-alpha *fills* with coloured ink, never solid, and
       never the destructive red — money owed is not a destructive action, and
       the two must not be confusable. Confined to the payment axis: fulfilment
-      status, the shell, the tables and the charts all stay monochrome.
-   4. The orbs, which are pictures rather than colour: they never encode state.
+      status, the shell and the tables all stay monochrome.
+   4. --chart-* is a categorical palette for chart series, and only for them:
+      a series needs a hue to be told apart from the one beside it. The six are
+      the user's reference hexes, used unchanged and the same in light and dark.
+   5. The orbs, which are pictures rather than colour: they never encode state.
 
    Ink below 64% is a border, a rule or an icon stroke. It is 2.57:1 as text and
    must not be used as one.
@@ -86,6 +88,10 @@
   --tint-caution-foreground: oklch(0.478 0.093 77.1);
   --tint-critical: oklch(0.62 0.18 22 / 12%);
   --tint-critical-foreground: oklch(0.492 0.142 30.8);
+  /* the same payment hues as solid-enough fills for a breakdown bar, where a
+     12% tint would vanish into its track */
+  --tint-caution-bar: oklch(0.72 0.15 72 / 55%);
+  --tint-critical-bar: oklch(0.62 0.18 22 / 50%);
   --border: oklch(0.192 0.02 195.6 / 10%);
   --input: oklch(0.913 0.02 103.7);
   --ring: oklch(0.461 0.072 209.4);
@@ -102,14 +108,26 @@
     rgba(0, 0, 0, 0.04) 0 1px 4px;
   --blur-card: 0px;
 
-  /* The charts are ink at descending density, never the accent: teal means
-     "the action on this screen", and a second job makes it ambiguous. Chroma
-     tapers as the ramp lightens so the pale steps don't read as tinted. */
-  --chart-1: oklch(0.192 0.02 195.6);
-  --chart-2: oklch(0.38 0.018 195.6);
-  --chart-3: oklch(0.55 0.015 195.6);
-  --chart-4: oklch(0.7 0.012 195.6);
-  --chart-5: oklch(0.82 0.01 195.6);
+  /* Glass, for the dashboard's cards and the quick-action menu: a translucent fill under a lit top
+     edge and a three-layer shadow. See .glass-card below. */
+  --glass-fill: oklch(0.99 0.006 98.9 / 62%);
+  --glass-edge: rgb(255 255 255 / 80%);
+  --glass-rim: oklch(0.192 0.02 195.6 / 7%);
+  --glass-shadow:
+    0 1px 1px rgb(0 0 0 / 3%), 0 2px 6px rgb(20 30 30 / 5%),
+    0 12px 32px rgb(20 30 30 / 8%);
+  --glass-spec: rgb(255 255 255 / 60%);
+  --glass-track: oklch(0.192 0.02 195.6 / 6%);
+
+  /* Chart series, in the order a chart takes them. Ordered is blue and
+     collected orange; Reports' customers are green and debt over time purple.
+     Sampled from the user's reference and used exactly — do not tune them. */
+  --chart-1: #448aff; /* blue */
+  --chart-2: #4dd0e1; /* cyan */
+  --chart-3: #f57f17; /* orange */
+  --chart-4: #b389ff; /* purple */
+  --chart-5: #24b39b; /* green */
+  --chart-6: #ff4082; /* pink */
 
   /* the sidebar sits on the shell, not on a sheet of its own */
   --sidebar: transparent;
@@ -156,6 +174,8 @@
   --tint-caution-foreground: oklch(0.804 0.109 82);
   --tint-critical: oklch(0.65 0.19 22 / 17%);
   --tint-critical-foreground: oklch(0.75 0.109 29.6);
+  --tint-caution-bar: oklch(0.75 0.15 72 / 60%);
+  --tint-critical-bar: oklch(0.65 0.19 22 / 60%);
   --border: oklch(0.952 0.012 91.5 / 10%);
   --input: oklch(0.952 0.012 91.5 / 13%);
   --ring: oklch(0.623 0.095 206.9);
@@ -168,11 +188,14 @@
     rgba(0, 0, 0, 0.2) 0 4px 18px, rgba(0, 0, 0, 0.16) 0 7px 7px,
     rgba(0, 0, 0, 0.3) 0 1px 4px;
 
-  --chart-1: oklch(0.952 0.012 91.5);
-  --chart-2: oklch(0.8 0.011 91.5);
-  --chart-3: oklch(0.65 0.01 91.5);
-  --chart-4: oklch(0.5 0.009 91.5);
-  --chart-5: oklch(0.36 0.008 91.5);
+  --glass-fill: oklch(0.26 0.014 196.2 / 50%);
+  --glass-edge: rgb(255 255 255 / 10%);
+  --glass-rim: rgb(255 255 255 / 6%);
+  --glass-shadow: 0 1px 1px rgb(0 0 0 / 20%), 0 12px 32px rgb(0 0 0 / 45%);
+  --glass-spec: rgb(255 255 255 / 10%);
+  --glass-track: rgb(255 255 255 / 7%);
+
+  /* --chart-* is not redefined: the series keep their hue in the dark. */
 
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.952 0.012 91.5);
@@ -221,6 +244,8 @@
   --color-tint-caution-foreground: var(--tint-caution-foreground);
   --color-tint-critical: var(--tint-critical);
   --color-tint-critical-foreground: var(--tint-critical-foreground);
+  --color-tint-caution-bar: var(--tint-caution-bar);
+  --color-tint-critical-bar: var(--tint-critical-bar);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -230,6 +255,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -278,6 +304,117 @@
     box-shadow:
       0 0 0 0.5px var(--hairline),
       var(--shadow-card);
+  }
+
+  /* Glass: the dashboard's cards and the quick-action menu, and nowhere else
+     (the dashboard's Orders table stays .surface-raised). Translucent and blurred, lit along the top edge,
+     held up by three shadows. There is no wash behind it: on the plain sheet
+     the blur is quiet, which is the point. The pointer's specular highlight is
+     a ::before under the content (isolation keeps it above the fill), moved by
+     GlassCard through --spec-x/--spec-y, mouse only. */
+  .glass-card {
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--radius-card);
+    background: var(--glass-fill);
+    color: var(--card-foreground);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    backdrop-filter: blur(28px) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge),
+      inset 0 0 0 1px var(--glass-rim),
+      var(--glass-shadow);
+  }
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      160px circle at var(--spec-x, 50%) var(--spec-y, 0),
+      var(--glass-spec),
+      transparent
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .glass-card:hover::before {
+      opacity: 0.7;
+    }
+    .glass-card[data-pressable]:hover::before {
+      opacity: 1;
+    }
+  }
+  /* Press in fast, settle slow, no bounce. */
+  .glass-card[data-pressable] {
+    transition: scale 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .glass-card[data-pressable]:active {
+    scale: 0.98;
+    transition-duration: 100ms;
+  }
+  /* Once, on load: out of a blur into place. --stagger is the card's index. */
+  .glass-materialize {
+    animation: glass-materialize 520ms var(--ease-out-quint) both;
+    animation-delay: calc(var(--stagger, 0) * 50ms);
+  }
+
+  /* A recessed track for a breakdown bar; its segments grow from the reading
+     side and catch the same top light as the card. */
+  .glass-track {
+    display: flex;
+    gap: 2px;
+    height: 10px;
+    padding: 2px;
+    border-radius: 7px;
+    background: var(--glass-track);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 6%);
+  }
+  .glass-track > * {
+    border-radius: 4px;
+    background-image: linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 28%),
+      transparent 60%
+    );
+    transform-origin: left center;
+    animation: glass-grow 700ms var(--ease-out-quint) 180ms both;
+  }
+  [dir="rtl"] .glass-track > * {
+    transform-origin: right center;
+  }
+}
+
+@keyframes glass-materialize {
+  from {
+    opacity: 0;
+    scale: 0.97;
+    filter: blur(8px);
+  }
+}
+@keyframes glass-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-materialize,
+  .glass-track > * {
+    animation: none;
+  }
+  .glass-card[data-pressable]:active {
+    scale: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass-card {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 

@@ -14,10 +14,13 @@ import { imageUrl } from "@/lib/storage";
 
 export default async function NewOrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ customer?: string | string[] }>;
 }) {
   const { locale } = await params;
+  const { customer } = await searchParams;
   const user = await requireUser(locale);
   const t = await getTranslations({ locale, namespace: "orders" });
   const tCustomers = await getTranslations({ locale, namespace: "customers" });
@@ -48,9 +51,13 @@ export default async function NewOrderPage({
   ]);
 
   if (customers.length > 0) {
+    // Started from a Customer's page: only one of this User's own Customers
+    // is taken; anything else starts the order with no Customer.
+    const chosen = customers.find((c) => c.id === customer)?.id;
     return (
       <OrderForm
         customers={customers}
+        customerId={chosen}
         suggestions={suggestions}
         models={models.map((m) => ({
           ...m,

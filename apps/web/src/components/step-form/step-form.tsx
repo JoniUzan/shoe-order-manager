@@ -71,13 +71,14 @@ export function useStepForm({
 }: {
   steps: readonly StepDef[];
   editing: boolean;
-  /** The step it opens on, e.g. an existing order's Review. */
+  /** The step it opens on, e.g. an existing order's Review, or a new
+   *  order's Items when its Customer is already chosen. */
   start?: number;
 }) {
   const last = Math.max(steps.length - 1, 0);
   const [current, setCurrent] = useState(start);
   // The furthest step reached, so the bar can return to it.
-  const [reached, setReached] = useState(editing ? last : 0);
+  const [reached, setReached] = useState(editing ? last : start);
   // Which way the last change went; null until one happens, so the page
   // itself doesn't animate in.
   const [direction, setDirection] = useState<Direction | null>(null);
