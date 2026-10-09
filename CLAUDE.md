@@ -4,7 +4,7 @@ A Turborepo monorepo for a B2B wholesale **shoe order manager**: a User sells sh
 stores (Customers) and tracks their orders and payments. Hebrew (RTL, the primary locale) +
 English. Data lives in Postgres: Neon in production (used as plain Postgres), Docker locally.
 
-The domain words (English and Hebrew) are in `CONTEXT.md`. Each package has its own
+The domain words (English and Hebrew) are in `GLOSSARY.md`. Each package has its own
 `CLAUDE.md` with the rules for working inside it: `apps/web`, `apps/e2e`, `packages/db`,
 `packages/domain`, `packages/ui`. The reasons behind the big design choices are
 in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011.
@@ -90,7 +90,7 @@ code, not in Postgres RLS (ADR 0003).
 
 ## Terms
 
-The domain glossary is @CONTEXT.md: the English term, its Hebrew UI wording, and the words to
+The domain glossary is @GLOSSARY.md: the English term, its Hebrew UI wording, and the words to
 avoid. Use those words in code, UI copy, commits and conversation. The
 `domain-modeling` skill (reached through `/grill-with-docs`) adds to it and to `docs/adr/`.
 
