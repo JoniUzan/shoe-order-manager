@@ -13,8 +13,8 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 
 - New or redesigned UI: draw it on a Claude Design canvas and wait for the user's approval
   (root `CLAUDE.md`, "Design first for UI").
-- Name things with the root `CLAUDE.md` Terms. A concept that isn't there gets a row added to
-  the table in this PR, English and Hebrew.
+- Name things with the terms in the root `CONTEXT.md`. A concept that isn't there gets an entry
+  added to it in this PR, English and Hebrew.
 - `git switch -c <branch>` and plan one commit per step below.
 
 ## 1. Data (`packages/db`)

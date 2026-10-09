@@ -64,7 +64,7 @@ const flow = useStepForm({
 Use `roomy` (`roomy.ts`) for every control a step builds itself: `field` (48px, 16px corner,
 16px text, no number spinners), `area`, `label`, `button` (52px phone / 44px computer), `raised`
 (secondary), `press`, `scrollbar` (transparent track, thumb in the text colour). Fields sit on the card without a fill of their own. Every string goes
-into both `messages/*.json`; Hebrew wording from the root `CLAUDE.md` Terms.
+into both `messages/*.json`; Hebrew wording from the root `CONTEXT.md`.
 
 A list the user adds to (Packs, order lines) uses `useAddedItem`: the item just added takes the
 focus and eases in. Without it the cursor stays on the "Add" button and a typed space adds a
