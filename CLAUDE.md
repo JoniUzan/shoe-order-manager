@@ -4,8 +4,9 @@ A Turborepo monorepo for a B2B wholesale **shoe order manager**: a User sells sh
 stores (Customers) and tracks their orders and payments. Hebrew (RTL, the primary locale) +
 English. Data lives in Postgres: Neon in production (used as plain Postgres), Docker locally.
 
-Each package has its own `CLAUDE.md` with the rules for working inside it: `apps/web`,
-`apps/e2e`, `packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
+The domain words (English and Hebrew) are in `GLOSSARY.md`. Each package has its own
+`CLAUDE.md` with the rules for working inside it: `apps/web`, `apps/e2e`, `packages/db`,
+`packages/domain`, `packages/ui`. The reasons behind the big design choices are
 in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011.
 
 ## Commands
@@ -89,35 +90,14 @@ code, not in Postgres RLS (ADR 0003).
 
 ## Terms
 
-Use these words in code, UI copy, commits and conversation. Hebrew is the UI wording.
+The domain glossary is @GLOSSARY.md: the English term, its Hebrew UI wording, and the words to
+avoid. Use those words in code, UI copy, commits and conversation. The
+`domain-modeling` skill (reached through `/grill-with-docs`) adds to it and to `docs/adr/`.
 
-| Term | Hebrew | Meaning | Avoid |
-|---|---|---|---|
-| **User** | | A person who signs in and runs one business; owns all their data. `ownerId` in code. Several people per business may come later (ADR 0003). | owner, account, tenant |
-| **Customer** | לקוח | A retail store that buys from the User. Never signs in. | client, store (as the entity) |
-| **Business details** | פרטי העסק | The User's name, phone, address and tax ID, printed on every order and WhatsApp message. | |
-| **Shoe model** | דגם | A catalog entry: name, SKU, default price, size run. The catalog (קטלוג) is all of them. | |
-| **Product image** | תמונת מוצר | The one photo of a Shoe model, shown in the catalog, the order form, the order page and both PDFs. | image (alone: that's the User's avatar) |
-| **Pack** | סדרה | A shoe model's fixed pairs-per-size, e.g. 38×3, 39×2, 40×3 (its **curve**). | series, set |
-| **Cartons** | קרטונים | How many of a pack an order takes. | packs (for the count) |
-| **Loose pairs** | זוגות בודדים | Pairs ordered outside any pack. | extra items |
-| **Material** | חומר | What a line item's upper is made of (e.g. leather, synthetic), chosen per order block like color. | upper, fabric |
-| **Sole** | סוליה | What a line item's sole is made of (e.g. rubber, EVA), chosen per order block like color. Neither Material nor Sole changes the price, and neither reaches the Customer (not on the Order summary or WhatsApp). | material sole |
-| **Order** | הזמנה | What a Customer buys, numbered per User (#1, #2, …). | invoice |
-| **Line item** | שורה / פריט | One size of one model (or a free-text item) with quantity and unit price. | |
-| **Custom item** | מותאם | A line item described in free text instead of a catalog model. An order with any custom item is a **custom order**. | |
-| **Open order** | הזמנה פתוחה | An Order whose Order status is `not_done`: still to be made or delivered. About fulfilment, not money; an unpaid Order can be done. The dashboard lists them oldest first. | unpaid order |
-| **Order status** | סטטוס | Fulfilment stage: `not_done` / `done` (rows, so more can be added). | |
-| **Payment** | תשלום | One amount a Customer paid toward an order. | |
-| **Paid** | שולם | The sum of an order's Payments. The column `depositAgorot` and the UI label "מקדמה" mean this same total, not only an up-front payment. | deposit (as a separate concept) |
-| **Balance** | יתרה | Total minus Paid; what's still owed (never below zero when shown as debt). | |
-| **Payment status** | | `unpaid` / `partial` / `paid`, derived from total and Paid. | |
-| **Order summary** | סיכום הזמנה | An Order as a PDF for its Customer: pairs per size, cartons, prices, totals, Paid and Balance. | invoice |
-| **Production sheet** | דף ייצור | An Order as sent to the factory: the pairs per model, color and size of every line item, with no packs or cartons, no prices, totals or payments, and only the Customer's name. Not an Order of its own. | factory order, factory invoice |
-| **Factory note** | הערה למפעל | An Order's note meant for the factory. Printed only on the Production sheet; the regular notes never reach the factory. | |
-| **Picking** | ליקוט | Gathering an order's cartons and loose pairs for delivery. | packing |
-| **Sign-up** | הרשמה | Creating a User; open to anyone. | register |
-| **Onboarding** | | The welcome dialog after Sign-up: language, name/avatar/theme, then Business details. | setup wizard |
+Where the code says it differently:
+- `ownerId` is the User. Several people per business may come later (ADR 0003).
+- `depositAgorot` is Paid, the sum of every Payment.
+- Order status rows are `not_done` / `done`; Payment status is `unpaid` / `partial` / `paid`.
 
 ## How we work
 

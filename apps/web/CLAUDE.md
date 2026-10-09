@@ -60,7 +60,7 @@ Validate on the client with the same domain schema the action uses (react-hook-f
 Locale is in the URL (`/he`, `/en`); `[locale]/layout.tsx` sets `<html dir>`. Server components
 use `getTranslations({ locale, namespace })`, client components `useTranslations`. Every new
 string goes into **both** `messages/en.json` and `messages/he.json` with the same key; use
-the Terms in the root `CLAUDE.md` for Hebrew wording. Layout uses logical utilities only.
+the root `GLOSSARY.md` for Hebrew wording. Layout uses logical utilities only.
 
 ## Settings dialog
 
