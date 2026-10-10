@@ -27,6 +27,7 @@
     "signIn": "התחברות",
     "signingIn": "מתחבר…",
     "invalidCredentials": "אימייל או סיסמה שגויים",
+    "signInRateLimited": "יותר מדי ניסיונות התחברות. נסו שוב בעוד כמה דקות.",
     "genericError": "משהו השתבש. נסו שוב.",
     "noAccount": "אין לכם חשבון?",
     "signUp": "הרשמה",

@@ -1,16 +1,15 @@
 // ---------------------------------------------------------------------------
-// Auth.js (NextAuth v5) models — Prisma adapter
+// Better Auth models (ADR 0009); field names are the ones it expects
 // ---------------------------------------------------------------------------
 
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
-  emailVerified DateTime?
+  emailVerified Boolean   @default(false)
   // The chosen avatar as a token (`orb:onyx`); null → the orb generated
-  // from the email. The Auth.js adapter's column, reused.
+  // from the email. Better Auth's column, reused.
   image         String?
-  passwordHash  String?
   locale        String    @default("he") // "he" | "en"
   theme         String    @default("system") // "light" | "dark" | "system"
   // When the welcome dialog was finished. Set explicitly, not derived from the
@@ -34,48 +33,62 @@ model User {
   payments    Payment[]
 }
 
+// How a User signs in: one row per method. Email + password is the
+// `credential` provider, with the password hash in `password`.
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
+// One signed-in device. The web app holds `token` in a cookie; a mobile app
+// will send it as a bearer token (ADR 0010).
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// One row per sign-up attempt, for the per-IP rate limit. In Postgres, not in
-// memory: serverless instances don't share memory. Old rows are deleted in
-// app code (`actions/signup.ts`), not by a DB job.
-model SignupAttempt {
   id        String   @id @default(cuid())
-  ip        String
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([ip, createdAt])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Short-lived tokens (password reset, once it exists).
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// Better Auth's rate-limit counters, one row per IP and endpoint. In Postgres,
+// not in memory: serverless instances don't share memory.
+model RateLimit {
+  id          String @id @default(cuid())
+  key         String @unique
+  count       Int
+  lastRequest BigInt
 }

@@ -27,6 +27,7 @@
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "invalidCredentials": "Incorrect email or password",
+    "signInRateLimited": "Too many sign-in attempts. Try again in a few minutes.",
     "genericError": "Something went wrong. Please try again.",
     "noAccount": "Don’t have an account?",
     "signUp": "Sign up",

@@ -5,8 +5,8 @@ stores (Customers) and tracks their orders and payments. Hebrew (RTL, the primar
 English. Data lives in Postgres: Neon in production (used as plain Postgres), Docker locally.
 
 The domain words (English and Hebrew) are in `GLOSSARY.md`. Each package has its own
-`CLAUDE.md` with the rules for working inside it: `apps/web`, `apps/e2e`, `packages/db`,
-`packages/domain`, `packages/ui`. The reasons behind the big design choices are
+`CLAUDE.md` with the rules for working inside it: `apps/web`, `apps/e2e`, `packages/auth`,
+`packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
 in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011.
 
 ## Commands
@@ -45,16 +45,17 @@ for looking at a change by hand. For a new feature from schema to screen, follow
 
 `apps/web/.env.local` and `packages/db/.env`, each copied from the `.env.example` next to it:
 `DATABASE_URL` + `DIRECT_URL` (the same Docker URL twice locally), plus `AUTH_SECRET`
-(`openssl rand -base64 33`), `AUTH_TRUST_HOST=true` and the `S3_*` / `IMAGE_BASE_URL` storage
+(`openssl rand -base64 33`) and the `S3_*` / `IMAGE_BASE_URL` storage
 block (as in the example) for the web app. Dev login:
 `admin@example.com` / `changeme123` (override with `ADMIN_EMAIL`/`ADMIN_PASSWORD` before
 `db:seed`).
 
 ## Architecture
 
-- `apps/web`: the only deployable. Next.js 16 App Router, React 19, Auth.js v5, next-intl.
+- `apps/web`: the only deployable. Next.js 16 App Router, React 19, Better Auth, next-intl.
 - `apps/e2e`: the Playwright suites, run against `web`'s production build. Never deployed.
 - `packages/db`: Prisma 7 schema, client, seeds.
+- `packages/auth`: the Better Auth config, shared with the future mobile API (ADR 0009).
 - `packages/domain`: framework-free Zod schemas and business rules (money, totals, sizes,
   packs). Split from `db` so client components can import it.
 - `packages/ui`: shadcn/ui primitives and the theme.

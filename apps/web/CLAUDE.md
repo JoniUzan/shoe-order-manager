@@ -2,7 +2,7 @@
 
 # web (Next.js 16 app)
 
-The only deployable: App Router, React 19, Auth.js v5, next-intl.
+The only deployable: App Router, React 19, Better Auth, next-intl.
 
 ## Layout
 
@@ -19,7 +19,7 @@ The only deployable: App Router, React 19, Auth.js v5, next-intl.
 
 Server Components call `prisma` directly, filtered by `ownerId` (ADR 0003). A page starts with
 `requireUser(locale)` from `lib/session.ts`: it redirects to login when there's no session **or**
-when the session's user row is gone (a JWT can outlive a DB reset). List state (search, filter,
+when the session's user row is gone (a cached session can outlive a DB reset). List state (search, filter,
 sort, page) lives in the URL; `lib/list-params.ts` whitelists every value before it reaches
 Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
 `contains` with `mode: "insensitive"`.
@@ -28,7 +28,7 @@ Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
 
 Every action follows the same shape:
 
-1. Get the owner id from `auth()` (the `requireOwnerId` helper at the top of each file).
+1. Get the owner id from `getSession()` (the `requireOwnerId` helper at the top of each file).
 2. Re-validate the input with the `@repo/domain` schema.
 3. Scope every query by `ownerId`; reach `OrderItem` / `OrderPack` / `SizePack` through an
    owned parent.
@@ -98,16 +98,25 @@ a layout change by rendering the PDF (`/api/orders/<id>/pdf?doc=…&lang=…`), 
 
 ## Auth
 
-Auth.js v5 credentials provider with JWT sessions and the Prisma adapter, configured in
-`lib/auth.ts`. Sign-up is open and rate-limited per IP through the `SignupAttempt` table.
-The login page repeats `requireUser`'s user-exists check so a stale JWT can't loop between
-login and the app.
+Better Auth, from the shared config in `@repo/auth`, mounted in `lib/auth.ts` at
+`/api/auth/[...all]`. Server code reads the session with `getSession()`; never trust an id
+from the client.
+- The login and sign-up forms call Better Auth's endpoints through `lib/auth-client.ts`, not
+  Server Actions: its rate limiter only sees HTTP requests to those endpoints. Only the
+  endpoints in `PUBLIC_AUTH_PATHS` (`@repo/auth`) answer over HTTP; the rest are 404. Sign-out and
+  the password and email changes in Settings stay Server Actions.
+- Passwords live on the User's `credential` Account (`lib/password.ts`), hashed by Better
+  Auth. A password change ends every other session.
+- Sessions are rows with a 5-minute cookie cache, so the login page repeats `requireUser`'s
+  user-exists check: a cached session can outlive its User (after a DB reset).
 
 ## Tests
 
 - **Server Actions** have an integration test next to them (`src/lib/actions/<area>.test.ts`),
   run by Vitest against the real `shoe_test` Postgres.
   - `test/setup.ts` mocks `@/lib/auth`, `next/cache` and `next/headers`.
+  - The auth endpoints (sign-in, sign-up, their rate limits) are tested over HTTP against a
+    real Better Auth instance in `src/lib/auth.test.ts`.
   - Global setup also makes the `shoe-test` bucket on the local S3 server, so
     `docker compose up -d` has to be running.
   - `createUser()` from `test/factories.ts` makes a fresh User and signs in as them;

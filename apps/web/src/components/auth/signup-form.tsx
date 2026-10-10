@@ -4,26 +4,30 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Eye, EyeOff } from "lucide-react";
+import { signupSchema, type LocaleCode } from "@repo/domain";
 import { useTranslations } from "next-intl";
-import { useActionState, useState } from "react";
+import { useState, type FormEvent } from "react";
 
 import { FieldError } from "@/components/settings/field-error";
-import { signUp, type SignupState } from "@/lib/actions/signup";
+import { useRouter } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+
+type Field = "name" | "email" | "password";
 
 /**
  * Name, email and one password field (with show/hide, no confirm field).
- * The inputs are controlled so a server-side error doesn't clear what was
- * typed (React resets uncontrolled fields after a form action).
+ * Checked here with the domain schema, then posted to Better Auth's sign-up
+ * endpoint, which checks it again, rate-limits it and signs the new User in.
+ * The app then opens onboarding, since `onboardedAt` is still unset.
  */
-export function SignupForm({ locale }: { locale: string }) {
+export function SignupForm({ locale }: { locale: LocaleCode }) {
   const t = useTranslations("auth");
-  const [state, formAction, pending] = useActionState<SignupState, FormData>(
-    signUp,
-    undefined,
-  );
+  const router = useRouter();
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const errors = state?.fieldErrors ?? {};
+  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
+  const [formError, setFormError] = useState<"rateLimited" | "error" | null>(null);
+  const [pending, setPending] = useState(false);
 
   const bind = (field: keyof typeof values) => ({
     id: `signup-${field}`,
@@ -35,9 +39,36 @@ export function SignupForm({ locale }: { locale: string }) {
   });
   const box = "h-11 rounded-xl px-3.5 text-[15px] md:text-[15px]";
 
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+    const parsed = signupSchema.safeParse(values);
+    if (!parsed.success) {
+      const fieldErrors: Partial<Record<Field, string>> = {};
+      for (const issue of parsed.error.issues) {
+        fieldErrors[issue.path[0] as Field] ??= issue.message;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
+    setPending(true);
+    const { error } = await authClient.signUp.email({ ...parsed.data, locale });
+    if (error) {
+      setPending(false);
+      if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+        setErrors({ email: "emailTaken" });
+      } else {
+        setFormError(error.status === 429 ? "rateLimited" : "error");
+      }
+      return;
+    }
+    // Stays pending through the navigation.
+    router.replace("/");
+  }
+
   return (
-    <form action={formAction} noValidate className="flex flex-col gap-5">
-      <input type="hidden" name="locale" value={locale} />
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
 
       <div className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">
@@ -96,9 +127,9 @@ export function SignupForm({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {state?.error && (
+      {formError && (
         <p role="alert" className="text-sm text-destructive">
-          {state.error === "rate_limited" ? t("rateLimited") : t("genericError")}
+          {formError === "rateLimited" ? t("rateLimited") : t("genericError")}
         </p>
       )}
 

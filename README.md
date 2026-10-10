@@ -8,12 +8,13 @@ Order-management web app for a B2B wholesale shoe business — track customers, 
 - **Turborepo** (pnpm) monorepo
 - **Next.js 16** (App Router) + **React 19** + **shadcn/ui** + **Tailwind CSS 4**
 - **Prisma** ORM over **Postgres** (Neon in production, Docker locally)
-- **Auth.js v5** (email/password), **next-intl** (he/en, RTL), dark mode
+- **Better Auth** (email/password), **next-intl** (he/en, RTL), dark mode
 
 ## Structure
 
 ```
 apps/web              Next.js app (the only deployable)
+packages/auth         Better Auth config (shared with the future mobile API)
 packages/db           Prisma schema, client, seed
 packages/domain       Zod schemas, money (agorot) + order-totals logic
 packages/ui           shadcn/ui components + theme

@@ -13,9 +13,10 @@ import type { PrismaClient as PrismaClientType } from "./generated/prisma/client
 export { Prisma } from "./generated/prisma/browser";
 export type {
   User,
-  SignupAttempt,
   Account,
   Session,
+  Verification,
+  RateLimit,
   OrderStatus,
   Customer,
   ShoeModel,

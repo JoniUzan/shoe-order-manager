@@ -1,6 +1,6 @@
 // For running it with plain `tsx` too (`prisma db seed` loads .env itself).
 import "dotenv/config";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 import { prisma } from "../src/client";
 
 async function main() {
@@ -18,18 +18,30 @@ async function main() {
   }
   console.log(`✓ Seeded ${statuses.length} order statuses`);
 
-  // --- Admin (the father's) account ---
-  const email = process.env.ADMIN_EMAIL ?? "admin@example.com";
+  // --- Admin (the father's) account: development only ---
+  // Production has no well-known login; its first User signs up.
+  if (process.env.NODE_ENV === "production") return;
+
+  // Better Auth looks emails up lower-cased.
+  const email = (process.env.ADMIN_EMAIL ?? "admin@example.com").toLowerCase();
   const password = process.env.ADMIN_PASSWORD ?? "changeme123";
   const name = process.env.ADMIN_NAME ?? "Owner";
-  const passwordHash = await bcrypt.hash(password, 10);
 
-  await prisma.user.upsert({
-    where: { email },
-    update: {},
-    // Already onboarded: the admin never sees the welcome dialog.
-    create: { email, name, passwordHash, locale: "he", onboardedAt: new Date() },
-  });
+  if (!(await prisma.user.findUnique({ where: { email }, select: { id: true } }))) {
+    const user = await prisma.user.create({
+      // Already onboarded: the admin never sees the welcome dialog.
+      data: { email, name, locale: "he", onboardedAt: new Date() },
+    });
+    // Email + password sign-in is Better Auth's `credential` account.
+    await prisma.account.create({
+      data: {
+        userId: user.id,
+        accountId: user.id,
+        providerId: "credential",
+        password: await hashPassword(password),
+      },
+    });
+  }
   console.log(`✓ Admin user ready: ${email}`);
   if (!process.env.ADMIN_PASSWORD) {
     console.log(`  (default password "changeme123" — set ADMIN_PASSWORD to override)`);

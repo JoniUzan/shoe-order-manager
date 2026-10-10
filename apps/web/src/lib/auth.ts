@@ -1,59 +1,15 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@repo/db";
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import { authOptions } from "@repo/auth";
+import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
+import { headers } from "next/headers";
 
-import { verifyPassword } from "./password";
+/**
+ * The shared config (`@repo/auth`) mounted for the web app. `nextCookies`
+ * lets a Server Action that calls `auth.api` (sign-out) set the cookie.
+ */
+export const auth = betterAuth({ ...authOptions, plugins: [nextCookies()] });
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
-  providers: [
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      authorize: async (credentials) => {
-        const email =
-          typeof credentials?.email === "string" ? credentials.email : "";
-        const password =
-          typeof credentials?.password === "string" ? credentials.password : "";
-        if (!email || !password) return null;
-
-        // Sign-up stores emails lower-cased; older accounts may not be.
-        const user = await prisma.user.findFirst({
-          where: { email: { equals: email.trim(), mode: "insensitive" } },
-        });
-        if (!user?.passwordHash) return null;
-
-        const valid = await verifyPassword(password, user.passwordHash);
-        if (!valid) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          locale: user.locale,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      if (token.id && session.user) {
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
-});
+/** This request's session and User, or null when signed out. */
+export async function getSession() {
+  return auth.api.getSession({ headers: await headers() });
+}

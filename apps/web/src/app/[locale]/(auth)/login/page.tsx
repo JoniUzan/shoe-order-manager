@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { NoiseWash } from "@/components/ui/noise-wash";
 import { Link } from "@/i18n/navigation";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export default async function LoginPage({
   params,
@@ -16,8 +16,8 @@ export default async function LoginPage({
   const { locale } = await params;
 
   // Already signed in with a still-valid user → go to the dashboard.
-  // (Verify the row exists so a stale JWT shows the form instead of looping.)
-  const session = await auth();
+  // (Verify the row exists so a stale cached session shows the form instead of looping.)
+  const session = await getSession();
   if (session?.user?.id) {
     const exists = await prisma.user.findUnique({
       where: { id: session.user.id },

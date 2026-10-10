@@ -1,4 +1,5 @@
 import { prisma } from "@repo/db";
+import type { LocaleCode } from "@repo/domain";
 import { Card } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -6,7 +7,7 @@ import { redirect } from "next/navigation";
 import { SignupForm } from "@/components/auth/signup-form";
 import { NoiseWash } from "@/components/ui/noise-wash";
 import { Link } from "@/i18n/navigation";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 /** Open to anyone: each new User is its own, empty business. */
 export default async function SignupPage({
@@ -17,8 +18,8 @@ export default async function SignupPage({
   const { locale } = await params;
 
   // Already signed in (and the user still exists) → the app. Same check as
-  // the login page, so a stale JWT shows the form instead of looping.
-  const session = await auth();
+  // the login page, so a stale cached session shows the form instead of looping.
+  const session = await getSession();
   if (session?.user?.id) {
     const exists = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -45,7 +46,8 @@ export default async function SignupPage({
           </h1>
           <p className="text-sm text-muted-foreground">{t("signupSubtitle")}</p>
         </div>
-        <SignupForm locale={locale} />
+        {/* The [locale] layout has already 404ed anything else. */}
+        <SignupForm locale={locale as LocaleCode} />
         <p className="text-center text-sm text-muted-foreground">
           {t("haveAccount")}{" "}
           <Link href="/login" className="font-medium text-primary hover:underline">

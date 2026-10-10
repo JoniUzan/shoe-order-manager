@@ -1,7 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getTranslations } from "next-intl/server";
 
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { OrderSummaryPdf } from "@/lib/pdf/order-summary-pdf";
 import { loadOrderPdfData } from "@/lib/pdf/order-pdf-data";
 import { ProductionSheetPdf } from "@/lib/pdf/production-sheet-pdf";
@@ -24,7 +24,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) return new Response(null, { status: 401 });
 
   const { id } = await params;

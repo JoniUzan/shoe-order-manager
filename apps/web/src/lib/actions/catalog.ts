@@ -16,7 +16,7 @@ import {
 } from "@repo/domain";
 import { revalidatePath } from "next/cache";
 
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import {
   deleteObjectQuietly,
   imageUrl,
@@ -25,7 +25,7 @@ import {
 } from "@/lib/storage";
 
 async function requireOwnerId(): Promise<string> {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) throw new Error("unauthorized");
   return session.user.id;
 }

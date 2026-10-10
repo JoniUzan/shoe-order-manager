@@ -52,7 +52,9 @@ export default defineConfig<Options>({
       DATABASE_URL: TEST_DATABASE_URL,
       DIRECT_URL: TEST_DATABASE_URL,
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-only-secret-not-used-anywhere-else",
-      AUTH_TRUST_HOST: "true",
+      // Every suite signs in from this one machine; the limits are covered by
+      // the integration tests (apps/web/src/lib/auth.test.ts).
+      AUTH_RATE_LIMIT: "off",
       S3_ENDPOINT: TEST_S3_ENDPOINT,
       S3_BUCKET: "shoe-test",
       S3_ACCESS_KEY_ID: "local",

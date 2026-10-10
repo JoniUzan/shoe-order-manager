@@ -33,9 +33,6 @@ export default defineConfig({
     },
     globalSetup: ["test/global-setup.ts"],
     setupFiles: ["test/setup.ts"],
-    // next-auth imports `next/server` without an extension, which Node's ESM
-    // loader refuses; bundling it through Vite resolves it.
-    server: { deps: { inline: ["next-auth"] } },
     // The lock tests wait on real row locks.
     testTimeout: 20_000,
     coverage: {

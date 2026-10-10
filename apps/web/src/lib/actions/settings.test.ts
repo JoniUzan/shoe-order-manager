@@ -2,7 +2,7 @@ import { prisma } from "@repo/db";
 import { describe, expect, it } from "vitest";
 
 import { createUser, PASSWORD, uniqueEmail } from "../../../test/factories";
-import { signInAs } from "../../../test/session";
+import { sessionToken, signInAs } from "../../../test/session";
 
 import { finishOnboarding } from "./onboarding";
 import {
@@ -14,7 +14,7 @@ import {
   updatePreferences,
 } from "./settings";
 
-import { verifyPassword } from "@/lib/password";
+import { passwordMatches } from "@/lib/password";
 
 const me = (id: string) => prisma.user.findUniqueOrThrow({ where: { id } });
 
@@ -69,8 +69,15 @@ describe("account settings", () => {
     expect((await me(user.id)).email).toBe(email);
   });
 
-  it("changes the password", async () => {
+  it("changes the password and signs out every other device", async () => {
     const user = await createUser({ password: true });
+    const expiresAt = new Date(Date.now() + 86_400_000);
+    await prisma.session.createMany({
+      data: [
+        { userId: user.id, token: sessionToken(user.id), expiresAt },
+        { userId: user.id, token: `other-${user.id}`, expiresAt },
+      ],
+    });
     const input = { currentPassword: PASSWORD, newPassword: "newpass123", confirmPassword: "newpass123" };
     expect(await changePassword({ ...input, currentPassword: "wrong" })).toEqual({
       ok: false,
@@ -81,7 +88,10 @@ describe("account settings", () => {
       error: "invalid",
     });
     expect(await changePassword(input)).toEqual({ ok: true });
-    expect(await verifyPassword("newpass123", (await me(user.id)).passwordHash!)).toBe(true);
+    expect(await passwordMatches(user.id, "newpass123")).toBe(true);
+    expect(await passwordMatches(user.id, PASSWORD)).toBe(false);
+    const left = await prisma.session.findMany({ where: { userId: user.id } });
+    expect(left.map((s) => s.token)).toEqual([sessionToken(user.id)]);
   });
 
   it("answers not_found when the User is gone", async () => {
