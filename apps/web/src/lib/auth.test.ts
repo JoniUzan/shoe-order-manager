@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 
-import { authOptions } from "@repo/auth";
+import { authOptions, PUBLIC_AUTH_PATHS } from "@repo/auth";
 import { prisma } from "@repo/db";
 import { betterAuth } from "better-auth";
 import { verifyPassword } from "better-auth/crypto";
@@ -113,5 +113,43 @@ describe("sign-in", () => {
     }
     expect((await post("/sign-in/email", attempt, ip)).status).toBe(429);
     expect((await post("/sign-in/email", attempt)).status).toBe(401);
+  });
+});
+
+describe("endpoints", () => {
+  // Every endpoint this Better Auth version has, as the router serves it. A
+  // version that adds one shows up here, and it must answer 404 unless it's
+  // been added to PUBLIC_AUTH_PATHS on purpose.
+  const endpoints = Object.values(auth.api)
+    .filter((e) => typeof e.path === "string")
+    .map((e) => {
+      const method = e.options.method;
+      return { path: e.path!, method: Array.isArray(method) ? method[0]! : method };
+    });
+
+  it.each(endpoints)("$method $path answers only if it's allowed", async ({ path, method }) => {
+    const url = `${BASE}/api/auth${path.replace(/:[^/]+/g, "x")}`;
+    const res = await auth.handler(
+      new Request(url, {
+        method,
+        headers: { "content-type": "application/json", origin: BASE, "x-real-ip": newIp() },
+        body: method === "GET" ? undefined : "{}",
+      }),
+    );
+    if (PUBLIC_AUTH_PATHS.includes(path)) expect(res.status).not.toBe(404);
+    else expect(res.status).toBe(404);
+  });
+
+  it("lists every allowed path among the endpoints", () => {
+    expect(endpoints.map((e) => e.path)).toEqual(expect.arrayContaining([...PUBLIC_AUTH_PATHS]));
+  });
+
+  it("leaves server-side calls alone", async () => {
+    // The web app's sign-out runs on the server through auth.api.
+    const input = signup();
+    const res = await post("/sign-up/email", input);
+    const cookie = res.headers.get("set-cookie")!.split(";")[0]!;
+    const session = await auth.api.getSession({ headers: new Headers({ cookie }) });
+    expect(session?.user.email).toBe(input.email);
   });
 });

@@ -27,4 +27,6 @@ User's `credential` Account. Ids stay Prisma's cuid, like every other table. Sig
 are rate-limited per IP by Better Auth's limiter, with its counters in Postgres (serverless
 instances share no memory), which replaced our own sign-up throttle. That limiter only runs on
 HTTP requests to the auth endpoints, so the login and sign-up forms call those endpoints instead
-of Server Actions. Production has no seeded admin: the first User signs up.
+of Server Actions. Only the endpoints those flows call answer over HTTP; every other Better Auth
+endpoint (its own `/update-user`, which would skip our input checks, and any a later version
+adds) answers 404 until a feature needs it. Production has no seeded admin: the first User signs up.

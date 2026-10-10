@@ -7,6 +7,21 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 const DAY = 60 * 60 * 24;
 
 /**
+ * The Better Auth endpoints a browser or app may call over HTTP. Every other
+ * one answers 404, including any a later Better Auth version adds, so a new
+ * endpoint is off until it's listed here. Settings changes go through our own
+ * Server Actions (and later `apps/api`), which check input with
+ * `@repo/domain`; Better Auth's `/update-user` would skip those checks. Server
+ * code calling `auth.api` directly isn't limited by this.
+ */
+export const PUBLIC_AUTH_PATHS: readonly string[] = [
+  "/sign-in/email",
+  "/sign-up/email",
+  "/sign-out",
+  "/get-session",
+];
+
+/**
  * The one Better Auth config (ADR 0009). Each app mounts it with its own
  * plugins: the web app adds Next's cookie helper, and the future `apps/api`
  * adds bearer tokens for mobile. Both then read and write the same Users and
@@ -52,9 +67,13 @@ export const authOptions = {
     },
   },
   hooks: {
-    // The form checks this too, but a request can skip the form.
     before: createAuthMiddleware(async (ctx) => {
+      // `ctx.path` is the route (`/callback/:id`), so this covers every endpoint.
+      if (ctx.request && !PUBLIC_AUTH_PATHS.includes(ctx.path)) {
+        throw new APIError("NOT_FOUND");
+      }
       if (ctx.path !== "/sign-up/email") return;
+      // The form checks this too, but a request can skip the form.
       const parsed = signupSchema.safeParse(ctx.body);
       const locale = ctx.body?.locale;
       if (

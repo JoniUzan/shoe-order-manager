@@ -5,11 +5,11 @@ import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Eye, EyeOff } from "lucide-react";
 import { signupSchema, type LocaleCode } from "@repo/domain";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 
 import { FieldError } from "@/components/settings/field-error";
+import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 
 type Field = "name" | "email" | "password";
@@ -64,7 +64,7 @@ export function SignupForm({ locale }: { locale: LocaleCode }) {
       return;
     }
     // Stays pending through the navigation.
-    router.replace(`/${locale}`);
+    router.replace("/");
   }
 
   return (

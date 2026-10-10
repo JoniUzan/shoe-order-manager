@@ -4,10 +4,10 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 
+import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 
 type LoginError = "invalid" | "rateLimited" | "error";
@@ -40,7 +40,7 @@ export function LoginForm({ locale }: { locale: string }) {
       return;
     }
     // Stays pending through the navigation.
-    router.replace(`/${data.user.locale ?? locale}`);
+    router.replace("/", { locale: data.user.locale ?? locale });
   }
 
   return (

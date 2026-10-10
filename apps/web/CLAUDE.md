@@ -19,7 +19,7 @@ The only deployable: App Router, React 19, Better Auth, next-intl.
 
 Server Components call `prisma` directly, filtered by `ownerId` (ADR 0003). A page starts with
 `requireUser(locale)` from `lib/session.ts`: it redirects to login when there's no session **or**
-when the session's user row is gone (a JWT can outlive a DB reset). List state (search, filter,
+when the session's user row is gone (a cached session can outlive a DB reset). List state (search, filter,
 sort, page) lives in the URL; `lib/list-params.ts` whitelists every value before it reaches
 Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
 `contains` with `mode: "insensitive"`.
@@ -28,7 +28,7 @@ Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
 
 Every action follows the same shape:
 
-1. Get the owner id from `auth()` (the `requireOwnerId` helper at the top of each file).
+1. Get the owner id from `getSession()` (the `requireOwnerId` helper at the top of each file).
 2. Re-validate the input with the `@repo/domain` schema.
 3. Scope every query by `ownerId`; reach `OrderItem` / `OrderPack` / `SizePack` through an
    owned parent.
@@ -102,7 +102,8 @@ Better Auth, from the shared config in `@repo/auth`, mounted in `lib/auth.ts` at
 `/api/auth/[...all]`. Server code reads the session with `getSession()`; never trust an id
 from the client.
 - The login and sign-up forms call Better Auth's endpoints through `lib/auth-client.ts`, not
-  Server Actions: its rate limiter only sees HTTP requests to those endpoints. Sign-out and
+  Server Actions: its rate limiter only sees HTTP requests to those endpoints. Only the
+  endpoints in `PUBLIC_AUTH_PATHS` (`@repo/auth`) answer over HTTP; the rest are 404. Sign-out and
   the password and email changes in Settings stay Server Actions.
 - Passwords live on the User's `credential` Account (`lib/password.ts`), hashed by Better
   Auth. A password change ends every other session.
