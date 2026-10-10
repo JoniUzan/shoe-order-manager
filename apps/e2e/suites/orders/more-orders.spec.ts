@@ -65,6 +65,52 @@ test("mark an order done, then reopen it", async ({ page, t, appLocale, user }) 
   await expect(orderPage.statusBadge("not_done")).toBeVisible();
 });
 
+test("an order in the list opens its page, by number or by row", async ({ page, t, appLocale, user }) => {
+  await threeOrders(user.id);
+  const [, second, third] = await prisma.order.findMany({
+    where: { ownerId: user.id },
+    orderBy: { orderNumber: "asc" },
+  });
+  const list = new OrdersList(page, t);
+  const orderPage = new OrderPage(page, t);
+
+  await list.goto(appLocale);
+  await list.orderLink(2).click();
+  await page.waitForURL(new RegExp(`/orders/${second!.id}$`));
+  await expect(orderPage.heading(2)).toBeVisible();
+
+  await list.goto(appLocale);
+  await list.clickRow(3);
+  await page.waitForURL(new RegExp(`/orders/${third!.id}$`));
+  await expect(orderPage.heading(3)).toBeVisible();
+});
+
+test("Payments sit beside the items on a computer, under them on a phone", async ({
+  page,
+  t,
+  appLocale,
+  user,
+  isMobile,
+}) => {
+  const { order } = await orderWithChangedPack(user.id);
+  const orderPage = new OrderPage(page, t);
+  await orderPage.goto(appLocale, order.id);
+  await expect(orderPage.itemsTable()).toBeVisible();
+  await expect(orderPage.paymentsTitle()).toBeVisible();
+
+  const table = await orderPage.itemsTable().boundingBox();
+  const payments = await orderPage.paymentsTitle().boundingBox();
+  expect(table && payments).toBeTruthy();
+  if (isMobile) {
+    expect(payments!.y).toBeGreaterThan(table!.y + table!.height);
+  } else {
+    expect(payments!.y).toBeLessThan(table!.y + table!.height);
+    const beside =
+      payments!.x + payments!.width <= table!.x || payments!.x >= table!.x + table!.width;
+    expect(beside).toBe(true);
+  }
+});
+
 test("bulk: mark selected orders done, then delete them", async ({ page, t, appLocale, user }) => {
   await threeOrders(user.id);
   const list = new OrdersList(page, t);

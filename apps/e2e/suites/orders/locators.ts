@@ -334,6 +334,15 @@ export class OrderPage {
     return this.page.getByRole("button", { name: this.t("orders.markDone") });
   }
 
+  itemsTable() {
+    return this.page.getByRole("table");
+  }
+
+  /** The Payments card's title. */
+  paymentsTitle() {
+    return this.page.getByText(this.t("payments.title"), { exact: true });
+  }
+
   /** Open the PDF menu (a popover on a computer, a drawer on a phone). */
   async openPdfMenu() {
     await this.page.getByRole("button", { name: this.t("pdf.menu") }).click();
@@ -371,6 +380,20 @@ export class OrdersList {
 
   async goto(locale: string) {
     await this.page.goto(`/${locale}/orders`);
+  }
+
+  /** An order's number, a link to its page. */
+  orderLink(orderNumber: number) {
+    return this.page.getByRole("link", { name: `#${orderNumber}`, exact: true });
+  }
+
+  /** Click an order's row away from its links and buttons: on its status badge. */
+  async clickRow(orderNumber: number) {
+    await this.page
+      .getByRole("row")
+      .filter({ has: this.orderLink(orderNumber) })
+      .getByText(this.t("status.not_done"), { exact: true })
+      .click();
   }
 
   async select(orderNumber: number) {

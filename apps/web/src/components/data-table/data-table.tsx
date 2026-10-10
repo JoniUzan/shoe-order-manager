@@ -351,9 +351,9 @@ export function DataTable<TRow, F extends string, S extends string>({
                   }
                   className={cn(onRowClick && "cursor-pointer")}
                   // On a phone most columns are off-screen, so the row itself
-                  // is the way into the quick look — the first cell's link
-                  // alone is a small target. Anything already interactive
-                  // keeps its own job.
+                  // is the way in (a quick look, or the record's page) — the
+                  // first cell's link alone is a small target. Anything
+                  // already interactive keeps its own job.
                   onClick={
                     onRowClick &&
                     ((e) => {

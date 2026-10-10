@@ -48,11 +48,14 @@ export function PaymentControls({
   totalAgorot,
   paidAgorot,
   payments,
+  className,
 }: {
   orderId: string;
   totalAgorot: number;
   paidAgorot: number;
   payments: PaymentRow[];
+  /** For a page that sizes the card; the history scrolls when it's short. */
+  className?: string;
 }) {
   const t = useTranslations("payments");
   const locale = useLocale();
@@ -122,11 +125,11 @@ export function PaymentControls({
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
         <div className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t("total")}</span>
@@ -208,11 +211,11 @@ export function PaymentControls({
         )}
 
         {payments.length > 0 && (
-          <div className="flex flex-col gap-2">
+          <div className="flex min-h-0 flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">
               {t("history")}
             </p>
-            <ul className="flex flex-col divide-y">
+            <ul className="flex min-h-0 flex-col divide-y overflow-y-auto">
               {payments.map((p) => (
                 <li
                   key={p.id}
