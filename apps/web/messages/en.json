@@ -359,7 +359,7 @@
     "packCount": "Number of packs",
     "packsUnit": "packs",
     "totalPerSize": "Total per size:",
-    "packing": "Packing",
+    "packing": "Picking",
     "packLine": "{count} × {name}",
     "extraLine": "+ extra:",
     "looseLine": "Pairs:",
