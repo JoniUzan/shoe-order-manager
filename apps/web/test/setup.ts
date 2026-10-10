@@ -1,13 +1,15 @@
 import { vi } from "vitest";
 
-import { session } from "./session";
+import { session, sessionToken } from "./session";
 
 // Server Actions read the signed-in User from Better Auth; tests pick who that
 // is with `signInAs` (test/session.ts). The auth endpoints themselves are
 // tested against a real instance in src/lib/auth.test.ts.
 vi.mock("@/lib/auth", () => ({
   getSession: vi.fn(async () =>
-    session.userId ? { user: { id: session.userId } } : null,
+    session.userId
+      ? { user: { id: session.userId }, session: { token: sessionToken(session.userId) } }
+      : null,
   ),
   auth: { api: { signOut: vi.fn() } },
 }));

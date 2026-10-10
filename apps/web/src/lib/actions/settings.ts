@@ -18,7 +18,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 import { getSession } from "@/lib/auth";
-import { hashPassword, verifyPassword } from "@/lib/password";
+import { passwordMatches, replacePassword } from "@/lib/password";
 
 async function requireUserId(): Promise<string> {
   const session = await getSession();
@@ -42,18 +42,6 @@ export type SettingsActionResult =
         | "wrong_password"
         | "email_taken";
     };
-
-/** Checks the user's current password — for changes to how they sign in. */
-async function passwordMatches(userId: string, password: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { passwordHash: true },
-  });
-  if (!user) return null;
-  return (
-    !!user.passwordHash && (await verifyPassword(password, user.passwordHash))
-  );
-}
 
 export async function updateName(
   input: NameInput,
@@ -119,7 +107,10 @@ export async function changeEmail(
 export async function changePassword(
   input: PasswordChangeInput,
 ): Promise<SettingsActionResult> {
-  const userId = await requireUserId();
+  // The session too, not just the User: it's the one that stays signed in.
+  const session = await getSession();
+  if (!session) throw new Error("unauthorized");
+  const userId = session.user.id;
   const parsed = passwordChangeSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const data = parsed.data;
@@ -128,10 +119,7 @@ export async function changePassword(
   if (valid === null) return { ok: false, error: "not_found" };
   if (!valid) return { ok: false, error: "wrong_password" };
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { passwordHash: await hashPassword(data.newPassword) },
-  });
+  await replacePassword(userId, data.newPassword, session.session.token);
 
   revalidatePath("/", "layout");
   return { ok: true };

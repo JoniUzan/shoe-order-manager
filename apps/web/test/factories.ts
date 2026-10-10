@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { prisma } from "@repo/db";
 
-import { hashPassword } from "@/lib/password";
+import { hashPassword } from "better-auth/crypto";
 
 import { signInAs } from "./session";
 
@@ -22,9 +22,19 @@ export async function createUser(opts: { password?: boolean } = {}) {
       email: uniqueEmail(),
       name: "Test User",
       onboardedAt: new Date(),
-      passwordHash: opts.password ? await hashPassword(PASSWORD) : null,
     },
   });
+  if (opts.password) {
+    // Email + password sign-in is Better Auth's `credential` account.
+    await prisma.account.create({
+      data: {
+        userId: user.id,
+        accountId: user.id,
+        providerId: "credential",
+        password: await hashPassword(PASSWORD),
+      },
+    });
+  }
   signInAs(user.id);
   return user;
 }

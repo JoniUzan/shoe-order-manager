@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { prisma } from "@repo/db";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 
 import type { Locale } from "./i18n.ts";
 
@@ -16,16 +16,25 @@ export function uniqueEmail() {
 }
 
 export async function createAccount(locale: Locale, opts: { onboarded?: boolean } = {}) {
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email: uniqueEmail(),
       name: "E2E User",
-      passwordHash: await bcrypt.hash(PASSWORD, 10),
       locale,
       onboardedAt: opts.onboarded === false ? null : new Date(),
     },
     select: { id: true, email: true, name: true },
   });
+  // Email + password sign-in is Better Auth's `credential` account.
+  await prisma.account.create({
+    data: {
+      userId: user.id,
+      accountId: user.id,
+      providerId: "credential",
+      password: await hashPassword(PASSWORD),
+    },
+  });
+  return user;
 }
 
 export function createCustomer(ownerId: string, name = unique("Store")) {
