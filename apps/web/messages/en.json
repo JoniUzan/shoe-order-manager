@@ -60,7 +60,6 @@
     "noResults": "No results",
     "rowCount": "{count} orders",
     "openOrder": "Open order",
-    "close": "Close",
     "print": "Print",
     "searchPlaceholder": "Search customer or order #",
     "searchPlaceholderScoped": "Search order #",

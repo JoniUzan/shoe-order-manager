@@ -65,6 +65,26 @@ test("mark an order done, then reopen it", async ({ page, t, appLocale, user }) 
   await expect(orderPage.statusBadge("not_done")).toBeVisible();
 });
 
+test("an order in the list opens its page, by number or by row", async ({ page, t, appLocale, user }) => {
+  await threeOrders(user.id);
+  const [, second, third] = await prisma.order.findMany({
+    where: { ownerId: user.id },
+    orderBy: { orderNumber: "asc" },
+  });
+  const list = new OrdersList(page, t);
+  const orderPage = new OrderPage(page, t);
+
+  await list.goto(appLocale);
+  await list.orderLink(2).click();
+  await page.waitForURL(new RegExp(`/orders/${second!.id}$`));
+  await expect(orderPage.heading(2)).toBeVisible();
+
+  await list.goto(appLocale);
+  await list.clickRow(3);
+  await page.waitForURL(new RegExp(`/orders/${third!.id}$`));
+  await expect(orderPage.heading(3)).toBeVisible();
+});
+
 test("bulk: mark selected orders done, then delete them", async ({ page, t, appLocale, user }) => {
   await threeOrders(user.id);
   const list = new OrdersList(page, t);

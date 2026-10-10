@@ -13,15 +13,6 @@ import {
 } from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import { Checkbox } from "@repo/ui/components/checkbox";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@repo/ui/components/drawer";
 import { cn } from "@repo/ui/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Check, RotateCcw, Trash2, X } from "lucide-react";
@@ -30,7 +21,6 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { DataTable } from "@/components/data-table/data-table";
-import { DetailRow } from "@/components/data-table/detail-row";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
@@ -51,8 +41,8 @@ import {
  * The orders table, shared by the dashboard and /orders.
  *
  * Everything list-shaped (toolbar, paging, column visibility) lives in
- * `<DataTable>`; what's here is what's specific to orders — the columns, bulk
- * selection, and the quick look.
+ * `<DataTable>`; what's here is what's specific to orders — the columns and bulk
+ * selection. A row opens its Order page.
  */
 
 /** Which direction a column should take when you first sort by it. */
@@ -90,7 +80,6 @@ export function OrdersTable({
   const tOrders = useTranslations("orders");
   const tc = useTranslations("common");
   const locale = useLocale();
-  const isRtl = locale === "he";
 
   const router = useRouter();
   const { setParams, isPending, startTransition, search, setSearch, viewKey } =
@@ -98,8 +87,6 @@ export function OrdersTable({
       params,
       onDashboard ? dashboardOrderListToQuery : orderListToQuery,
     );
-
-  const [active, setActive] = useState<OrderRow | null>(null);
 
   /* --------------------------------------------------------------- selection */
 
@@ -215,13 +202,12 @@ export function OrdersTable({
           />
         ),
         cell: ({ row }) => (
-          <button
-            type="button"
-            onClick={() => setActive(row.original)}
+          <Link
+            href={`/orders/${row.original.id}`}
             className="font-medium tabular-nums underline-offset-4 hover:underline"
           >
             <bdi>#{row.original.orderNumber}</bdi>
-          </button>
+          </Link>
         ),
       },
       ...(scopedToCustomer
@@ -405,7 +391,7 @@ export function OrdersTable({
           noResults: t("noResults"),
           noMatch: t("noMatch"),
         }}
-        onRowClick={setActive}
+        onRowClick={(row) => router.push(`/orders/${row.id}`)}
         isRowActive={(row) => selected.has(row.id)}
         aboveTable={
           /* Bulk bar — a separate strip, so the toolbar above never jumps.
@@ -488,62 +474,6 @@ export function OrdersTable({
           </div>
         }
       />
-
-      {/* Quick look */}
-      <Drawer
-        open={active !== null}
-        onOpenChange={(open) => !open && setActive(null)}
-        direction={isRtl ? "left" : "right"}
-      >
-        <DrawerContent>
-          {active && (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>
-                  <bdi>#{active.orderNumber}</bdi> · {active.customerName}
-                </DrawerTitle>
-                <DrawerDescription>
-                  {new Date(active.createdAt).toLocaleDateString(locale, {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="flex flex-col gap-3 px-4 text-sm">
-                <div className="flex gap-1.5">
-                  <OrderStatusBadge code={active.statusCode} />
-                  <PaymentBadge status={active.paymentStatus} />
-                </div>
-                <DetailRow
-                  label={t("colItems")}
-                  value={String(active.itemCount)}
-                />
-                <DetailRow
-                  label={t("colTotal")}
-                  value={formatMoney(active.totalAgorot, locale)}
-                />
-                <DetailRow
-                  label={t("colBalance")}
-                  value={
-                    active.balanceAgorot > 0
-                      ? formatMoney(active.balanceAgorot, locale)
-                      : "—"
-                  }
-                />
-              </div>
-              <DrawerFooter>
-                <Button asChild>
-                  <Link href={`/orders/${active.id}`}>{t("openOrder")}</Link>
-                </Button>
-                <DrawerClose asChild>
-                  <Button variant="outline">{t("close")}</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </>
-          )}
-        </DrawerContent>
-      </Drawer>
 
       <AlertDialog open={confirmingBulk} onOpenChange={setConfirmingBulk}>
         <AlertDialogContent>

@@ -373,6 +373,20 @@ export class OrdersList {
     await this.page.goto(`/${locale}/orders`);
   }
 
+  /** An order's number, a link to its page. */
+  orderLink(orderNumber: number) {
+    return this.page.getByRole("link", { name: `#${orderNumber}`, exact: true });
+  }
+
+  /** Click an order's row away from its links and buttons: on its status badge. */
+  async clickRow(orderNumber: number) {
+    await this.page
+      .getByRole("row")
+      .filter({ has: this.orderLink(orderNumber) })
+      .getByText(this.t("status.not_done"), { exact: true })
+      .click();
+  }
+
   async select(orderNumber: number) {
     await this.page
       .getByRole("checkbox", { name: this.t("dashboard.selectRow", { number: orderNumber }) })
