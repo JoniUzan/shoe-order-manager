@@ -334,6 +334,15 @@ export class OrderPage {
     return this.page.getByRole("button", { name: this.t("orders.markDone") });
   }
 
+  itemsTable() {
+    return this.page.getByRole("table");
+  }
+
+  /** The Payments card's title. */
+  paymentsTitle() {
+    return this.page.getByText(this.t("payments.title"), { exact: true });
+  }
+
   /** Open the PDF menu (a popover on a computer, a drawer on a phone). */
   async openPdfMenu() {
     await this.page.getByRole("button", { name: this.t("pdf.menu") }).click();

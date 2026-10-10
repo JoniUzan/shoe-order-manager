@@ -148,21 +148,37 @@ export default async function OrderDetailPage({
         <PaymentBadge status={order.paymentStatus} />
       </div>
 
-      {packing && <PackingCard summary={packing} locale={locale} />}
+      {/* Contents in the wide column, money and notes beside it. On a phone
+          the side column drops under the contents. */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {packing && <PackingCard summary={packing} locale={locale} />}
 
-      <OrderItemsTable
-        rows={itemList.rows}
-        total={itemList.total}
-        totalUnfiltered={itemList.totalUnfiltered}
-        pageCount={itemList.pageCount}
-        params={itemList.params}
-      />
+          <OrderItemsTable
+            rows={itemList.rows}
+            total={itemList.total}
+            totalUnfiltered={itemList.totalUnfiltered}
+            pageCount={itemList.pageCount}
+            params={itemList.params}
+          />
+        </div>
 
-      <div className="grid items-start gap-6 sm:grid-cols-2">
-        {(order.notes || order.factoryNote) && (
-          <div className="flex flex-col gap-6">
+        <aside className="min-w-0">
+          {/* Stays in view beside a long items table, and is as tall as the
+              column it sits in, up to the window: Payments takes the room
+              the notes leave, and its history scrolls inside it. The 7.5rem
+              keeps its foot clear of the quick-action button, which sits on
+              this side of the window. */}
+          <div className="flex flex-col gap-6 xl:sticky xl:top-6 xl:h-full xl:max-h-[calc(100svh-7.5rem)]">
+            <PaymentControls
+              orderId={order.id}
+              totalAgorot={order.totalAgorot}
+              paidAgorot={order.depositAgorot}
+              payments={order.payments}
+              className="xl:min-h-0 xl:flex-1"
+            />
             {order.notes && (
-              <Card>
+              <Card className="shrink-0">
                 <CardHeader>
                   <CardTitle>{t("notes")}</CardTitle>
                 </CardHeader>
@@ -172,7 +188,7 @@ export default async function OrderDetailPage({
               </Card>
             )}
             {order.factoryNote && (
-              <Card>
+              <Card className="shrink-0">
                 <CardHeader className="flex flex-row items-baseline justify-between gap-3">
                   <CardTitle>{t("factoryNote")}</CardTitle>
                   <span className="text-xs text-muted-foreground">
@@ -185,15 +201,7 @@ export default async function OrderDetailPage({
               </Card>
             )}
           </div>
-        )}
-        <div className="sm:col-start-2">
-          <PaymentControls
-            orderId={order.id}
-            totalAgorot={order.totalAgorot}
-            paidAgorot={order.depositAgorot}
-            payments={order.payments}
-          />
-        </div>
+        </aside>
       </div>
     </div>
   );
