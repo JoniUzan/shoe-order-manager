@@ -7,7 +7,7 @@ import {
 } from "@repo/domain";
 import { revalidatePath } from "next/cache";
 
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export type FinishOnboardingResult =
   | { ok: true }
@@ -22,7 +22,7 @@ export type FinishOnboardingResult =
 export async function finishOnboarding(
   input: FinishOnboardingInput,
 ): Promise<FinishOnboardingResult> {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
   const parsed = finishOnboardingSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };

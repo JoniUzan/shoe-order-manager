@@ -4,29 +4,47 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useActionState, useState } from "react";
+import { useState, type FormEvent } from "react";
 
-import { authenticate, type LoginState } from "@/lib/actions/auth-actions";
+import { authClient } from "@/lib/auth-client";
+
+type LoginError = "invalid" | "rateLimited" | "error";
 
 /**
- * Email and password, drawn like the sign-up form. The email is controlled
- * so a wrong password doesn't clear it (React resets uncontrolled fields
- * after a form action).
+ * Email and password, drawn like the sign-up form. Posts to Better Auth's
+ * sign-in endpoint (rate-limited there), then lands in the account's saved
+ * language, whichever one the login page was in.
  */
 export function LoginForm({ locale }: { locale: string }) {
   const t = useTranslations("auth");
-  const [state, formAction, pending] = useActionState<LoginState, FormData>(
-    authenticate,
-    undefined,
-  );
+  const router = useRouter();
+  const [error, setError] = useState<LoginError | null>(null);
+  const [pending, setPending] = useState(false);
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const box = "h-11 rounded-xl px-3.5 text-[15px] md:text-[15px]";
 
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const password = String(new FormData(event.currentTarget).get("password"));
+    setPending(true);
+    setError(null);
+    const { data, error } = await authClient.signIn.email({ email, password });
+    if (error) {
+      setPending(false);
+      setError(
+        error.status === 401 ? "invalid" : error.status === 429 ? "rateLimited" : "error",
+      );
+      return;
+    }
+    // Stays pending through the navigation.
+    router.replace(`/${data.user.locale ?? locale}`);
+  }
+
   return (
-    <form action={formAction} className="flex flex-col gap-5">
-      <input type="hidden" name="locale" value={locale} />
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
 
       <div className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">
@@ -71,9 +89,13 @@ export function LoginForm({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {state && (
+      {error && (
         <p role="alert" className="text-sm text-destructive">
-          {state === "invalid" ? t("invalidCredentials") : t("genericError")}
+          {error === "invalid"
+            ? t("invalidCredentials")
+            : error === "rateLimited"
+              ? t("signInRateLimited")
+              : t("genericError")}
         </p>
       )}
 

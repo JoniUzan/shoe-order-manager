@@ -2,15 +2,15 @@ import { prisma } from "@repo/db";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import { auth } from "./auth";
+import { getSession } from "./auth";
 
 /**
  * Require an authenticated user in a server component / action.
  *
- * Verifies the session's user still exists in the database (a JWT can outlive
- * the row it references — e.g. after a DB reset), so a stale session redirects
- * to login instead of causing a foreign-key crash downstream. Returns the
- * fresh user for ownerId scoping.
+ * Verifies the session's user still exists in the database (the 5-minute
+ * session cookie cache can outlive the row it references — e.g. after a DB
+ * reset), so a stale session redirects to login instead of causing a
+ * foreign-key crash downstream. Returns the fresh user for ownerId scoping.
  *
  * Wrapped in React `cache()` so the `(app)` layout and the page it wraps share
  * one session + user read per server request instead of each doing its own.
@@ -19,7 +19,7 @@ import { auth } from "./auth";
  * nothing relies on a second call within one request seeing fresher data.
  */
 export const requireUser = cache(async function requireUser(locale: string) {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) {
     redirect(`/${locale}/login`);
   }
@@ -50,7 +50,7 @@ export const requireUser = cache(async function requireUser(locale: string) {
 });
 
 export async function getCurrentUser() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) return null;
   return prisma.user.findUnique({
     where: { id: session.user.id },
