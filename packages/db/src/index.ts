@@ -5,6 +5,8 @@ export type {
   SignupAttempt,
   Account,
   Session,
+  Verification,
+  RateLimit,
   OrderStatus,
   Customer,
   ShoeModel,
