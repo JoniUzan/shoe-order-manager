@@ -23,6 +23,10 @@ Prisma 7 schema, client and seeds. Exports `prisma` plus the model types.
 2. Add any new model type to the export lists in **both** `src/index.ts` and `src/browser.ts`.
 3. A new required column on an existing table needs a default or a data migration, since
    production has rows.
+4. Migrations run before the new code is live, so for a short time the old code runs on the
+   new schema. Once a real business uses the app, a migration must not break the code before
+   it: a rename or drop takes two PRs (add and switch over, then drop in a later PR). Until
+   then a breaking migration is allowed. Migrations are never rolled back; fix forward.
 
 ## Client and connections
 
