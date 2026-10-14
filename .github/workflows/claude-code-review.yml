@@ -38,9 +38,9 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          # Logs every tool call, so permission denials show which command was refused.
-          # Temporary, to tune --allowedTools; the repo is private.
-          show_full_output: true
+          # Off: Actions logs are public once the repo is. To tune --allowedTools again,
+          # turn it on briefly and read one run's log for the refused commands.
+          show_full_output: false
           prompt: |
             /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
 
