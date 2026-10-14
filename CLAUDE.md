@@ -107,6 +107,16 @@ Where the code says it differently:
   ready. Split the work into one commit per logical section, each one typechecking on its own
   (new files land unused first, the consumer switches over last). The user reviews by
   reading the commit list.
+- **Merging (GitHub flow).** PRs target `master`, which is production; there is no staging
+  branch. Merge only when the Test workflow is green **and** the latest Claude review comment
+  says "Ready to merge — reviewed <the PR's head sha>". The review always reports success, so
+  that second half is this rule, not a required check. Merge commits; branches are kept.
+- **Deploys (planned, not built yet).** A ready PR gets a preview: a Neon branch made from the
+  demo-data branch, migrated, behind Cloudflare Access. A merge to `master` runs
+  `prisma migrate deploy` and then deploys; a failed migration stops the deploy. A bad deploy is
+  undone by rolling back to the previous version, and the database is fixed forward with a new
+  migration, never rolled back. Hosting moves to Cloudflare Workers if the spike passes; ADR 0008
+  is rewritten then.
 - **Design first for UI.** A new or redesigned screen is drawn on a Claude Design canvas first
   (the app's real tokens, Hebrew RTL first, desktop + phone + dark) and built only after the
   user approves it. The user often points at claude.ai's UI as the reference. Small fixes to
