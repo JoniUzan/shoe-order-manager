@@ -24,7 +24,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @repo/domain test:coverage
@@ -54,7 +54,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       # Product images: the same S3 server as docker compose. A step rather
       # than a service, because the server needs its command line. The tests
@@ -97,7 +97,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       # Product images: the same S3 server as docker compose. A step rather
       # than a service, because the server needs its command line. The tests

@@ -12,7 +12,7 @@
     "@repo/db": "workspace:*",
     "@repo/domain": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "better-auth": "^1.7.10",
     "intl-messageformat": "^11.2.13",
     "typescript": "^5.7.3",
