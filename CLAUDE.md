@@ -21,7 +21,7 @@ pnpm test                    # unit + integration tests (integration needs docke
 pnpm test:coverage           # the same, failing below the coverage floors
 pnpm test:e2e                # build, then Playwright on :3100 in he/en × desktop/phone
 
-docker compose up -d         # local Postgres 17 on :5432 + S3 storage for images on :8333
+docker compose up -d         # local Postgres 18 on :5432 + S3 storage for images on :8333
 docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login)
 pnpm db:migrate              # create/apply migrations (prisma migrate dev)
 pnpm db:seed                 # the dev admin user; db:seed:demo adds demo data
