@@ -24,7 +24,7 @@ pnpm test:e2e                # build, then Playwright on :3100 in he/en × deskt
 docker compose up -d         # local Postgres 17 on :5432 + S3 storage for images on :8333
 docker compose --profile studio up -d   # + pgAdmin on http://localhost:5050 (no login)
 pnpm db:migrate              # create/apply migrations (prisma migrate dev)
-pnpm db:seed                 # order statuses + admin user; db:seed:demo adds demo data
+pnpm db:seed                 # the dev admin user; db:seed:demo adds demo data
 pnpm db:generate             # regenerate the Prisma client after schema edits
 pnpm storage:check           # prove image storage works: write, read, public fetch, delete (--env <file>)
 pnpm storage:reset           # delete every local Product image (empties the product-images bucket)

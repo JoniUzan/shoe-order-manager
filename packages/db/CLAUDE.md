@@ -13,8 +13,9 @@ Prisma 7 schema, client and seeds. Exports `prisma` plus the model types.
   read and written through `@repo/domain`'s parse/serialize helpers.
 - Every owned table carries `ownerId` (ADR 0003). `SizePack`, `OrderPack` and `OrderItem` have
   none; queries reach them through `shoeModel: { ownerId }` or `order: { ownerId }`.
-- Order statuses are rows in `OrderStatus` (seeded), so a new stage is a seed row, not a
-  migration.
+- Order statuses are rows in `OrderStatus`, created by a migration (`20261015090000_order_statuses`)
+  so every database has them. A new stage is a new migration that inserts a row, not a schema
+  change.
 
 ## Changing the schema
 
@@ -41,5 +42,5 @@ Prisma 7 schema, client and seeds. Exports `prisma` plus the model types.
 
 ## Seeds
 
-- `pnpm db:seed` (`prisma/seed.ts`): order statuses + the admin user. Idempotent (upserts).
+- `pnpm db:seed` (`prisma/seed.ts`): the dev admin user (skipped when `NODE_ENV=production`). Idempotent.
 - `pnpm db:seed:demo` (`prisma/seed-demo.ts`): demo customers, catalog and orders.

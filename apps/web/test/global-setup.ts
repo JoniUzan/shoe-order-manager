@@ -29,8 +29,8 @@ async function createBucket() {
 }
 
 /**
- * Bring the test database up to the latest migration and seed it (order
- * statuses, admin). `migrate deploy` creates the database if it's missing.
+ * Bring the test database up to the latest migration (which creates the order
+ * statuses); tests make their own Users, so nothing is seeded. `migrate deploy` creates the database if it's missing.
  * Nothing is wiped between runs: every test makes its own User, and all data
  * is scoped by ownerId, so old rows never get in the way.
  */
@@ -39,8 +39,6 @@ export default async function setup() {
     process.env.TEST_DATABASE_URL ??
     "postgresql://postgres@localhost:5432/shoe_test";
   const env = { ...process.env, DATABASE_URL: url, DIRECT_URL: url };
-  for (const cmd of ["prisma migrate deploy", "prisma db seed"]) {
-    execSync(`pnpm --filter @repo/db exec ${cmd}`, { env, stdio: "pipe" });
-  }
+  execSync("pnpm --filter @repo/db exec prisma migrate deploy", { env, stdio: "pipe" });
   await createBucket();
 }
