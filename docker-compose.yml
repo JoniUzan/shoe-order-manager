@@ -2,13 +2,13 @@
 # Matches the DATABASE_URL / DIRECT_URL in packages/db/.env.example and
 # apps/web/.env.example. Production uses Neon; this never touches it.
 #
-# Major version 17 to match Neon, so local behaves like production.
-# Upgrading from a 16 volume: `docker compose down -v`, then up again and
-# re-run `pnpm db:migrate && pnpm db:seed` (a data directory can't be opened
-# by a different major version).
+# Major version 18 to match Neon, so local behaves like production.
+# Upgrading from a 17 volume: `docker compose down -v`, then up again and
+# run `pnpm dev:reset` (a data directory can't be opened by a different major
+# version).
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -19,7 +19,9 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # 18's image keeps its data under /var/lib/postgresql/18/docker and
+      # refuses a volume mounted at the old .../data path.
+      - pgdata:/var/lib/postgresql
 
   # S3-compatible storage for Product images, standing in for Cloudflare R2
   # (ADR 0008): http://localhost:8333, bucket `product-images`. SeaweedFS
