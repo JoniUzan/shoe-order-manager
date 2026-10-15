@@ -10,30 +10,30 @@ export type ThemeCode = (typeof THEMES)[number];
 export const PASSWORD_MIN = 8;
 
 export const nameSchema = z.object({
-  name: z.string().trim().min(1, { message: "required" }).max(100),
+  name: z.string().trim().min(1, { error: "required" }).max(100),
 });
 
 export type NameInput = z.infer<typeof nameSchema>;
 
 /** The email is the login, so changing it asks for the current password. */
 export const emailChangeSchema = z.object({
-  email: z.string().trim().toLowerCase().email({ message: "email" }).max(200),
-  currentPassword: z.string().min(1, { message: "required" }).max(200),
+  email: z.string().trim().toLowerCase().max(200).pipe(z.email({ error: "email" })),
+  currentPassword: z.string().min(1, { error: "required" }).max(200),
 });
 
 export type EmailChangeInput = z.infer<typeof emailChangeSchema>;
 
 export const passwordChangeSchema = z
   .object({
-    currentPassword: z.string().min(1, { message: "required" }).max(200),
+    currentPassword: z.string().min(1, { error: "required" }).max(200),
     newPassword: z
       .string()
-      .min(PASSWORD_MIN, { message: "passwordTooShort" })
+      .min(PASSWORD_MIN, { error: "passwordTooShort" })
       .max(200),
     confirmPassword: z.string(),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
-    message: "passwordMismatch",
+    error: "passwordMismatch",
     path: ["confirmPassword"],
   });
 
@@ -57,15 +57,16 @@ export type BusinessInput = z.infer<typeof businessSchema>;
 
 /** A new account. The email is stored lower-cased; login matches it either way. */
 export const signupSchema = z.object({
-  name: z.string().trim().min(1, { message: "required" }).max(100),
+  name: z.string().trim().min(1, { error: "required" }).max(100),
   email: z
     .string()
     .trim()
     .toLowerCase()
-    .min(1, { message: "required" })
-    .email({ message: "email" })
-    .max(200),
-  password: z.string().min(PASSWORD_MIN, { message: "passwordTooShort" }).max(200),
+    .min(1, { error: "required" })
+    .max(200)
+    // z.email() validates before any trim of its own, so normalise first.
+    .pipe(z.email({ error: "email" })),
+  password: z.string().min(PASSWORD_MIN, { error: "passwordTooShort" }).max(200),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
@@ -96,7 +97,7 @@ export type AvatarInput = z.infer<typeof avatarSchema>;
 
 /** Finishing onboarding needs a business name; the rest stays optional. */
 export const finishOnboardingSchema = businessSchema.extend({
-  businessName: z.string().trim().min(1, { message: "required" }).max(200),
+  businessName: z.string().trim().min(1, { error: "required" }).max(200),
 });
 
 export type FinishOnboardingInput = z.infer<typeof finishOnboardingSchema>;

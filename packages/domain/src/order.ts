@@ -15,7 +15,7 @@ export const orderItemSchema = z
   .object({
     shoeModelId: z.string().min(1).nullish(),
     customDescription: z.string().trim().max(500).nullish(),
-    size: z.string().trim().min(1, { message: "size_required" }).max(20),
+    size: z.string().trim().min(1, { error: "size_required" }).max(20),
     color: z.string().trim().max(100).optional().or(z.literal("")),
     material: z.string().trim().max(100).optional().or(z.literal("")),
     sole: z.string().trim().max(100).optional().or(z.literal("")),
@@ -24,15 +24,15 @@ export const orderItemSchema = z
     quantity: z
       .number()
       .int()
-      .positive({ message: "quantity_positive" })
-      .max(MAX_LINE_PAIRS, { message: "quantity_too_large" }),
+      .positive({ error: "quantity_positive" })
+      .max(MAX_LINE_PAIRS, { error: "quantity_too_large" }),
     unitPriceAgorot: z.number().int().min(0),
   })
   .refine(
     (item) =>
       (!!item.shoeModelId && !item.customDescription) ||
       (!item.shoeModelId && !!item.customDescription),
-    { message: "catalog_xor_custom", path: ["shoeModelId"] },
+    { error: "catalog_xor_custom", path: ["shoeModelId"] },
   );
 
 export type OrderItemInput = z.infer<typeof orderItemSchema>;
@@ -57,11 +57,11 @@ export const orderPackSchema = z
     count: z
       .number()
       .int()
-      .min(1, { message: "pack_count_positive" })
-      .max(MAX_PACK_COUNT, { message: "pack_count_too_large" }),
+      .min(1, { error: "pack_count_positive" })
+      .max(MAX_PACK_COUNT, { error: "pack_count_too_large" }),
   })
   .refine((p) => !!p.orderPackId || !!p.sizePackId, {
-    message: "pack_required",
+    error: "pack_required",
     path: ["sizePackId"],
   });
 
@@ -69,7 +69,7 @@ export type OrderPackInput = z.infer<typeof orderPackSchema>;
 
 export const orderSchema = z
   .object({
-    customerId: z.string().min(1, { message: "customer_required" }),
+    customerId: z.string().min(1, { error: "customer_required" }),
     statusCode: z.string().min(1).default("not_done"),
     notes: z.string().trim().max(2000).optional().or(z.literal("")),
     // Printed only on the Production sheet; `notes` never reach the factory.
@@ -85,7 +85,7 @@ export const orderSchema = z
   // An order of only packs has no loose items, so `.min(1)` on items alone
   // would refuse it.
   .refine((o) => o.items.length > 0 || o.packs.length > 0, {
-    message: "items_required",
+    error: "items_required",
     path: ["items"],
   });
 
