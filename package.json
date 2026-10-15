@@ -25,9 +25,9 @@
     "dev:reset": "pnpm --filter @repo/db reset && pnpm db:seed && pnpm storage:reset"
   },
   "devDependencies": {
-    "playwright-core": "^1.62.1",
-    "prettier": "^3.4.2",
-    "turbo": "^2.5.0",
+    "playwright-core": "^1.64.1",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.8",
     "typescript": "^5.7.3"
   },
   "pnpm": {
