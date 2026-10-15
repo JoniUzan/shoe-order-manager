@@ -15,7 +15,7 @@ import { Button } from "@repo/ui/components/button";
 import { Checkbox } from "@repo/ui/components/checkbox";
 import { cn } from "@repo/ui/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Check, RotateCcw, Trash2, X } from "lucide-react";
+import { Check, RotateCcw, Trash, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -456,7 +456,7 @@ export function OrdersTable({
                     onClick={() => setConfirmingBulk(true)}
                     className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 />
+                    <Trash />
                     {tc("delete")}
                   </Button>
                   <Button

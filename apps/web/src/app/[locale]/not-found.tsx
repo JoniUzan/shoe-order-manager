@@ -1,7 +1,7 @@
 import { Button } from "@repo/ui/components/button";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { FileQuestion } from "lucide-react";
+import { FileQuestionMark } from "lucide-react";
 import { headers } from "next/headers";
 
 import { Link } from "@/i18n/navigation";
@@ -20,7 +20,7 @@ export default async function NotFound() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
-      <FileQuestion className="size-12 text-muted-foreground" />
+      <FileQuestionMark className="size-12 text-muted-foreground" />
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">
           {t("notFoundTitle")}

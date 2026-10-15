@@ -11,11 +11,11 @@ import {
 import {
   ArrowUpRight,
   Check,
-  MoreHorizontal,
+  Ellipsis,
   Pencil,
   Printer,
   RotateCcw,
-  Trash2,
+  Trash,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
@@ -89,7 +89,7 @@ export function OrderRowActions({
             className="relative size-8 text-muted-foreground before:absolute before:-inset-1.5 before:content-[''] data-[state=open]:bg-accent"
             aria-label={tc("actions")}
           >
-            <MoreHorizontal />
+            <Ellipsis />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
@@ -124,7 +124,7 @@ export function OrderRowActions({
               setConfirming(true);
             }}
           >
-            <Trash2 />
+            <Trash />
             {tc("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
