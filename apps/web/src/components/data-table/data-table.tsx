@@ -26,12 +26,14 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { cn } from "@repo/ui/lib/utils";
 import {
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  metaHelper,
+  tableFeatures,
+  useTable,
   type ColumnDef,
   type RowData,
-  type VisibilityState,
+  type ColumnVisibilityState,
 } from "@tanstack/react-table";
 import {
   ChevronLeft,
@@ -63,19 +65,28 @@ import { LIST_PAGE_SIZES, type ListParams } from "@/lib/list-params";
  * belongs to the caller.
  */
 
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    /** Applied to this column's header cell and every body cell alike. */
-    cellClassName?: string;
-    /**
-     * The list sort this column maps to. `aria-sort` belongs on the header
-     * cell, not on the button inside it, so the shell needs to know which
-     * column the current sort refers to.
-     */
-    sortKey?: string;
-  }
-}
+type DataTableColumnMeta = {
+  /** Applied to this column's header cell and every body cell alike. */
+  cellClassName?: string;
+  /**
+   * The list sort this column maps to. `aria-sort` belongs on the header
+   * cell, not on the button inside it, so the shell needs to know which
+   * column the current sort refers to.
+   */
+  sortKey?: string;
+};
+
+/**
+ * Column visibility is the only TanStack feature in use: the server already
+ * filtered, sorted and paged, so no row model is registered.
+ */
+const features = tableFeatures({
+  columnVisibilityFeature,
+  columnMeta: metaHelper<DataTableColumnMeta>(),
+});
+
+/** A column of a DataTable. */
+export type DataTableColumn<TRow extends RowData> = ColumnDef<typeof features, TRow>;
 
 /**
  * Grows a control's pressable area vertically without redrawing it. The
@@ -86,11 +97,10 @@ declare module "@tanstack/react-table" {
 export const HIT_TALLER =
   "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
 
-export function DataTable<TRow, F extends string, S extends string>({
+export function DataTable<TRow extends RowData, F extends string, S extends string>({
   rows,
   columns,
   getRowId,
-  total,
   pageCount,
   params,
   defaultFilter,
@@ -108,10 +118,9 @@ export function DataTable<TRow, F extends string, S extends string>({
   showToolbar = true,
 }: {
   rows: TRow[];
-  columns: ColumnDef<TRow>[];
+  columns: DataTableColumn<TRow>[];
   /** Stable row identity — the record's id, never the index. */
   getRowId: (row: TRow) => string;
-  total: number;
   pageCount: number;
   params: ListParams<F, S>;
   /** The filter the list starts on — what "clear filters" returns to. */
@@ -150,25 +159,19 @@ export function DataTable<TRow, F extends string, S extends string>({
   const locale = useLocale();
   const isRtl = locale === "he";
 
-  const [visibility, setVisibility] = useState<VisibilityState>({});
+  const [visibility, setVisibility] = useState<ColumnVisibilityState>({});
 
   // Reverts on its own if the navigation never lands, so the pill can never be
   // left marking a filter the list is not actually showing.
   const [filterView, setFilterView] = useOptimistic(params.filter);
 
-  const table = useReactTable({
+  const table = useTable({
+    features,
     data: rows,
     columns,
     state: { columnVisibility: visibility },
     onColumnVisibilityChange: setVisibility,
-    getCoreRowModel: getCoreRowModel(),
     getRowId,
-    // The server already filtered, sorted and paged; TanStack only renders.
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
-    pageCount,
-    rowCount: total,
   });
 
   const Prev = isRtl ? ChevronRight : ChevronLeft;

@@ -1,11 +1,10 @@
 "use client";
 
 import { formatMoney } from "@repo/domain";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/data-table";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import {
@@ -74,7 +73,7 @@ export function SalesTable({
     [params.sort, params.dir, setParams],
   );
 
-  const columns = useMemo<ColumnDef<SalesRow>[]>(
+  const columns = useMemo<DataTableColumn<SalesRow>[]>(
     () => [
       {
         accessorKey: "start",
@@ -186,7 +185,6 @@ export function SalesTable({
       rows={rows}
       columns={columns}
       getRowId={(row) => row.start}
-      total={total}
       pageCount={pageCount}
       params={params}
       defaultFilter={SALES_LIST_DEFAULTS.filter}

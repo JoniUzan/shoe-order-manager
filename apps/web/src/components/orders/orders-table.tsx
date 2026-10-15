@@ -14,13 +14,12 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Checkbox } from "@repo/ui/components/checkbox";
 import { cn } from "@repo/ui/lib/utils";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Check, RotateCcw, Trash, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/data-table";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
@@ -165,7 +164,7 @@ export function OrdersTable({
     [params.sort, params.dir, setParams],
   );
 
-  const columns = useMemo<ColumnDef<OrderRow>[]>(
+  const columns = useMemo<DataTableColumn<OrderRow>[]>(
     () => [
       {
         id: "select",
@@ -233,7 +232,7 @@ export function OrdersTable({
                   {row.original.customerName}
                 </Link>
               ),
-            } satisfies ColumnDef<OrderRow>,
+            } satisfies DataTableColumn<OrderRow>,
           ]),
       {
         accessorKey: "createdAt",
@@ -355,7 +354,6 @@ export function OrdersTable({
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        total={total}
         pageCount={pageCount}
         params={params}
         defaultFilter={

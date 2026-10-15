@@ -17,13 +17,12 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@repo/ui/components/drawer";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { ModelRowActions } from "@/components/catalog/model-row-actions";
 import { CurveText } from "@/components/catalog/curve-text";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/data-table";
 import { DetailRow } from "@/components/data-table/detail-row";
 import { ModelThumb } from "@/components/orders/model-thumb";
 import { SortHeader } from "@/components/data-table/sort-header";
@@ -151,7 +150,7 @@ export function CatalogTable({
     [params.sort, params.dir, setParams],
   );
 
-  const columns = useMemo<ColumnDef<CatalogRow>[]>(
+  const columns = useMemo<DataTableColumn<CatalogRow>[]>(
     () => [
       {
         accessorKey: "name",
@@ -272,7 +271,6 @@ export function CatalogTable({
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        total={total}
         pageCount={pageCount}
         params={params}
         defaultFilter={CATALOG_LIST_DEFAULTS.filter}
