@@ -20,9 +20,9 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -31,7 +31,7 @@ jobs:
       - name: Coverage summary
         if: ${{ !cancelled() }}
         run: node .github/scripts/coverage-summary.mjs domain packages/domain/coverage/coverage-summary.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: coverage-domain
@@ -50,9 +50,9 @@ jobs:
         options: >-
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -70,7 +70,7 @@ jobs:
       - name: Coverage summary
         if: ${{ !cancelled() }}
         run: node .github/scripts/coverage-summary.mjs "Server Actions" apps/web/coverage/coverage-summary.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: coverage-actions
@@ -93,9 +93,9 @@ jobs:
       DIRECT_URL: postgresql://postgres@localhost:5432/shoe_test
       AUTH_SECRET: e2e-only-secret-not-used-anywhere-else
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -112,7 +112,7 @@ jobs:
         working-directory: apps/e2e
       - run: pnpm --filter web build
       - run: pnpm --filter e2e test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ failure() }}
         with:
           name: playwright-report
