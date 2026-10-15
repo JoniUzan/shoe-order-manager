@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import { customerSchema } from "./customer";
 import {
@@ -23,7 +24,7 @@ describe("signupSchema", () => {
 
   it("names each failing field", () => {
     const r = signupSchema.safeParse({ name: "", email: "nope", password: "short" });
-    expect(r.error?.flatten().fieldErrors).toEqual({
+    expect(r.error && z.flattenError(r.error).fieldErrors).toEqual({
       name: ["required"],
       email: ["email"],
       password: ["passwordTooShort"],

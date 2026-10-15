@@ -42,11 +42,11 @@ export function formatSize(size: string, format?: string | null): string {
 export const sizeSchema = z
   .string()
   .trim()
-  .min(1, { message: "size_empty" })
+  .min(1, { error: "size_empty" })
   .max(20)
-  .refine((s) => !s.includes(","), { message: "size_no_comma" })
-  .refine((s) => Number.isFinite(Number(s)), { message: "size_numeric" })
-  .refine((s) => Number(s) > 0, { message: "size_positive" });
+  .refine((s) => !s.includes(","), { error: "size_no_comma" })
+  .refine((s) => Number.isFinite(Number(s)), { error: "size_numeric" })
+  .refine((s) => Number(s) > 0, { error: "size_positive" });
 
 /** The most sizes one model may carry; also the ceiling on a generated run. */
 export const MAX_SIZES = 60;
@@ -180,7 +180,7 @@ export function formatCurve(curve: Curve, separator = " · "): string {
 export const sizePackSchema = z
   .object({
     id: z.string().min(1).optional(),
-    name: z.string().trim().min(1, { message: "required" }).max(100),
+    name: z.string().trim().min(1, { error: "required" }).max(100),
     curve: z
       .array(
         z.object({
@@ -208,7 +208,7 @@ export type SizePackInput = z.infer<typeof sizePackSchema>;
 
 export const shoeModelSchema = z
   .object({
-    name: z.string().trim().min(1, { message: "required" }).max(200),
+    name: z.string().trim().min(1, { error: "required" }).max(200),
     sku: z.string().trim().max(100).optional().or(z.literal("")),
     description: z.string().trim().max(2000).optional().or(z.literal("")),
     // Entered in shekels in the UI, converted to agorot before persisting.
@@ -221,7 +221,7 @@ export const shoeModelSchema = z
     // remove it. Whether the key is the User's own is checked by the action.
     imageKey: z
       .string()
-      .refine(isProductImageKey, { message: "invalid_image" })
+      .refine(isProductImageKey, { error: "invalid_image" })
       .nullable()
       .optional(),
   })

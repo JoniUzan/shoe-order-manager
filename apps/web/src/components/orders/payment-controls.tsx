@@ -24,7 +24,7 @@ import {
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { useLocale, useTranslations } from "next-intl";
-import { CheckCircle2, Plus, X } from "lucide-react";
+import { CircleCheck, Plus, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -204,7 +204,7 @@ export function PaymentControls({
               onClick={onMarkPaid}
               disabled={pending}
             >
-              <CheckCircle2 className="size-4" />
+              <CircleCheck className="size-4" />
               {t("markFullyPaid")}
             </Button>
           </div>

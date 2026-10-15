@@ -2,11 +2,10 @@
 
 import { formatMoney, formatSize } from "@repo/domain";
 import { Badge } from "@repo/ui/components/badge";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/data-table";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
 import { ModelThumb } from "@/components/orders/model-thumb";
@@ -68,7 +67,7 @@ export function OrderItemsTable({
     [params.sort, params.dir, setParams],
   );
 
-  const columns = useMemo<ColumnDef<OrderItemRow>[]>(
+  const columns = useMemo<DataTableColumn<OrderItemRow>[]>(
     () => [
       {
         accessorKey: "name",
@@ -194,7 +193,6 @@ export function OrderItemsTable({
       rows={rows}
       columns={columns}
       getRowId={(row) => row.id}
-      total={total}
       pageCount={pageCount}
       params={params}
       defaultFilter={ORDER_ITEM_LIST_DEFAULTS.filter}

@@ -11,11 +11,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@repo/ui/components/drawer";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable, type DataTableColumn } from "@/components/data-table/data-table";
 import { DetailRow } from "@/components/data-table/detail-row";
 import { SortHeader } from "@/components/data-table/sort-header";
 import { useListParams } from "@/components/data-table/use-list-params";
@@ -73,7 +72,7 @@ export function CustomersTable({
     [params.sort, params.dir, setParams],
   );
 
-  const columns = useMemo<ColumnDef<CustomerRow>[]>(
+  const columns = useMemo<DataTableColumn<CustomerRow>[]>(
     () => [
       {
         accessorKey: "name",
@@ -179,7 +178,6 @@ export function CustomersTable({
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        total={total}
         pageCount={pageCount}
         params={params}
         defaultFilter={CUSTOMER_LIST_DEFAULTS.filter}

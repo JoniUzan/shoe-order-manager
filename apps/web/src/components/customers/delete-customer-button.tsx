@@ -13,7 +13,7 @@ import {
 } from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import { useTranslations } from "next-intl";
-import { Trash2 } from "lucide-react";
+import { Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -51,7 +51,7 @@ export function DeleteCustomerButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Trash2 className="size-4" />
+          <Trash className="size-4" />
           {tc("delete")}
         </Button>
       </AlertDialogTrigger>
