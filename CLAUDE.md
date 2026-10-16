@@ -111,12 +111,12 @@ Where the code says it differently:
   branch. Merge only when the Test workflow is green **and** the latest Claude review comment
   says "Ready to merge — reviewed <the PR's head sha>". The review always reports success, so
   that second half is this rule, not a required check. Merge commits; branches are kept.
-- **Deploys (planned, not built yet).** A ready PR gets a preview: a Neon branch made from the
-  demo-data branch, migrated, behind Cloudflare Access. A merge to `master` runs
-  `prisma migrate deploy` and then deploys; a failed migration stops the deploy. A bad deploy is
-  undone by rolling back to the previous version, and the database is fixed forward with a new
-  migration, never rolled back. Hosting moves to Cloudflare Workers if the spike passes; ADR 0008
-  is rewritten then.
+- **Deploys.** `.github/workflows/deploy.yml`: once Test passes on a `master` commit, it runs
+  `prisma migrate deploy` on Neon and then deploys that commit to Vercel with the CLI; a failed
+  migration stops the deploy. Vercel's own Git deploys are off (`apps/web/vercel.json`), and
+  there are no PR previews yet. A bad deploy is undone by promoting the previous deployment in
+  Vercel, and the database is fixed forward with a new migration, never rolled back. Once real
+  Users exist, migrations stay backward-compatible (a rename or drop takes two PRs).
 - **Design first for UI.** A new or redesigned screen is drawn on a Claude Design canvas first
   (the app's real tokens, Hebrew RTL first, desktop + phone + dark) and built only after the
   user approves it. The user often points at claude.ai's UI as the reference. Small fixes to

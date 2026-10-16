@@ -35,9 +35,17 @@ font has to fit the Worker size limit, and Fastify (ADR 0010) doesn't run on Wor
 start on Vercel and keep the code portable. If cost ever forces the move, it's a project with a
 spike first, and `apps/api` would need a Workers-native framework.
 
-Consequences: migrations run from a GitHub Action on merge to `master` (`prisma migrate deploy`
-with `DIRECT_URL`) before Vercel deploys, so a failed migration stops the deploy. Every preview
-deploy gets its own Neon branch, so previews never touch production data. We start on
+Update (2026-10-16): we spiked Cloudflare Workers before the first deploy and dropped it.
+Cloudflare now routes Next.js through vinext (a beta reimplementation of Next on Vite; OpenNext
+is kept only for existing apps), and `vite build` hung on this app with no error. Vercel runs
+the same `next build` that CI and the e2e suites test. A later move would start again from a
+new spike.
+
+Consequences: migrations run from a GitHub Action (`deploy.yml`) once Test passes on a `master`
+commit (`prisma migrate deploy` with `DIRECT_URL`), and the same job then deploys that commit
+with the Vercel CLI, so a failed migration stops the deploy. Vercel's Git deploys are off, so
+nothing reaches production around the Action. PR previews come later, each on its own Neon
+branch so they never touch production data. We start on
 `*.vercel.app` and `r2.dev`, and buy a domain (Cloudflare, so R2 can use it) before the first
 real business relies on the app. Vercel Hobby doesn't allow commercial use, so Pro starts at that
 point too.
