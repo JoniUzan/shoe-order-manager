@@ -45,3 +45,6 @@ playwright-report/
 
 # design concept screenshots (regenerable)
 design-concepts/_shots/
+
+# Vercel CLI link (vercel link at the repo root)
+.vercel
