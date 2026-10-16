@@ -12,7 +12,7 @@ in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, P
 ## Commands
 
 ```bash
-pnpm install                 # postinstall build scripts are allow-listed in package.json#pnpm.onlyBuiltDependencies
+pnpm install                 # postinstall build scripts are allow-listed in pnpm-workspace.yaml#allowBuilds
 pnpm dev                     # the web app on http://localhost:3000
 pnpm typecheck               # tsc --noEmit across the workspace
 pnpm lint                    # eslint (web)

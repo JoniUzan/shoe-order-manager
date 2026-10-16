@@ -2,3 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
   - "packages/config/*"
+
+# Packages whose install scripts may run. pnpm skips every other package's.
+allowBuilds:
+  "@prisma/engines": true
+  prisma: true
+  esbuild: true
+  "@swc/core": true
+  unrs-resolver: true
+  "@parcel/watcher": true
