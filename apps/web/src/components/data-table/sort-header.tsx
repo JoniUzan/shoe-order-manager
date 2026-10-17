@@ -25,7 +25,8 @@ export function SortHeader<S extends string>({
   align?: "end";
   active: boolean;
   dir: "asc" | "desc";
-  onSort: (key: S) => void;
+  /** Omitted by a table's skeleton, which draws the heading before it can sort. */
+  onSort?: (key: S) => void;
 }) {
   const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
   const icon = (
@@ -35,7 +36,7 @@ export function SortHeader<S extends string>({
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => onSort(sortKey)}
+      onClick={onSort && (() => onSort(sortKey))}
       // The negative margin cancels the header cell's padding *plus* the
       // button's own, so the label lands on the same edge as the values below
       // it — a numeric column whose heading floats off its figures reads as
