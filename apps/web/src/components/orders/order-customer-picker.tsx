@@ -4,7 +4,7 @@ import { Input } from "@repo/ui/components/input";
 import { cn } from "@repo/ui/lib/utils";
 import { CheckIcon, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, type KeyboardEvent } from "react";
+import { useState, type ComponentProps, type KeyboardEvent, type ReactNode } from "react";
 
 import {
   NewCustomerSheet,
@@ -45,7 +45,6 @@ export function OrderCustomerPicker({
   error?: string;
 }) {
   const t = useTranslations("orders");
-  const tc = useTranslations("customers");
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const q = query.trim().toLocaleLowerCase();
@@ -62,21 +61,11 @@ export function OrderCustomerPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute start-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
-          aria-hidden
-        />
-        <Input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={onSearchKey}
-          placeholder={t("searchCustomer")}
-          aria-label={t("searchCustomer")}
-          className={cn(roomy.field, "ps-11")}
-        />
-      </div>
+      <CustomerSearch
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={onSearchKey}
+      />
 
       {/* Under the search, not under the list: a long list would hide it. */}
       {error && <p className={cn("text-sm text-destructive", roomy.appear)}>{error}</p>}
@@ -89,7 +78,8 @@ export function OrderCustomerPicker({
             <label
               key={c.id}
               className={cn(
-                "flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl px-3.5 py-3",
+                CUSTOMER_ROW,
+                "cursor-pointer",
                 "transition-[background-color,box-shadow] duration-150 ease-[ease]",
                 "has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50",
                 selected
@@ -104,12 +94,7 @@ export function OrderCustomerPicker({
                 checked={selected}
                 onChange={() => onChange(c.id)}
               />
-              <span
-                aria-hidden
-                className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold"
-              >
-                {c.name.trim().charAt(0)}
-              </span>
+              <CustomerAvatar>{c.name.trim().charAt(0)}</CustomerAvatar>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className={cn("truncate", selected ? "font-semibold" : "font-medium")}>
                   {c.name}
@@ -135,23 +120,7 @@ export function OrderCustomerPicker({
         {shown.length === 0 && (
           <p className="px-3.5 py-3 text-muted-foreground">{t("noMatches")}</p>
         )}
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className={cn(
-            "flex min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 text-start font-medium",
-            "outline-none hover:bg-surface focus-visible:ring-[3px] focus-visible:ring-ring/50",
-            roomy.press,
-          )}
-        >
-          <span
-            aria-hidden
-            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-dashed border-foreground/20"
-          >
-            <Plus className="size-4.5" />
-          </span>
-          {tc("new")}
-        </button>
+        <NewCustomerRow onClick={() => setAdding(true)} />
       </div>
 
       <NewCustomerSheet
@@ -167,5 +136,65 @@ export function OrderCustomerPicker({
         }}
       />
     </div>
+  );
+}
+
+/** A row of the Customer list: a Customer to pick, or "New customer". */
+export const CUSTOMER_ROW = "flex min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3";
+
+/** The search over the Customer list. */
+export function CustomerSearch(props: ComponentProps<typeof Input>) {
+  const t = useTranslations("orders");
+  return (
+    <div className="relative">
+      <Search
+        className="pointer-events-none absolute start-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
+        aria-hidden
+      />
+      <Input
+        type="search"
+        placeholder={t("searchCustomer")}
+        aria-label={t("searchCustomer")}
+        className={cn(roomy.field, "ps-11")}
+        {...props}
+      />
+    </div>
+  );
+}
+
+/** A Customer's round badge with the first letter of their name. */
+export function CustomerAvatar({ children }: { children: ReactNode }) {
+  return (
+    <span
+      aria-hidden
+      className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold"
+    >
+      {children}
+    </span>
+  );
+}
+
+/** "New customer" at the end of the list, with a dashed circle. */
+export function NewCustomerRow({ onClick }: { onClick: () => void }) {
+  const tc = useTranslations("customers");
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        CUSTOMER_ROW,
+        "text-start font-medium",
+        "outline-none hover:bg-surface focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        roomy.press,
+      )}
+    >
+      <span
+        aria-hidden
+        className="flex size-10 shrink-0 items-center justify-center rounded-full border border-dashed border-foreground/20"
+      >
+        <Plus className="size-4.5" />
+      </span>
+      {tc("new")}
+    </button>
   );
 }

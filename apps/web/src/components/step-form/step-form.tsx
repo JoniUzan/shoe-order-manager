@@ -12,6 +12,7 @@ import {
 } from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import { Label } from "@repo/ui/components/label";
+import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
 import { CheckIcon, ChevronDown, ChevronLeft, ChevronRight, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -117,6 +118,8 @@ interface StepFormContextValue extends StepFormFlow {
   pending: boolean;
   dirty: boolean;
   cancelHref: string;
+  /** Set by StepForm.Skeleton for a saved record: a Field's value is grey. */
+  grey?: boolean;
 }
 
 const StepFormContext = createContext<StepFormContextValue | null>(null);
@@ -127,6 +130,38 @@ export function useStepFormContext() {
   if (!ctx) throw new Error("A StepForm part was used outside <StepForm>.");
   return ctx;
 }
+
+/**
+ * The form's grid: each part places itself by grid area. Shared by the form
+ * and its skeleton, so the two can't lay out differently.
+ */
+function layoutClass(onePage: boolean, className?: string) {
+  return cn(
+    "grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] gap-x-6 gap-y-5 pb-28 md:gap-y-6 md:pb-0",
+    "[grid-template-areas:'header'_'pane'_'actions']",
+    "has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_1fr_auto]",
+    "has-[>[data-slot=step-form-summary]]:[grid-template-areas:'header'_'summary'_'pane'_'actions']",
+    // On a computer the form is held to the panel's height and the
+    // pane's row may shrink below its content: the pane scrolls.
+    "md:min-h-0 md:grid-rows-[auto_minmax(0,1fr)_auto]",
+    "md:has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_minmax(0,1fr)_auto]",
+    "@5xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_22rem]",
+    "@5xl:has-[>[data-slot=step-form-preview]]:[grid-template-areas:'header_header'_'pane_preview'_'actions_preview']",
+    // Three rows again: the Summary, hidden beside a Preview, mustn't
+    // keep a row of its own, or the buttons' row takes the stretch.
+    "@5xl:has-[>[data-slot=step-form-preview]]:grid-rows-[auto_minmax(0,1fr)_auto]",
+    "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
+    // A one-page form is short: a narrower column, centred, and a
+    // card only as tall as its fields (still scrolling once the
+    // window is shorter than that).
+    onePage &&
+      "md:mx-auto md:w-full md:max-w-[45rem] md:grid-rows-[auto_minmax(0,auto)_auto] md:content-start",
+    className,
+  );
+}
+
+/** The wrapper that fills the content panel's height, so the pane reaches its buttons. */
+const FILL = "flex flex-1 flex-col @container md:min-h-0";
 
 /**
  * The <form>. It owns the layout: each part places itself by grid area, so
@@ -166,8 +201,7 @@ function Root({
 
   return (
     <StepFormContext value={{ ...flow, pending, dirty, cancelHref }}>
-      {/* Fills the content panel's height, so the pane reaches its buttons. */}
-      <div className="flex flex-1 flex-col @container md:min-h-0">
+      <div className={FILL}>
         <form
           onSubmit={onSubmit}
           // Validation is react-hook-form's job: native constraint validation
@@ -178,31 +212,57 @@ function Root({
           // the server's HTML, and react-hook-form writes their saved values
           // in on hydration, over anything typed before it.
           data-ready={ready || undefined}
-          className={cn(
-            "grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] gap-x-6 gap-y-5 pb-28 md:gap-y-6 md:pb-0",
-            "[grid-template-areas:'header'_'pane'_'actions']",
-            "has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_1fr_auto]",
-            "has-[>[data-slot=step-form-summary]]:[grid-template-areas:'header'_'summary'_'pane'_'actions']",
-            // On a computer the form is held to the panel's height and the
-            // pane's row may shrink below its content: the pane scrolls.
-            "md:min-h-0 md:grid-rows-[auto_minmax(0,1fr)_auto]",
-            "md:has-[>[data-slot=step-form-summary]]:grid-rows-[auto_auto_minmax(0,1fr)_auto]",
-            "@5xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_22rem]",
-            "@5xl:has-[>[data-slot=step-form-preview]]:[grid-template-areas:'header_header'_'pane_preview'_'actions_preview']",
-            // Three rows again: the Summary, hidden beside a Preview, mustn't
-            // keep a row of its own, or the buttons' row takes the stretch.
-            "@5xl:has-[>[data-slot=step-form-preview]]:grid-rows-[auto_minmax(0,1fr)_auto]",
-            "@7xl:has-[>[data-slot=step-form-preview]]:grid-cols-[minmax(0,1fr)_25rem] @7xl:gap-x-8",
-            // A one-page form is short: a narrower column, centred, and a
-            // card only as tall as its fields (still scrolling once the
-            // window is shorter than that).
-            flow.steps.length === 0 &&
-              "md:mx-auto md:w-full md:max-w-[45rem] md:grid-rows-[auto_minmax(0,auto)_auto] md:content-start",
-            className,
-          )}
+          className={layoutClass(flow.steps.length === 0, className)}
         >
           {children}
         </form>
+      </div>
+    </StepFormContext>
+  );
+}
+
+/**
+ * The form before its route's data arrives, for a form's `loading.tsx`: the
+ * same parts (Header, Pane, StepHeader, Summary, Preview, Actions) inside the
+ * same grid, on the step the real form opens on, with the buttons disabled.
+ * Inert: nothing in it answers yet. With `grey`, every Field draws a grey
+ * bar for its saved value. It keeps the form's `data-slot`, so the app panel
+ * holds it to the window as it does the form.
+ */
+function Placeholder({
+  steps,
+  editing,
+  start = 0,
+  grey = false,
+  children,
+}: {
+  /** The step names; empty for a one-page form. */
+  steps: readonly string[];
+  editing: boolean;
+  /** The step the real form opens on. */
+  start?: number;
+  /** A saved record: its fields hold values, drawn grey. */
+  grey?: boolean;
+  children: ReactNode;
+}) {
+  const t = useTranslations("common");
+  const flow = useStepForm({
+    editing,
+    start,
+    steps: steps.map((label) => ({ label })),
+  });
+
+  return (
+    <StepFormContext value={{ ...flow, pending: true, dirty: false, cancelHref: "", grey }}>
+      <div aria-busy="true" className={cn("skeleton-reveal", FILL)}>
+        <span className="sr-only">{t("loading")}</span>
+        <div
+          inert
+          data-slot="step-form"
+          className={layoutClass(steps.length === 0)}
+        >
+          {children}
+        </div>
       </div>
     </StepFormContext>
   );
@@ -523,12 +583,28 @@ function Field({
   className?: string;
   children: ReactNode;
 }) {
+  // In a skeleton of a saved record, the value is a grey bar on the empty
+  // control, where its first line of text sits (fields and text areas alike).
+  const grey = use(StepFormContext)?.grey;
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-1.5",
+        // No placeholder under the grey bar.
+        grey && "relative [&_input::placeholder]:text-transparent [&_textarea::placeholder]:text-transparent",
+        className,
+      )}
+    >
       <Label htmlFor={htmlFor} className={roomy.label}>
         {label}
       </Label>
       {children}
+      {grey && (
+        // Under the 13px label and its 6px gap, centred on the control's first
+        // line (24px into a 48px field; 12px padding + half a 24px line in a
+        // text area), and past the 1px border and 14px padding.
+        <Skeleton className="absolute start-[0.9375rem] top-[2.3125rem] h-3 w-[min(40%,10rem)]" />
+      )}
       {error && (
         <p className={cn("text-sm text-destructive", roomy.appear)}>{error}</p>
       )}
@@ -816,6 +892,7 @@ function Submit({ children }: { children?: ReactNode }) {
 }
 
 export const StepForm = Object.assign(Root, {
+  Skeleton: Placeholder,
   Header,
   Pane,
   Step,
