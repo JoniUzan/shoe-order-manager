@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
 import { GlassLink } from "@/components/dashboard/glass-link";
-import type { Dashboard } from "@/lib/dashboard-query";
+import type { DashboardStats } from "@/lib/dashboard-query";
 
 /** Ink at three densities: the light-to-dark scale both count cards use. */
 const INK = ["bg-foreground/15", "bg-foreground/45", "bg-foreground"] as const;
@@ -20,7 +20,7 @@ export async function StatCards({
   data,
 }: {
   locale: string;
-  data: Pick<Dashboard, "balanceDue" | "open" | "recent">;
+  data: DashboardStats;
 }) {
   const t = await getTranslations({ locale, namespace: "dashboard" });
   const money = (agorot: number) => formatMoney(agorot, locale);
