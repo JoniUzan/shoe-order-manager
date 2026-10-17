@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import { SkeletonSection } from "./skeleton-section";
 
 /** An order's Payments card before its figures: real labels, grey money. */
-export function PaymentsSkeleton() {
+export function PaymentsSkeleton({ className }: { className?: string }) {
   const t = useTranslations("payments");
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
       </CardHeader>

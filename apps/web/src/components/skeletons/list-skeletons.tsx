@@ -78,11 +78,11 @@ export function CatalogTableSkeleton({ rows }: { rows?: number }) {
 }
 
 /** An order's line items, on its page. */
-export function OrderItemsTableSkeleton() {
+export function OrderItemsTableSkeleton({ rows = 6 }: { rows?: number }) {
   const t = useTranslations("orders");
   return (
     <TableSkeleton
-      rows={6}
+      rows={rows}
       toolbar={{ tabs: 3, search: true }}
       columns={[
         { label: t("items"), cell: "thumb", width: 130 },
