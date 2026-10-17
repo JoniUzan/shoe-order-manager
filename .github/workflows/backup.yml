@@ -1,0 +1,72 @@
+name: Backup
+
+# Nightly pg_dump of production (ADR 0008). Neon's free tier only restores the
+# last 6 hours, so we keep our own dumps in the private R2 bucket below; its
+# lifecycle rule deletes them after 30 days. Restoring: packages/db/CLAUDE.md.
+# The repo is public and so are these logs: never print row data or counts.
+on:
+  schedule:
+    - cron: "0 23 * * *" # 01:00/02:00 in Israel
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-production
+  cancel-in-progress: false
+
+env:
+  # pg_dump/pg_restore must be at least the server's major version (Neon runs 18).
+  POSTGRES_IMAGE: postgres:18
+  BUCKET: shoe-order-backups
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+    services:
+      # An empty Postgres to prove each dump restores before it's kept.
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Dump the production database
+        run: |
+          docker run --rm -e DIRECT_URL "$POSTGRES_IMAGE" \
+            sh -c 'pg_dump --format=custom --no-owner --no-acl "$DIRECT_URL"' > backup.dump
+          ls -l backup.dump
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Check the dump restores
+        run: |
+          docker run --rm --network host -v "$PWD:/backup" "$POSTGRES_IMAGE" \
+            pg_restore --no-owner --no-acl --exit-on-error \
+            -h localhost -U postgres -d postgres /backup/backup.dump
+          migrations=$(docker run --rm --network host "$POSTGRES_IMAGE" \
+            psql -h localhost -U postgres -d postgres -Atc 'SELECT count(*) FROM _prisma_migrations')
+          test "$migrations" -gt 0
+
+      - name: Upload to R2
+        run: |
+          key="neon/$(date -u +%Y-%m-%dT%H%MZ).dump"
+          aws s3 cp backup.dump "s3://$BUCKET/$key" \
+            --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          echo "Uploaded $key"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          AWS_DEFAULT_REGION: auto
+          # Cloudflare's advice for AWS CLI 2.23+: R2 lacks its default checksums.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
