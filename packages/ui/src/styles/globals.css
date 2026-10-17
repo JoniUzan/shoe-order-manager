@@ -386,6 +386,22 @@
   [dir="rtl"] .glass-track > * {
     transform-origin: right center;
   }
+
+  /* A Button with `loading`. Nothing changes for 150ms, so a fast action never
+     flashes; then the label goes clear, still holding the button's width, and
+     the spinner fades in over it. Text has no element to hide, hence the
+     colour; icons and spans are hidden outright. Keyed off the spinner, not
+     the button's data-slot, which an `asChild` child (AlertDialogAction)
+     replaces with its own. */
+  :has(> [data-slot="button-spinner"]) {
+    animation: button-busy 0s 150ms forwards;
+  }
+  :has(> [data-slot="button-spinner"]) > :not([data-slot="button-spinner"]) {
+    animation: button-busy-hide 0s 150ms forwards;
+  }
+  [data-slot="button-spinner"] {
+    animation: button-spinner-in 200ms ease-out 150ms both;
+  }
 }
 
 @keyframes glass-materialize {
@@ -398,6 +414,21 @@
 @keyframes glass-grow {
   from {
     transform: scaleX(0);
+  }
+}
+@keyframes button-busy {
+  to {
+    color: transparent;
+  }
+}
+@keyframes button-busy-hide {
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes button-spinner-in {
+  from {
+    opacity: 0;
   }
 }
 
