@@ -600,10 +600,10 @@ function Field({
       </Label>
       {children}
       {grey && (
-        // Under the 13px label and its 6px gap, centred on the control's first
-        // line (24px into a 48px field; 12px padding + half a 24px line in a
-        // text area), and past the 1px border and 14px padding.
-        <Skeleton className="absolute start-[0.9375rem] top-[2.3125rem] h-3 w-[min(40%,10rem)]" />
+        // Under the label (a 13px line, ~19.5px tall) and its 6px gap, centred
+        // on the control's first line (24px into a 48px field; 12px padding +
+        // half a 24px line in a text area), past the 1px border and padding.
+        <Skeleton className="absolute start-[0.9375rem] top-[2.6875rem] h-3 w-[min(40%,10rem)]" />
       )}
       {error && (
         <p className={cn("text-sm text-destructive", roomy.appear)}>{error}</p>

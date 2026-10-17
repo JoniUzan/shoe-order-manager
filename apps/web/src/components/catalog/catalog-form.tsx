@@ -20,7 +20,7 @@ import { Switch } from "@repo/ui/components/switch";
 import { Textarea } from "@repo/ui/components/textarea";
 import { cn } from "@repo/ui/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useForm, useWatch, type UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -275,10 +275,13 @@ export function CatalogDetails({
   form,
   image,
   onImage,
+  imageField,
 }: {
   form: UseFormReturn<FormValues>;
   image: ProductImageValue;
   onImage: (next: ProductImageValue) => void;
+  /** In place of the image picker: the skeleton's grey image. */
+  imageField?: ReactNode;
 }) {
   const t = useTranslations("catalog");
   const tv = useTranslations("validation");
@@ -287,7 +290,7 @@ export function CatalogDetails({
 
   return (
     <div className="flex flex-col gap-5 @xl:grid @xl:grid-cols-[13.75rem_minmax(0,1fr)] @xl:items-start @xl:gap-7">
-      <ProductImageField value={image} onChange={onImage} />
+      {imageField ?? <ProductImageField value={image} onChange={onImage} />}
       <div className="flex flex-col gap-4.5">
         <StepForm.Field
           label={t("name")}
