@@ -117,6 +117,8 @@ Where the code says it differently:
   there are no PR previews yet. A bad deploy is undone by promoting the previous deployment in
   Vercel, and the database is fixed forward with a new migration, never rolled back. Once real
   Users exist, migrations stay backward-compatible (a rename or drop takes two PRs).
+- **Backups.** `.github/workflows/backup.yml` dumps Neon nightly into the private R2 bucket
+  `shoe-order-backups` (30 days kept). Restoring is in `packages/db/CLAUDE.md`.
 - **Design first for UI.** A new or redesigned screen is drawn on a Claude Design canvas first
   (the app's real tokens, Hebrew RTL first, desktop + phone + dark) and built only after the
   user approves it. The user often points at claude.ai's UI as the reference. Small fixes to

@@ -44,3 +44,22 @@ Prisma 7 schema, client and seeds. Exports `prisma` plus the model types.
 
 - `pnpm db:seed` (`prisma/seed.ts`): the dev admin user (skipped when `NODE_ENV=production`). Idempotent.
 - `pnpm db:seed:demo` (`prisma/seed-demo.ts`): demo customers, catalog and orders.
+
+## Backups
+
+`.github/workflows/backup.yml` dumps production every night (`pg_dump --format=custom`), proves
+the dump restores into an empty Postgres 18, and uploads it to the private R2 bucket
+`shoe-order-backups` as `neon/<UTC time>.dump`. The bucket's lifecycle rule deletes dumps after
+30 days. A failed run emails the repo owner. GitHub turns scheduled workflows off after 60 days
+without a commit, so a quiet repo needs it re-enabled under Actions.
+
+To restore, download a dump from the bucket (Cloudflare dashboard → R2, or `aws s3 cp` with the
+backup token), then load it into an **empty** database. Never load it over the live one:
+
+```bash
+pg_restore --no-owner --no-acl --exit-on-error -d "<empty database URL>" <file>.dump
+```
+
+For production, restore into a new Neon branch, check it, then point Vercel's `DATABASE_URL`
+and the `production` environment's `DIRECT_URL` at it. Use a Postgres 18 client (e.g.
+`docker run --rm -v "$PWD:/b" postgres:18 pg_restore … /b/<file>.dump`).
