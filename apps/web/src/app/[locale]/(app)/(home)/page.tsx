@@ -17,7 +17,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { ChartSkeleton } from "@/components/skeletons/chart-skeleton";
 import { ListSkeleton } from "@/components/skeletons/list-skeleton";
-import { OrdersTableSkeleton, skeletonRows } from "@/components/skeletons/list-skeletons";
+import { OrdersTableSkeleton } from "@/components/skeletons/list-skeletons";
 import { StatCardsSkeleton } from "@/components/skeletons/stat-cards-skeleton";
 import { avatarOf } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
@@ -108,7 +108,7 @@ export default async function DashboardPage({
       {/* The Orders list, opening on the open ones. A solid table, not glass. */}
       <section className="flex flex-col gap-4">
         <OrdersSectionTitle />
-        <Suspense fallback={<OrdersTableSkeleton rows={skeletonRows(orderParams.per)} />}>
+        <Suspense fallback={<OrdersTableSkeleton params={orderParams} onDashboard />}>
           <DashboardOrders ownerId={user.id} orderParams={orderParams} />
         </Suspense>
       </section>

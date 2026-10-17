@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 import { CustomersTable } from "@/components/customers/customers-table";
 import { ListHeader } from "@/components/layout/list-header";
-import { CustomersTableSkeleton, skeletonRows } from "@/components/skeletons/list-skeletons";
+import { CustomersTableSkeleton } from "@/components/skeletons/list-skeletons";
 import { OrbField } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import {
@@ -37,7 +37,7 @@ export default async function CustomersPage({
         addLabel={t("add")}
       />
       {/* Not keyed by the params: paging keeps the old rows, dimmed (ADR 0012). */}
-      <Suspense fallback={<CustomersTableSkeleton rows={skeletonRows(listParams.per)} />}>
+      <Suspense fallback={<CustomersTableSkeleton params={listParams} />}>
         <CustomersList locale={locale} listParams={listParams} />
       </Suspense>
     </div>

@@ -28,7 +28,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PaymentsSkeleton } from "@/components/skeletons/detail-skeletons";
 import {
   OrderItemsTableSkeleton,
-  skeletonRows,
 } from "@/components/skeletons/list-skeletons";
 import { Link } from "@/i18n/navigation";
 import type { RawSearchParams } from "@/lib/list-params";
@@ -154,7 +153,7 @@ export default async function OrderDetailPage({
           {packing && <PackingCard summary={packing} locale={locale} />}
 
           {/* Not keyed by the params: paging keeps the old rows (ADR 0012). */}
-          <Suspense fallback={<OrderItemsTableSkeleton rows={skeletonRows(itemParams.per)} />}>
+          <Suspense fallback={<OrderItemsTableSkeleton params={itemParams} />}>
             <Items ownerId={user.id} orderId={order.id} itemParams={itemParams} />
           </Suspense>
         </div>

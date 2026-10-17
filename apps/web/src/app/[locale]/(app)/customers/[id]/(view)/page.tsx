@@ -14,7 +14,7 @@ import { Suspense } from "react";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
-import { OrdersTableSkeleton, skeletonRows } from "@/components/skeletons/list-skeletons";
+import { OrdersTableSkeleton } from "@/components/skeletons/list-skeletons";
 import { Link } from "@/i18n/navigation";
 import type { RawSearchParams } from "@/lib/list-params";
 import {
@@ -110,7 +110,7 @@ export default async function CustomerDetailPage({
           {/* Not keyed by the params: paging keeps the old rows (ADR 0012). */}
           <Suspense
             fallback={
-              <OrdersTableSkeleton rows={skeletonRows(orderParams.per)} scopedToCustomer />
+              <OrdersTableSkeleton params={orderParams} scopedToCustomer />
             }
           >
             <History

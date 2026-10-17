@@ -20,7 +20,6 @@ import { SalesTrend } from "@/components/reports/sales-trend";
 import {
   OwedTableSkeleton,
   SalesTableSkeleton,
-  skeletonRows,
 } from "@/components/skeletons/list-skeletons";
 import {
   CustomerReportSkeleton,
@@ -96,7 +95,7 @@ export default async function ReportsPage({
       {/* Each tab's body streams behind its own skeleton (ADR 0012). */}
       {tab === "owed" && (
         <Suspense
-          fallback={<OwedTableSkeleton rows={skeletonRows(parseOwedListParams(sp).per)} />}
+          fallback={<OwedTableSkeleton params={parseOwedListParams(sp)} />}
         >
           <OwedReport ownerId={user.id} sp={sp} t={t} />
         </Suspense>
@@ -117,7 +116,7 @@ export default async function ReportsPage({
           <Suspense fallback={<SalesTrendsSkeleton />}>
             <SalesTrends locale={locale} ownerId={user.id} t={t} />
           </Suspense>
-          <Suspense fallback={<SalesTableSkeleton />}>
+          <Suspense fallback={<SalesTableSkeleton params={parseSalesListParams(sp)} />}>
             <SalesList ownerId={user.id} sp={sp} />
           </Suspense>
         </div>

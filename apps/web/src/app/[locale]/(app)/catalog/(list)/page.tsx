@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
 import { ListHeader } from "@/components/layout/list-header";
-import { CatalogTableSkeleton, skeletonRows } from "@/components/skeletons/list-skeletons";
+import { CatalogTableSkeleton } from "@/components/skeletons/list-skeletons";
 import { OrbField } from "@/components/ui/orb";
 import { Link } from "@/i18n/navigation";
 import {
@@ -37,7 +37,7 @@ export default async function CatalogPage({
         addLabel={t("add")}
       />
       {/* Not keyed by the params: paging keeps the old rows, dimmed (ADR 0012). */}
-      <Suspense fallback={<CatalogTableSkeleton rows={skeletonRows(listParams.per)} />}>
+      <Suspense fallback={<CatalogTableSkeleton params={listParams} />}>
         <ModelsList locale={locale} listParams={listParams} />
       </Suspense>
     </div>
