@@ -45,7 +45,9 @@ every applicable step below is ticked and the draft PR is open. For each step, r
 ## 4. Reads and UI (`apps/web`)
 
 - Server Component page: `requireUser(locale)` then an `ownerId`-scoped query (lists go through
-  `lib/*-query.ts` and `list-params.ts`).
+  `lib/*-query.ts` and `list-params.ts`). Each section that reads data is its own async
+  component behind `<Suspense>` with a skeleton from `components/skeletons/`, and the route gets
+  a `loading.tsx` in the page's shape (ADR 0012).
 - Client form: same schema for validation, async submit, `router.push` after the await. Build
   it on StepForm with the `stepped-form` skill.
 - Every string in both `messages/en.json` and `messages/he.json`; logical Tailwind utilities
