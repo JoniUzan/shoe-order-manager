@@ -128,7 +128,7 @@ export function PasswordDialog({
           >
             {t("cancel")}
           </Button>
-          <Button type="submit" form="change-password" disabled={pending}>
+          <Button type="submit" form="change-password" loading={pending}>
             {t("changePassword")}
           </Button>
         </DialogFooter>

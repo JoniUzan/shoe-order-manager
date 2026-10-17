@@ -65,7 +65,7 @@ export function DeleteOrderButton({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            disabled={pending}
+            loading={pending}
             variant="destructive"
           >
             {tc("delete")}

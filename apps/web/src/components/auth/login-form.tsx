@@ -99,8 +99,13 @@ export function LoginForm({ locale }: { locale: string }) {
         </p>
       )}
 
-      <Button type="submit" disabled={pending} className="h-11 rounded-xl text-[15px]">
-        {pending ? t("signingIn") : t("signIn")}
+      <Button
+        type="submit"
+        loading={pending}
+        loadingLabel={t("signingIn")}
+        className="h-11 rounded-xl text-[15px]"
+      >
+        {t("signIn")}
       </Button>
     </form>
   );

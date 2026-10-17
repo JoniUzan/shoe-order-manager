@@ -53,7 +53,7 @@ export function ConfirmDeleteDialog({
               e.preventDefault();
               onConfirm();
             }}
-            disabled={pending}
+            loading={pending}
             variant="destructive"
           >
             {tc("delete")}

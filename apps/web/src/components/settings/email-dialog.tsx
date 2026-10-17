@@ -107,7 +107,7 @@ export function EmailDialog({
           >
             {t("cancel")}
           </Button>
-          <Button type="submit" form="change-email" disabled={pending}>
+          <Button type="submit" form="change-email" loading={pending}>
             {t("changeEmail")}
           </Button>
         </DialogFooter>

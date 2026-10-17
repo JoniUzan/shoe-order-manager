@@ -184,7 +184,8 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
   const nextButton = (
     <Button
       onClick={next}
-      disabled={pending || switching}
+      loading={pending}
+      disabled={switching}
       className={cn("rounded-[14px] px-6 text-[15px]", phone ? "h-12 flex-1" : "h-11")}
     >
       {step === "business" ? t("finish") : t("continue")}
