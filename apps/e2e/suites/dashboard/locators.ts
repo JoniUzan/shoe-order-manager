@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 type Card = "cardBalanceDue" | "cardOpenOrders" | "cardRecent";
 
@@ -13,6 +13,7 @@ export class DashboardPage {
 
   async goto(locale: string) {
     await this.page.goto(`/${locale}`);
+    await streamed(this.page);
   }
 
   /** A card is one link; its name is everything written on it. */

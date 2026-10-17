@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 type Tab = "owed" | "customers" | "sales";
 
@@ -13,6 +13,7 @@ export class ReportsPage {
 
   async goto(locale: string, tab: Tab = "owed") {
     await this.page.goto(`/${locale}/reports${tab === "owed" ? "" : `?tab=${tab}`}`);
+    await streamed(this.page);
   }
 
   tab(tab: Tab) {

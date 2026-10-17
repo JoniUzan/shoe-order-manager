@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 /** The Payments card on an order's page, and its record dialog. */
 export class PaymentsCard {
@@ -11,6 +11,7 @@ export class PaymentsCard {
 
   async goto(locale: string, orderId: string) {
     await this.page.goto(`/${locale}/orders/${orderId}`);
+    await streamed(this.page);
   }
 
   dialog() {

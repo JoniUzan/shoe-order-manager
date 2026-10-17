@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 const STEPS = ["Customer", "Items", "Notes", "Review"] as const;
 type Step = (typeof STEPS)[number];
@@ -306,6 +306,7 @@ export class OrderPage {
 
   async goto(locale: string, id: string) {
     await this.page.goto(`/${locale}/orders/${id}`);
+    await streamed(this.page);
   }
 
   heading(number: number) {
@@ -380,6 +381,7 @@ export class OrdersList {
 
   async goto(locale: string) {
     await this.page.goto(`/${locale}/orders`);
+    await streamed(this.page);
   }
 
   /** An order's number, a link to its page. */
