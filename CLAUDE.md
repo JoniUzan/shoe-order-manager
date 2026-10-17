@@ -7,7 +7,7 @@ English. Data lives in Postgres: Neon in production (used as plain Postgres), Do
 The domain words (English and Hebrew) are in `GLOSSARY.md`. Each package has its own
 `CLAUDE.md` with the rules for working inside it: `apps/web`, `apps/e2e`, `packages/auth`,
 `packages/db`, `packages/domain`, `packages/ui`. The reasons behind the big design choices are
-in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011.
+in `docs/adr/`; hosting, auth and the planned mobile app are ADRs 0008–0010, Product images ADR 0011, streamed pages and skeletons ADR 0012.
 
 ## Commands
 
@@ -61,7 +61,8 @@ block (as in the example) for the web app. Dev login:
 - `packages/ui`: shadcn/ui primitives and the theme.
 - `packages/config/*`: shared `typescript-config` and `eslint-config`. No root tsconfig.
 
-Reads are Server Components calling `prisma` directly; writes are Server Actions in
+Reads are Server Components calling `prisma` directly, each section streamed behind its own
+`<Suspense>` and skeleton (ADR 0012); writes are Server Actions in
 `apps/web/src/lib/actions/`. Both scope every query by `ownerId`: authorization lives in app
 code, not in Postgres RLS (ADR 0003).
 

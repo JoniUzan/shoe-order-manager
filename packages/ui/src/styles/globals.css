@@ -129,6 +129,10 @@
   --chart-5: #24b39b; /* green */
   --chart-6: #ff4082; /* pink */
 
+  /* A skeleton's fill: ink at low strength, so it reads on the sheet, a card
+     and a glass card alike. --accent can't: in dark it is the surface itself. */
+  --skeleton: oklch(0.192 0.02 195.6 / 7%);
+
   /* the sidebar sits on the shell, not on a sheet of its own */
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.192 0.02 195.6);
@@ -197,6 +201,8 @@
 
   /* --chart-* is not redefined: the series keep their hue in the dark. */
 
+  --skeleton: oklch(0.952 0.012 91.5 / 9%);
+
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.952 0.012 91.5);
   --sidebar-primary: oklch(0.184 0.011 196.3);
@@ -231,6 +237,7 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-skeleton: var(--skeleton);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -386,6 +393,12 @@
   [dir="rtl"] .glass-track > * {
     transform-origin: right center;
   }
+
+  /* The outermost element of a skeleton. It waits 150ms before it shows, so
+     a fast response never flashes grey at the User. */
+  .skeleton-reveal {
+    animation: skeleton-in 200ms ease-out 150ms both;
+  }
 }
 
 @keyframes glass-materialize {
@@ -400,6 +413,11 @@
     transform: scaleX(0);
   }
 }
+@keyframes skeleton-in {
+  from {
+    opacity: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .glass-materialize,
@@ -408,6 +426,10 @@
   }
   .glass-card[data-pressable]:active {
     scale: none;
+  }
+  /* Still late, so nothing flashes, but no fade. */
+  .skeleton-reveal {
+    animation-duration: 0s;
   }
 }
 @media (prefers-reduced-transparency: reduce) {

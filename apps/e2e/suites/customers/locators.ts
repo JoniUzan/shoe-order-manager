@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 /** The new/edit Customer form: one page on StepForm. */
 export class CustomerForm {
@@ -72,6 +72,7 @@ export class CustomerPage {
 
   async goto(locale: string, id: string) {
     await this.page.goto(`/${locale}/customers/${id}`);
+    await streamed(this.page);
   }
 
   heading(name: string) {

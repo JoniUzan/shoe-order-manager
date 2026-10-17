@@ -4,7 +4,23 @@ import { describe, expect, it } from "vitest";
 
 import { createCustomer, createUser } from "../../test/factories";
 
-import { loadDashboard } from "./dashboard-query";
+import {
+  loadDashboardCounts,
+  loadDashboardStats,
+  loadDashboardWeeks,
+  loadOwed,
+} from "./dashboard-query";
+
+/** Every section's loader, as the page calls them. */
+async function loadDashboard(ownerId: string, now: Date) {
+  const [counts, stats, weeks, owed] = await Promise.all([
+    loadDashboardCounts(ownerId),
+    loadDashboardStats(ownerId, now),
+    loadDashboardWeeks(ownerId, now),
+    loadOwed(ownerId),
+  ]);
+  return { ...counts, ...stats, weeks, owed };
+}
 
 // Wednesday 7 October 2026, mid-afternoon, local time.
 const NOW = new Date(2026, 9, 7, 15, 30);
@@ -43,7 +59,7 @@ async function order(
   return created;
 }
 
-describe("loadDashboard", () => {
+describe("the dashboard loaders", () => {
   it("is empty for a new User", async () => {
     const user = await createUser();
     const d = await loadDashboard(user.id, NOW);

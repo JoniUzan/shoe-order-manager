@@ -7,7 +7,7 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
@@ -17,6 +17,15 @@ import { RankBars } from "@/components/reports/rank-bars";
 import { ReportCustomerSelect } from "@/components/reports/report-customer-select";
 import { SalesTable } from "@/components/reports/sales-table";
 import { SalesTrend } from "@/components/reports/sales-trend";
+import {
+  OwedTableSkeleton,
+  SalesTableSkeleton,
+  skeletonRows,
+} from "@/components/skeletons/list-skeletons";
+import {
+  CustomerReportSkeleton,
+  SalesTrendsSkeleton,
+} from "@/components/skeletons/report-skeletons";
 import { Link } from "@/i18n/navigation";
 import { listOrders, parseOrderListParams } from "@/lib/orders-query";
 import { listOwed, parseOwedListParams } from "@/lib/owed-query";
@@ -84,18 +93,34 @@ export default async function ReportsPage({
         ))}
       </div>
 
-      {tab === "owed" && <OwedReport ownerId={user.id} sp={sp} t={t} />}
+      {/* Each tab's body streams behind its own skeleton (ADR 0012). */}
+      {tab === "owed" && (
+        <Suspense
+          fallback={<OwedTableSkeleton rows={skeletonRows(parseOwedListParams(sp).per)} />}
+        >
+          <OwedReport ownerId={user.id} sp={sp} t={t} />
+        </Suspense>
+      )}
       {tab === "customers" && (
-        <CustomersReport
-          locale={locale}
-          ownerId={user.id}
-          customerId={typeof sp.customer === "string" ? sp.customer : undefined}
-          sp={sp}
-          t={t}
-        />
+        <Suspense fallback={<CustomerReportSkeleton picked={typeof sp.customer === "string"} />}>
+          <CustomersReport
+            locale={locale}
+            ownerId={user.id}
+            customerId={typeof sp.customer === "string" ? sp.customer : undefined}
+            sp={sp}
+            t={t}
+          />
+        </Suspense>
       )}
       {tab === "sales" && (
-        <SalesReport locale={locale} ownerId={user.id} sp={sp} t={t} />
+        <div className="flex flex-col gap-4">
+          <Suspense fallback={<SalesTrendsSkeleton />}>
+            <SalesTrends locale={locale} ownerId={user.id} t={t} />
+          </Suspense>
+          <Suspense fallback={<SalesTableSkeleton />}>
+            <SalesList ownerId={user.id} sp={sp} />
+          </Suspense>
+        </div>
       )}
     </div>
   );
@@ -221,22 +246,17 @@ async function CustomersReport({
   );
 }
 
-async function SalesReport({
+/** The sales tab's three trend cards: one read, so one boundary. */
+async function SalesTrends({
   locale,
   ownerId,
-  sp,
   t,
 }: {
   locale: string;
   ownerId: string;
-  sp: RawSearchParams;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
-  const [list, trends] = await Promise.all([
-    listSales(ownerId, parseSalesListParams(sp)),
-    loadSalesTrends(ownerId),
-  ]);
-
+  const trends = await loadSalesTrends(ownerId);
   return (
     <div className="flex flex-col gap-4">
       <SalesTrend weeks={trends.weeks} />
@@ -267,13 +287,19 @@ async function SalesReport({
         />
       </div>
       <DebtChart data={trends.debt} />
-      <SalesTable
-        rows={list.rows}
-        total={list.total}
-        pageCount={list.pageCount}
-        params={list.params}
-      />
     </div>
+  );
+}
+
+async function SalesList({ ownerId, sp }: { ownerId: string; sp: RawSearchParams }) {
+  const list = await listSales(ownerId, parseSalesListParams(sp));
+  return (
+    <SalesTable
+      rows={list.rows}
+      total={list.total}
+      pageCount={list.pageCount}
+      params={list.params}
+    />
   );
 }
 
