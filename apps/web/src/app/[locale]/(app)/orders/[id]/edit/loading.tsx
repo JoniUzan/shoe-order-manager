@@ -9,11 +9,10 @@ export default function OrderFormLoading() {
     <FormSkeleton
       title={t("edit")}
       steps={[t("stepCustomer"), t("stepItems"), t("stepNotes"), t("stepReview")]}
-      illustration="store"
       stepTitle={t("stepCustomer")}
       hint={t("stepCustomerHint")}
       submitLabel={tc("continue")}
-      fields={5}
+      body="list"
     />
   );
 }

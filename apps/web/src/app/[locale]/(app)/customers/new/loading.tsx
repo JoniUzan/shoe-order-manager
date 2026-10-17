@@ -8,7 +8,6 @@ export default function CustomerFormLoading() {
     <FormSkeleton
       title={t("new")}
       steps={[]}
-      illustration="store"
       stepTitle={t("new")}
       hint={t("formHint")}
       submitLabel={t("saveCustomer")}

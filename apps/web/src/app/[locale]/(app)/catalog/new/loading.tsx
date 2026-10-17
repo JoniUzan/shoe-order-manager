@@ -9,7 +9,6 @@ export default function ModelFormLoading() {
     <FormSkeleton
       title={t("new")}
       steps={[t("stepDetails"), t("stepSizes"), t("stepPacks")]}
-      illustration="sneaker"
       stepTitle={t("stepDetails")}
       hint={t("stepDetailsHint")}
       submitLabel={tc("continue")}
