@@ -12,7 +12,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@repo/ui/components/popover";
-import { cn } from "@repo/ui/lib/utils";
 import { ChevronDown, Download, FileText, Printer, Share2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
@@ -242,15 +241,14 @@ function DocSection({
               key={action}
               type="button"
               variant="outline"
+              loading={pending}
+              loadingLabel={t("generating")}
               disabled={busy !== null}
               onClick={() => onAction(doc, action)}
-              className={cn(
-                "h-14 flex-col gap-1 text-[13px] [&_svg]:size-[18px]",
-                pending && "animate-pulse",
-              )}
+              className="h-14 flex-col gap-1 text-[13px] [&_svg]:size-[18px]"
             >
               {icon}
-              {pending ? t("generating") : label}
+              {label}
             </Button>
           );
         })}

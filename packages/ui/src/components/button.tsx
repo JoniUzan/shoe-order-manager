@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { LoaderCircle } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { cn } from "@repo/ui/lib/utils"
@@ -38,15 +39,38 @@ const buttonVariants = cva(
   }
 )
 
+// The spinner's ink, per variant: a loading button clears its own text colour
+// (globals.css), so the spinner can't inherit it.
+const spinnerInk = {
+  default: "text-primary-foreground",
+  destructive: "text-white",
+  outline: "text-foreground",
+  secondary: "text-secondary-foreground",
+  ghost: "text-foreground",
+  link: "text-primary",
+} as const
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  loadingLabel,
+  disabled,
+  children,
+  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    /**
+     * Pending: disabled and `aria-busy`, and after 150ms the label goes clear
+     * (the button keeps its width) under a spinner. Local change.
+     */
+    loading?: boolean
+    /** What a screen reader hears while loading, e.g. "Signing in…". */
+    loadingLabel?: string
   }) {
   const Comp = asChild ? Slot.Root : "button"
 
@@ -55,9 +79,35 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      aria-busy={loading || undefined}
+      aria-label={loading && loadingLabel ? loadingLabel : ariaLabel}
+      disabled={disabled || loading}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        // Busy, not unavailable: the spinner stays at full strength.
+        loading && "relative disabled:opacity-100"
+      )}
       {...props}
-    />
+    >
+      {loading
+        ? // An array, not a fragment: Slot doesn't look inside a fragment for
+          // the Slottable, and an `asChild` button would lose its props.
+          [
+            <Slot.Slottable key="label">{children}</Slot.Slottable>,
+            <span
+              key="spinner"
+              data-slot="button-spinner"
+              aria-hidden
+              className={cn(
+                "absolute inset-0 flex items-center justify-center",
+                spinnerInk[variant ?? "default"]
+              )}
+            >
+              <LoaderCircle className="animate-spin motion-reduce:[animation-duration:1.6s]" />
+            </span>,
+          ]
+        : children}
+    </Comp>
   )
 }
 

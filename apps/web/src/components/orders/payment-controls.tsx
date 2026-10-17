@@ -64,7 +64,8 @@ export function PaymentControls({
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
-  const [pending, setPending] = useState(false);
+  // Which action is waiting on the server; both buttons stop meanwhile.
+  const [pending, setPending] = useState<"record" | "markPaid" | null>(null);
   // The Payment the × was pressed on. It outlives `confirming` so the dialog
   // keeps its amount while it animates closed.
   const [toRemove, setToRemove] = useState<PaymentRow | null>(null);
@@ -82,9 +83,9 @@ export function PaymentControls({
       toast.error(t("errorAmount"));
       return;
     }
-    setPending(true);
+    setPending("record");
     const res = await recordPayment(orderId, amountAgorot, note);
-    setPending(false);
+    setPending(null);
     if (res.ok) {
       toast.success(t("recorded"));
       setAmount("");
@@ -99,9 +100,9 @@ export function PaymentControls({
   }
 
   async function onMarkPaid() {
-    setPending(true);
+    setPending("markPaid");
     const res = await markFullyPaid(orderId);
-    setPending(false);
+    setPending(null);
     if (res.ok) {
       toast.success(t("recorded"));
       router.refresh();
@@ -191,7 +192,11 @@ export function PaymentControls({
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={onRecord} disabled={pending}>
+                  <Button
+                    onClick={onRecord}
+                    loading={pending === "record"}
+                    disabled={pending !== null}
+                  >
                     {t("record")}
                   </Button>
                 </DialogFooter>
@@ -202,7 +207,8 @@ export function PaymentControls({
               variant="outline"
               size="sm"
               onClick={onMarkPaid}
-              disabled={pending}
+              loading={pending === "markPaid"}
+              disabled={pending !== null}
             >
               <CircleCheck className="size-4" />
               {t("markFullyPaid")}

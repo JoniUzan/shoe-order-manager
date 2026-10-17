@@ -797,7 +797,7 @@ function Submit({ children }: { children?: ReactNode }) {
   return (
     <Button
       type="submit"
-      disabled={pending}
+      loading={pending}
       className={cn(roomy.button, "flex-1 md:min-w-40 md:flex-none")}
     >
       {saves ? (
