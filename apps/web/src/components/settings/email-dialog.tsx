@@ -48,8 +48,12 @@ export function EmailDialog({
 
   async function onSubmit(values: EmailChangeInput) {
     setPending(true);
-    const res = await changeEmail(values);
-    setPending(false);
+    let res;
+    try {
+      res = await changeEmail(values);
+    } finally {
+      setPending(false);
+    }
     if (res.ok) {
       toast.success(t("emailSaved"));
       onOpenChange(false);

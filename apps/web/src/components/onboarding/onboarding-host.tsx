@@ -143,7 +143,13 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
       return;
     }
     setPending(true);
-    const res = await finishOnboarding(business);
+    let res;
+    try {
+      res = await finishOnboarding(business);
+    } catch (error) {
+      setPending(false);
+      throw error;
+    }
     if (!res.ok) {
       setPending(false);
       toast.error(t("errorGeneric"));

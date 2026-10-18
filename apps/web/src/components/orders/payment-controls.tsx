@@ -84,30 +84,37 @@ export function PaymentControls({
       return;
     }
     setPending("record");
-    const res = await recordPayment(orderId, amountAgorot, note);
-    setPending(null);
-    if (res.ok) {
-      toast.success(t("recorded"));
-      setAmount("");
-      setNote("");
-      setOpen(false);
-      router.refresh();
-    } else if (res.error === "too_much") {
-      toast.error(t("errorTooMuch"));
-    } else {
-      toast.error(t("errorGeneric"));
+    try {
+      const res = await recordPayment(orderId, amountAgorot, note);
+      if (res.ok) {
+        toast.success(t("recorded"));
+        setAmount("");
+        setNote("");
+        setOpen(false);
+        router.refresh();
+      } else if (res.error === "too_much") {
+        toast.error(t("errorTooMuch"));
+      } else {
+        toast.error(t("errorGeneric"));
+      }
+    } finally {
+      // Also when the request itself fails, or both buttons stay locked.
+      setPending(null);
     }
   }
 
   async function onMarkPaid() {
     setPending("markPaid");
-    const res = await markFullyPaid(orderId);
-    setPending(null);
-    if (res.ok) {
-      toast.success(t("recorded"));
-      router.refresh();
-    } else {
-      toast.error(t("errorGeneric"));
+    try {
+      const res = await markFullyPaid(orderId);
+      if (res.ok) {
+        toast.success(t("recorded"));
+        router.refresh();
+      } else {
+        toast.error(t("errorGeneric"));
+      }
+    } finally {
+      setPending(null);
     }
   }
 

@@ -70,8 +70,12 @@ export function NewCustomerSheet({
 
   async function save(values: CustomerInput) {
     setPending(true);
-    const res = await createCustomer(values);
-    setPending(false);
+    let res;
+    try {
+      res = await createCustomer(values);
+    } finally {
+      setPending(false);
+    }
     if (!res.ok) {
       toast.error(t("errorGeneric"));
       return;
