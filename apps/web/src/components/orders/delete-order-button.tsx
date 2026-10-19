@@ -34,13 +34,20 @@ export function DeleteOrderButton({
 
   async function onConfirm() {
     setPending(true);
-    const res = await deleteOrder(id);
-    if (res.ok) {
-      toast.success(t("deleted"));
-      router.push("/orders");
-    } else {
-      toast.error(t("errorGeneric"));
-      setPending(false);
+    let leaving = false;
+    try {
+      const res = await deleteOrder(id);
+      if (res.ok) {
+        toast.success(t("deleted"));
+        leaving = true;
+        router.push("/orders");
+      } else {
+        toast.error(t("errorGeneric"));
+      }
+    } finally {
+      // A delete that went through keeps spinning until the list replaces
+      // this page.
+      if (!leaving) setPending(false);
     }
   }
 
@@ -64,8 +71,13 @@ export function DeleteOrderButton({
             {tc("cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
-            disabled={pending}
+            onClick={(e) => {
+              // Keep the dialog up until the action resolves, so the spinner
+              // shows and a refusal is reported over it.
+              e.preventDefault();
+              void onConfirm();
+            }}
+            loading={pending}
             variant="destructive"
           >
             {tc("delete")}

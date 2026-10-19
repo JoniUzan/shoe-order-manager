@@ -48,8 +48,12 @@ export function EmailDialog({
 
   async function onSubmit(values: EmailChangeInput) {
     setPending(true);
-    const res = await changeEmail(values);
-    setPending(false);
+    let res;
+    try {
+      res = await changeEmail(values);
+    } finally {
+      setPending(false);
+    }
     if (res.ok) {
       toast.success(t("emailSaved"));
       onOpenChange(false);
@@ -107,7 +111,7 @@ export function EmailDialog({
           >
             {t("cancel")}
           </Button>
-          <Button type="submit" form="change-email" disabled={pending}>
+          <Button type="submit" form="change-email" loading={pending}>
             {t("changeEmail")}
           </Button>
         </DialogFooter>
