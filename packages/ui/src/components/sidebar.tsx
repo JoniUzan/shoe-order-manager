@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 import { Slot } from "radix-ui"
 
-import { useIsMobile } from "@repo/ui/hooks/use-mobile"
+import { isMobileNow, useIsMobile } from "@repo/ui/hooks/use-mobile"
 import { cn } from "@repo/ui/lib/utils"
 import { Button } from "@repo/ui/components/button"
 import { Input } from "@repo/ui/components/input"
@@ -38,19 +38,23 @@ type SidebarContextProps = {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  isMobile: boolean
   toggleSidebar: () => void
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
 
+// `isMobile` is read by each caller, not held in the context: it turns true
+// just after a phone hydrates, and a context change then would reach the
+// page's still-streaming Suspense boundary and make React render it again on
+// the client, while the streamed copy still sits hidden in <body>.
 function useSidebar() {
   const context = React.useContext(SidebarContext)
+  const isMobile = useIsMobile()
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.")
   }
 
-  return context
+  return { ...context, isMobile }
 }
 
 function SidebarProvider({
@@ -66,7 +70,6 @@ function SidebarProvider({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
-  const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
@@ -90,8 +93,10 @@ function SidebarProvider({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile])
+    return isMobileNow()
+      ? setOpenMobile((open) => !open)
+      : setOpen((open) => !open)
+  }, [setOpen, setOpenMobile])
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -118,12 +123,11 @@ function SidebarProvider({
       state,
       open,
       setOpen,
-      isMobile,
       openMobile,
       setOpenMobile,
       toggleSidebar,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+    [state, open, setOpen, openMobile, setOpenMobile, toggleSidebar]
   )
 
   return (
