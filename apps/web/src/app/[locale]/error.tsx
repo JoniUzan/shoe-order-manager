@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@repo/ui/components/button";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
@@ -16,6 +17,8 @@ export default function Error({
 
   useEffect(() => {
     console.error(error);
+    // A server error arrives here too, but onRequestError already reported it.
+    if (!error.digest) Sentry.captureException(error);
   }, [error]);
 
   return (
