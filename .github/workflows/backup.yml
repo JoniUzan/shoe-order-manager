@@ -40,8 +40,13 @@ jobs:
           --health-retries 10
     steps:
       - name: Dump the production database
+        # DIRECT_URL has sslmode=verify-full, and the postgres image ships no CA
+        # bundle (libpq looks for ~/.postgresql/root.crt), so lend it the runner's.
         run: |
-          docker run --rm -e DIRECT_URL "$POSTGRES_IMAGE" \
+          docker run --rm -e DIRECT_URL \
+            -v /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro \
+            -e PGSSLROOTCERT=/etc/ssl/certs/ca-certificates.crt \
+            "$POSTGRES_IMAGE" \
             sh -c 'pg_dump --format=custom --no-owner --no-acl "$DIRECT_URL"' > backup.dump
           ls -l backup.dump
         env:
