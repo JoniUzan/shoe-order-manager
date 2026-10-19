@@ -17,7 +17,8 @@ What stays at the top of a page, before anything streams:
   turns into something else.
 
 Forms are not split: a form is one unit, so its route's `loading.tsx` is the whole story. The
-dashboard's `loading.tsx` is only a header's shape, for the same reason it counts first.
+dashboard's `loading.tsx` is only a header's shape, for the same reason it counts first, and so
+is an order's: a packing card above the items appears only on an order with packs.
 
 **A `loading.tsx` covers every route under it**, and on a navigation the outermost new one shows.
 So the list and detail pages sit in route groups with their own (`orders/(list)/`,

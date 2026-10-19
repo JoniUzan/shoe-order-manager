@@ -168,12 +168,19 @@ export function CatalogTableSkeleton({ params }: { params?: ListState }) {
  * when the lines run past a page, and most orders fit on one. Four rows, the
  * size of a usual order, rather than the page size of 20.
  */
-export function OrderItemsTableSkeleton({ params }: { params?: ListState }) {
+export function OrderItemsTableSkeleton({
+  params,
+  rows = 4,
+}: {
+  params?: ListState;
+  /** The order's item count when the page knows it, up to a page. */
+  rows?: number;
+}) {
   const t = useTranslations("orders");
   const state = params ?? ORDER_ITEM_LIST_DEFAULTS;
   return (
     <TableSkeleton
-      rows={4}
+      rows={Math.min(rows, state.per)}
       state={state}
       columns={[
         { label: t("items"), sortKey: "name", width: 96 },

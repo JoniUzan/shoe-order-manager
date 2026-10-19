@@ -153,7 +153,14 @@ export default async function OrderDetailPage({
           {packing && <PackingCard summary={packing} locale={locale} />}
 
           {/* Not keyed by the params: paging keeps the old rows (ADR 0012). */}
-          <Suspense fallback={<OrderItemsTableSkeleton params={itemParams} />}>
+          <Suspense
+            fallback={
+              <OrderItemsTableSkeleton
+                params={itemParams}
+                rows={itemParams.q ? undefined : allItems.length}
+              />
+            }
+          >
             <Items ownerId={user.id} orderId={order.id} itemParams={itemParams} />
           </Suspense>
         </div>
