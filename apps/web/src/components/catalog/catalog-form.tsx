@@ -276,12 +276,15 @@ export function CatalogDetails({
   image,
   onImage,
   imageField,
+  idPrefix = "",
 }: {
   form: UseFormReturn<FormValues>;
   image: ProductImageValue;
   onImage: (next: ProductImageValue) => void;
   /** In place of the image picker: the skeleton's grey image. */
   imageField?: ReactNode;
+  /** Keeps the skeleton's copy from sharing the real fields' ids. */
+  idPrefix?: string;
 }) {
   const t = useTranslations("catalog");
   const tv = useTranslations("validation");
@@ -294,11 +297,11 @@ export function CatalogDetails({
       <div className="flex flex-col gap-4.5">
         <StepForm.Field
           label={t("name")}
-          htmlFor="name"
+          htmlFor={`${idPrefix}name`}
           error={nameError ? tv("required") : undefined}
         >
           <Input
-            id="name"
+            id={`${idPrefix}name`}
             placeholder={t("namePlaceholder")}
             aria-invalid={!!nameError}
             className={roomy.field}
@@ -315,17 +318,17 @@ export function CatalogDetails({
         </StepForm.Field>
 
         <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <StepForm.Field label={t("sku")} htmlFor="sku">
+          <StepForm.Field label={t("sku")} htmlFor={`${idPrefix}sku`}>
             <Input
-              id="sku"
+              id={`${idPrefix}sku`}
               dir="ltr"
               className={cn(roomy.field, "text-start")}
               {...form.register("sku")}
             />
           </StepForm.Field>
-          <StepForm.Field label={`${t("price")} (₪)`} htmlFor="price">
+          <StepForm.Field label={`${t("price")} (₪)`} htmlFor={`${idPrefix}price`}>
             <Input
-              id="price"
+              id={`${idPrefix}price`}
               type="number"
               min="0"
               step="0.01"
@@ -337,9 +340,9 @@ export function CatalogDetails({
           </StepForm.Field>
         </div>
 
-        <StepForm.Field label={t("description")} htmlFor="description">
+        <StepForm.Field label={t("description")} htmlFor={`${idPrefix}description`}>
           <Textarea
-            id="description"
+            id={`${idPrefix}description`}
             rows={3}
             className={cn(roomy.area, "resize-none")}
             {...form.register("description")}
