@@ -38,7 +38,7 @@ export function OrderStatusToggle({
       type="button"
       variant={isDone ? "outline" : "default"}
       size="sm"
-      disabled={pending}
+      loading={pending}
       onClick={toggle}
     >
       {isDone ? (

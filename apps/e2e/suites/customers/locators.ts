@@ -85,17 +85,29 @@ export class CustomerPage {
     await this.page.locator("form[data-ready]").waitFor();
   }
 
-  /** Delete, and confirm in the dialog. */
-  async delete() {
+  /** Open the "Delete customer?" dialog from the Customer's own Delete. */
+  async openDelete() {
     // The Customer's own Delete opens a dialog; the order history has others.
     await this.page
       .getByRole("button", { name: this.t("common.delete") })
       .and(this.page.locator('[aria-haspopup="dialog"]'))
       .click();
-    await this.page
-      .getByRole("alertdialog")
-      .getByRole("button", { name: this.t("common.delete") })
-      .click();
+  }
+
+  deleteDialog() {
+    return this.page.getByRole("alertdialog", { name: this.t("customers.deleteTitle") });
+  }
+
+  /** Delete or Cancel in the open "Delete customer?" dialog. */
+  deleteAnswer(answer: "confirm" | "cancel") {
+    const key = answer === "confirm" ? "common.delete" : "common.cancel";
+    return this.deleteDialog().getByRole("button", { name: this.t(key) });
+  }
+
+  /** Delete, and confirm in the dialog. */
+  async delete() {
+    await this.openDelete();
+    await this.deleteAnswer("confirm").click();
   }
 
   hasOrdersError() {

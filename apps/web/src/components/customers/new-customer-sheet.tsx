@@ -70,8 +70,12 @@ export function NewCustomerSheet({
 
   async function save(values: CustomerInput) {
     setPending(true);
-    const res = await createCustomer(values);
-    setPending(false);
+    let res;
+    try {
+      res = await createCustomer(values);
+    } finally {
+      setPending(false);
+    }
     if (!res.ok) {
       toast.error(t("errorGeneric"));
       return;
@@ -118,7 +122,7 @@ export function NewCustomerSheet({
         </Button>
         <Button
           type="submit"
-          disabled={pending}
+          loading={pending}
           className={cn(roomy.button, "flex-1 md:min-w-40 md:flex-none")}
         >
           <CheckIcon className="size-4.5" aria-hidden />

@@ -92,6 +92,8 @@ export function OrdersTable({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmingBulk, setConfirmingBulk] = useState(false);
   const [bulkPending, startBulk] = useTransition();
+  // The status the bulk bar is setting, for which button spins.
+  const [bulkTarget, setBulkTarget] = useState<"done" | "not_done" | null>(null);
 
   // Selection is per-view: it clears whenever the visible set changes. Acting
   // in bulk on rows you can no longer see is the one mistake worth designing
@@ -124,6 +126,7 @@ export function OrdersTable({
 
   function bulkStatus(statusCode: "done" | "not_done") {
     const ids = [...selected];
+    setBulkTarget(statusCode);
     startBulk(async () => {
       const res = await setOrdersStatus(ids, statusCode);
       if (res.ok) {
@@ -432,6 +435,7 @@ export function OrdersTable({
                   <Button
                     variant="outline"
                     size="sm"
+                    loading={bulkPending && bulkTarget === "done"}
                     disabled={bulkPending}
                     onClick={() => bulkStatus("done")}
                   >
@@ -441,6 +445,7 @@ export function OrdersTable({
                   <Button
                     variant="outline"
                     size="sm"
+                    loading={bulkPending && bulkTarget === "not_done"}
                     disabled={bulkPending}
                     onClick={() => bulkStatus("not_done")}
                   >
@@ -490,7 +495,7 @@ export function OrdersTable({
                 e.preventDefault();
                 bulkDelete();
               }}
-              disabled={bulkPending}
+              loading={bulkPending}
               variant="destructive"
             >
               {tc("delete")}

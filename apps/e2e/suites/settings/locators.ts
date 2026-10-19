@@ -81,8 +81,10 @@ export class SettingsDialog {
 
   /** Account → password → Change, then fill the dialog and submit. */
   async changePassword(current: string, next: string) {
-    // Email and password each have a "Change"; password is the second.
-    await this.page.getByRole("button", { name: this.t("settings.change") }).last().click();
+    // Email and password each have a "Change"; password is the second. Exact,
+    // because the dialog's own submit ("Change password") also starts with it,
+    // and a dialog still closing would take the click.
+    await this.page.getByRole("button", { name: this.t("settings.change"), exact: true }).last().click();
     const dialog = this.page.getByRole("dialog").filter({ has: this.page.locator("#pw-current") });
     await dialog.locator("#pw-current").fill(current);
     await dialog.locator("#pw-new").fill(next);

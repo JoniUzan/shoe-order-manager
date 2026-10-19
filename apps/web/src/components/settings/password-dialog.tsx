@@ -53,8 +53,12 @@ export function PasswordDialog({
 
   async function onSubmit(values: PasswordChangeInput) {
     setPending(true);
-    const res = await changePassword(values);
-    setPending(false);
+    let res;
+    try {
+      res = await changePassword(values);
+    } finally {
+      setPending(false);
+    }
     if (res.ok) {
       toast.success(t("passwordSaved"));
       onOpenChange(false);
@@ -128,7 +132,7 @@ export function PasswordDialog({
           >
             {t("cancel")}
           </Button>
-          <Button type="submit" form="change-password" disabled={pending}>
+          <Button type="submit" form="change-password" loading={pending}>
             {t("changePassword")}
           </Button>
         </DialogFooter>

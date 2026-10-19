@@ -370,6 +370,24 @@ export class OrderPage {
   reopen() {
     return this.page.getByRole("button", { name: this.t("orders.markNotDone") });
   }
+
+  /** Open the "Delete order?" dialog from the order's own Delete. */
+  async openDelete() {
+    await this.page
+      .getByRole("button", { name: this.t("common.delete") })
+      .and(this.page.locator('[aria-haspopup="dialog"]'))
+      .click();
+  }
+
+  deleteDialog() {
+    return this.page.getByRole("alertdialog", { name: this.t("orders.deleteTitle") });
+  }
+
+  /** Delete or Cancel in the open "Delete order?" dialog. */
+  deleteAnswer(answer: "confirm" | "cancel") {
+    const key = answer === "confirm" ? "common.delete" : "common.cancel";
+    return this.deleteDialog().getByRole("button", { name: this.t(key) });
+  }
 }
 
 /** The orders list, with row selection and the bulk bar. */

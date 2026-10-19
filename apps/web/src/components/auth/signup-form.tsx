@@ -133,8 +133,13 @@ export function SignupForm({ locale }: { locale: LocaleCode }) {
         </p>
       )}
 
-      <Button type="submit" disabled={pending} className="h-11 rounded-xl text-[15px]">
-        {pending ? t("creatingAccount") : t("createAccount")}
+      <Button
+        type="submit"
+        loading={pending}
+        loadingLabel={t("creatingAccount")}
+        className="h-11 rounded-xl text-[15px]"
+      >
+        {t("createAccount")}
       </Button>
     </form>
   );

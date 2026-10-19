@@ -143,7 +143,13 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
       return;
     }
     setPending(true);
-    const res = await finishOnboarding(business);
+    let res;
+    try {
+      res = await finishOnboarding(business);
+    } catch (error) {
+      setPending(false);
+      throw error;
+    }
     if (!res.ok) {
       setPending(false);
       toast.error(t("errorGeneric"));
@@ -184,7 +190,8 @@ export function OnboardingHost({ data }: { data: SettingsData }) {
   const nextButton = (
     <Button
       onClick={next}
-      disabled={pending || switching}
+      loading={pending}
+      disabled={switching}
       className={cn("rounded-[14px] px-6 text-[15px]", phone ? "h-12 flex-1" : "h-11")}
     >
       {step === "business" ? t("finish") : t("continue")}
