@@ -12,9 +12,9 @@ function subscribe(onChange: () => void) {
 
 /**
  * Phone vs computer for the settings — a drawer and a section menu, or a
- * dialog with a side menu. Unlike `useIsMobile`, a client navigation gets the
- * right answer on the first render, so the dialog doesn't flash open as the
- * wrong one before switching.
+ * dialog with a side menu. A client navigation gets the right answer on the
+ * first render, so the dialog doesn't flash open as the wrong one before
+ * switching (`useIsMobile` in @repo/ui now works the same way).
  */
 export function useIsPhone(): boolean {
   return useSyncExternalStore(
