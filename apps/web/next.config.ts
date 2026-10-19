@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs/config";
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
@@ -21,4 +22,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// Uploads the browser and server source maps to Sentry on the production build
+// (deploy.yml sets SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT) and deletes them
+// from the output. Without the token, as locally and in CI tests, it skips that.
+export default withSentryConfig(withNextIntl(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+  widenClientFileUpload: true,
+  // Browser events go through our own server, so ad blockers don't drop them.
+  // Under /api so the locale proxy leaves it alone.
+  tunnelRoute: "/api/monitoring",
+  silent: !process.env.CI,
+  telemetry: false,
+});
