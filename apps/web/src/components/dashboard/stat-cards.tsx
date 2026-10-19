@@ -8,7 +8,7 @@ import { GlassLink } from "@/components/dashboard/glass-link";
 import type { DashboardStats } from "@/lib/dashboard-query";
 
 /** Ink at three densities: the light-to-dark scale both count cards use. */
-const INK = ["bg-foreground/15", "bg-foreground/45", "bg-foreground"] as const;
+export const INK = ["bg-foreground/15", "bg-foreground/45", "bg-foreground"] as const;
 
 /**
  * The dashboard's three cards, each a link to the list it counts: Balance
@@ -136,19 +136,26 @@ function StatCard({
       href={href}
       className="group flex flex-col gap-3 px-6 py-5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
-      <span className="flex items-center justify-between gap-2 text-sm font-medium text-muted-foreground">
-        {label}
-        <ChevronRight
-          aria-hidden
-          className="size-4.5 transition-[translate,color] duration-150 ease-(--ease-out-quint) rtl:rotate-180 group-hover:text-foreground pointer-fine:group-hover:translate-x-0.75 rtl:pointer-fine:group-hover:-translate-x-0.75"
-        />
-      </span>
+      <CardLabel>{label}</CardLabel>
       {children}
     </GlassLink>
   );
 }
 
-function Big({ children }: { children: ReactNode }) {
+/** A card's name and the chevron that says it opens a list. */
+export function CardLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className="flex items-center justify-between gap-2 text-sm font-medium text-muted-foreground">
+      {children}
+      <ChevronRight
+        aria-hidden
+        className="size-4.5 transition-[translate,color] duration-150 ease-(--ease-out-quint) rtl:rotate-180 group-hover:text-foreground pointer-fine:group-hover:translate-x-0.75 rtl:pointer-fine:group-hover:-translate-x-0.75"
+      />
+    </span>
+  );
+}
+
+export function Big({ children }: { children: ReactNode }) {
   return (
     <span className="text-[32px] leading-[1.1] font-semibold tracking-[-0.02em] tabular-nums">
       {children}
@@ -157,7 +164,7 @@ function Big({ children }: { children: ReactNode }) {
 }
 
 /** A breakdown bar: each part as wide as its share. Empty parts are left out. */
-function Track({ parts }: { parts: { value: number; className: string }[] }) {
+export function Track({ parts }: { parts: { value: number; className: string }[] }) {
   return (
     <div className="glass-track" aria-hidden>
       {parts
@@ -173,7 +180,7 @@ function Track({ parts }: { parts: { value: number; className: string }[] }) {
   );
 }
 
-function Key({ children }: { children: ReactNode }) {
+export function Key({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-xs text-muted-foreground">
       {children}
@@ -181,7 +188,7 @@ function Key({ children }: { children: ReactNode }) {
   );
 }
 
-function KeyItem({
+export function KeyItem({
   dot,
   label,
   value,

@@ -7,12 +7,12 @@ export function ListSkeleton({ rows }: { rows: number }) {
   return (
     <SkeletonSection className="flex flex-col">
       {Array.from({ length: rows }, (_, i) => (
-        <div
-          key={i}
-          className="flex h-11 items-center justify-between gap-3 border-t border-(--hairline) first:border-t-0"
-        >
-          <Skeleton className="h-3.5" style={{ width: vary(i, 150) }} />
-          <Skeleton className="h-3.5" style={{ width: vary(i + 3, 72) }} />
+        // The rule sits outside the 44px row, as the real list's does.
+        <div key={i} className="border-t border-(--hairline) first:border-t-0">
+          <div className="flex h-11 items-center justify-between gap-3">
+            <Skeleton className="h-3.5" style={{ width: vary(i, 150) }} />
+            <Skeleton className="h-3.5" style={{ width: vary(i + 3, 88) }} />
+          </div>
         </div>
       ))}
     </SkeletonSection>
