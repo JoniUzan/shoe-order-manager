@@ -116,6 +116,17 @@ from the client.
 - Sessions are rows with a 5-minute cookie cache, so the login page repeats `requireUser`'s
   user-exists check: a cached session can outlive its User (after a DB reset).
 
+## Error monitoring
+
+Sentry, errors only (no tracing, replay or PII), and off without `NEXT_PUBLIC_SENTRY_DSN`.
+`src/instrumentation.ts` reports server errors through `onRequestError`; `src/instrumentation-client.ts`
+reports browser errors, sent through our own `/api/monitoring` tunnel so ad blockers don't drop
+them. `[locale]/error.tsx` reports only errors without a `digest` (a digest means the server
+already did); `app/global-error.tsx` covers a failing root layout. The production build in
+`deploy.yml` takes the DSN, org and project from the `production` environment's variables and
+`SENTRY_AUTH_TOKEN` from its secrets, uploads the source maps and deletes them from the output.
+An action's expected failure (`{ ok: false }`) is not an error; only a throw reaches Sentry.
+
 ## Tests
 
 - **Server Actions** have an integration test next to them (`src/lib/actions/<area>.test.ts`),
