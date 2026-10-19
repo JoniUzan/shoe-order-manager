@@ -9,16 +9,19 @@ import {
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
+import { Suspense } from "react";
 
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { OrdersTable } from "@/components/orders/orders-table";
+import { OrdersTableSkeleton } from "@/components/skeletons/list-skeletons";
 import { Link } from "@/i18n/navigation";
 import type { RawSearchParams } from "@/lib/list-params";
 import {
   listOrders,
   ORDER_LIST_DEFAULTS,
   parseOrderListParams,
+  type OrderListParams,
 } from "@/lib/orders-query";
 import { requireUser } from "@/lib/session";
 
@@ -47,11 +50,7 @@ export default async function CustomerDetailPage({
   });
   if (!customer) notFound();
 
-  // The history is the orders list, narrowed to this customer — same component,
-  // same search, filters, sorting, paging and quick look as /orders.
-  const list = await listOrders(user.id, parseOrderListParams(sp), {
-    customerId: customer.id,
-  });
+  const orderParams = parseOrderListParams(sp);
 
   const details: { label: string; value: string | null }[] = [
     { label: t("contactName"), value: customer.contactName },
@@ -108,28 +107,66 @@ export default async function CustomerDetailPage({
           <h3 className="text-sm font-medium text-muted-foreground">
             {t("orderHistory")}
           </h3>
-          {/* Only a Customer with no orders at all gets the bare card. An
-              empty result under a search or filter keeps the table, so the
-              toolbar stays and the empty row offers "clear filters". */}
-          {list.total === 0 &&
-          list.params.q === "" &&
-          list.params.filter === ORDER_LIST_DEFAULTS.filter ? (
-            <Card>
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                {t("noOrders")}
-              </CardContent>
-            </Card>
-          ) : (
-            <OrdersTable
-              rows={list.rows}
-              total={list.total}
-              pageCount={list.pageCount}
-              params={list.params}
-              scopedToCustomer
+          {/* Not keyed by the params: paging keeps the old rows (ADR 0012). */}
+          <Suspense
+            fallback={
+              <OrdersTableSkeleton params={orderParams} scopedToCustomer />
+            }
+          >
+            <History
+              locale={locale}
+              ownerId={user.id}
+              customerId={customer.id}
+              orderParams={orderParams}
             />
-          )}
+          </Suspense>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The Customer's history: the orders list narrowed to them — same component,
+ * same search, filters, sorting, paging and quick look as /orders.
+ */
+async function History({
+  locale,
+  ownerId,
+  customerId,
+  orderParams,
+}: {
+  locale: string;
+  ownerId: string;
+  customerId: string;
+  orderParams: OrderListParams;
+}) {
+  const t = await getTranslations({ locale, namespace: "customers" });
+  const list = await listOrders(ownerId, orderParams, { customerId });
+
+  // Only a Customer with no orders at all gets the bare card. An empty result
+  // under a search or filter keeps the table, so the toolbar stays and the
+  // empty row offers "clear filters".
+  if (
+    list.total === 0 &&
+    list.params.q === "" &&
+    list.params.filter === ORDER_LIST_DEFAULTS.filter
+  ) {
+    return (
+      <Card>
+        <CardContent className="py-6 text-center text-sm text-muted-foreground">
+          {t("noOrders")}
+        </CardContent>
+      </Card>
+    );
+  }
+  return (
+    <OrdersTable
+      rows={list.rows}
+      total={list.total}
+      pageCount={list.pageCount}
+      params={list.params}
+      scopedToCustomer
+    />
   );
 }

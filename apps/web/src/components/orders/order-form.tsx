@@ -91,7 +91,7 @@ export interface ModelOption {
   packs: { id: string; name: string; curve: Curve }[];
 }
 
-const STEPS = [
+export const STEPS = [
   { key: "Customer", illustration: "store" },
   { key: "Items", illustration: "shoe-box" },
   { key: "Notes", illustration: "checklist" },
@@ -100,7 +100,7 @@ const STEPS = [
 const ITEMS = 1;
 const LAST = STEPS.length - 1;
 
-const EMPTY: OrderFormValues = {
+export const EMPTY: OrderFormValues = {
   customerId: "",
   notes: "",
   factoryNote: "",

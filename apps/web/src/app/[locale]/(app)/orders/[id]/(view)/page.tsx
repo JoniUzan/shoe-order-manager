@@ -15,6 +15,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
+import { Suspense } from "react";
 
 import { DeleteOrderButton } from "@/components/orders/delete-order-button";
 import { OrderStatusBadge, PaymentBadge } from "@/components/orders/badges";
@@ -24,11 +25,16 @@ import { OrderStatusToggle } from "@/components/orders/order-status-toggle";
 import { PackingCard } from "@/components/orders/packing-card";
 import { PaymentControls } from "@/components/orders/payment-controls";
 import { PageHeader } from "@/components/layout/page-header";
+import { PaymentsSkeleton } from "@/components/skeletons/detail-skeletons";
+import {
+  OrderItemsTableSkeleton,
+} from "@/components/skeletons/list-skeletons";
 import { Link } from "@/i18n/navigation";
 import type { RawSearchParams } from "@/lib/list-params";
 import {
   listOrderItems,
   parseOrderItemListParams,
+  type OrderItemListParams,
 } from "@/lib/order-items-query";
 import { buildPackingSummary } from "@/lib/packing";
 import { requireUser } from "@/lib/session";
@@ -49,10 +55,6 @@ export default async function OrderDetailPage({
     where: { id, ownerId: user.id },
     include: {
       customer: true,
-      payments: {
-        orderBy: { paidAt: "desc" },
-        select: { id: true, amountAgorot: true, paidAt: true, note: true },
-      },
       packs: {
         orderBy: { id: "asc" },
         select: { id: true, packName: true, curve: true, count: true },
@@ -77,11 +79,7 @@ export default async function OrderDetailPage({
   const packing =
     order.packs.length > 0 ? buildPackingSummary(allItems, order.packs) : null;
 
-  const itemList = await listOrderItems(
-    user.id,
-    order.id,
-    parseOrderItemListParams(sp),
-  );
+  const itemParams = parseOrderItemListParams(sp);
 
   const ts = await getTranslations({ locale, namespace: "share" });
   const tp = await getTranslations({ locale, namespace: "pdf" });
@@ -154,13 +152,17 @@ export default async function OrderDetailPage({
         <div className="flex min-w-0 flex-col gap-6">
           {packing && <PackingCard summary={packing} locale={locale} />}
 
-          <OrderItemsTable
-            rows={itemList.rows}
-            total={itemList.total}
-            totalUnfiltered={itemList.totalUnfiltered}
-            pageCount={itemList.pageCount}
-            params={itemList.params}
-          />
+          {/* Not keyed by the params: paging keeps the old rows (ADR 0012). */}
+          <Suspense
+            fallback={
+              <OrderItemsTableSkeleton
+                params={itemParams}
+                rows={itemParams.q ? undefined : allItems.length}
+              />
+            }
+          >
+            <Items ownerId={user.id} orderId={order.id} itemParams={itemParams} />
+          </Suspense>
         </div>
 
         <aside className="min-w-0">
@@ -170,13 +172,13 @@ export default async function OrderDetailPage({
               keeps its foot clear of the quick-action button, which sits on
               this side of the window. */}
           <div className="flex flex-col gap-6 xl:sticky xl:top-6 xl:h-full xl:max-h-[calc(100svh-7.5rem)]">
-            <PaymentControls
-              orderId={order.id}
-              totalAgorot={order.totalAgorot}
-              paidAgorot={order.depositAgorot}
-              payments={order.payments}
-              className="xl:min-h-0 xl:flex-1"
-            />
+            <Suspense fallback={<PaymentsSkeleton className="xl:min-h-0 xl:flex-1" />}>
+              <Payments
+                ownerId={user.id}
+                order={order}
+                className="xl:min-h-0 xl:flex-1"
+              />
+            </Suspense>
             {order.notes && (
               <Card className="shrink-0">
                 <CardHeader>
@@ -204,5 +206,51 @@ export default async function OrderDetailPage({
         </aside>
       </div>
     </div>
+  );
+}
+
+async function Items({
+  ownerId,
+  orderId,
+  itemParams,
+}: {
+  ownerId: string;
+  orderId: string;
+  itemParams: OrderItemListParams;
+}) {
+  const itemList = await listOrderItems(ownerId, orderId, itemParams);
+  return (
+    <OrderItemsTable
+      rows={itemList.rows}
+      total={itemList.total}
+      totalUnfiltered={itemList.totalUnfiltered}
+      pageCount={itemList.pageCount}
+      params={itemList.params}
+    />
+  );
+}
+
+async function Payments({
+  ownerId,
+  order,
+  className,
+}: {
+  ownerId: string;
+  order: { id: string; totalAgorot: number; depositAgorot: number };
+  className?: string;
+}) {
+  const payments = await prisma.payment.findMany({
+    where: { orderId: order.id, ownerId },
+    orderBy: { paidAt: "desc" },
+    select: { id: true, amountAgorot: true, paidAt: true, note: true },
+  });
+  return (
+    <PaymentControls
+      orderId={order.id}
+      totalAgorot={order.totalAgorot}
+      paidAgorot={order.depositAgorot}
+      payments={payments}
+      className={className}
+    />
   );
 }

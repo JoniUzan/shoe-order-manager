@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@repo/ui/components/button";
+import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
 import { Camera, ImageUp } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -149,6 +150,8 @@ export function ProductImageField({
             {t("productImageHint")}
           </span>
 
+          {/* As tall as the stored image's row (size-28), so the edit form's
+              skeleton, which can't know which one is coming, never jumps. */}
           <div className="flex gap-2.5 @xl:hidden">
             {[
               { label: t("productImageCamera"), Icon: Camera, ref: cameraRef },
@@ -163,7 +166,7 @@ export function ProductImageField({
                 className={cn(
                   roomy.button,
                   roomy.raised,
-                  "h-24 flex-1 flex-col gap-1.5 md:h-24",
+                  "h-28 flex-1 flex-col gap-1.5 md:h-28",
                 )}
               >
                 <Icon className="size-6" aria-hidden />
@@ -173,6 +176,34 @@ export function ProductImageField({
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * The field holding a stored image, before the model arrives (the form's
+ * skeleton): the same square and Replace / Remove, the image grey. Keep it
+ * in step with the stored branch above.
+ */
+export function ProductImageSkeleton() {
+  const t = useTranslations("catalog");
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-4 @xl:flex-col @xl:items-stretch @xl:gap-3">
+        <Skeleton className="size-28 shrink-0 rounded-[1.25rem] @xl:aspect-square @xl:size-auto @xl:w-full" />
+        <div className="flex flex-1 flex-col gap-2 @xl:flex-row">
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(roomy.button, roomy.raised, "@xl:flex-1")}
+          >
+            {t("productImageReplace")}
+          </Button>
+          <Button type="button" variant="ghost" className={cn(roomy.button, "@xl:flex-1")}>
+            {t("productImageRemove")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -13,6 +13,15 @@ export interface Options {
 
 type Account = { id: string; email: string; name: string | null };
 
+/**
+ * Waits until a page has streamed in (ADR 0012): no skeleton left on it. Until
+ * then a label a skeleton draws for real (a card's title) is on the page more
+ * than once, and a strict locator on it fails.
+ */
+export async function streamed(page: Page) {
+  await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
+}
+
 export async function login(page: Page, locale: Locale, email: string, password = PASSWORD) {
   await page.goto(`/${locale}/login`);
   await page.fill("#email", email);

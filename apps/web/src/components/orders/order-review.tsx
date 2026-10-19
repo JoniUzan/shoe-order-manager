@@ -35,14 +35,13 @@ export function OrderReview({
   onStatus: (code: string) => void;
 }) {
   const t = useTranslations("orders");
-  const ts = useTranslations("status");
   const locale = useLocale();
   const text = useBlockText(models);
   const line = customer ? customerLine(customer) : "";
 
   return (
     <dl className="flex flex-col divide-y divide-border">
-      <Row label={t("customer")} onEdit={() => onEdit(0)}>
+      <ReviewRow label={t("customer")} onEdit={() => onEdit(0)}>
         {customer ? (
           <>
             <span className="font-semibold">{customer.name}</span>
@@ -51,8 +50,8 @@ export function OrderReview({
         ) : (
           <Empty />
         )}
-      </Row>
-      <Row label={t("items")} onEdit={() => onEdit(1)}>
+      </ReviewRow>
+      <ReviewRow label={t("items")} onEdit={() => onEdit(1)}>
         {values.blocks.length ? (
           values.blocks.map((block, i) => (
             <span key={i} className="flex items-baseline justify-between gap-3 text-sm">
@@ -68,15 +67,15 @@ export function OrderReview({
         ) : (
           <Empty />
         )}
-      </Row>
-      <Row label={t("notes")} onEdit={() => onEdit(2)}>
+      </ReviewRow>
+      <ReviewRow label={t("notes")} onEdit={() => onEdit(2)}>
         {values.notes.trim() ? (
           <span className="text-sm whitespace-pre-line">{values.notes}</span>
         ) : (
           <Empty />
         )}
-      </Row>
-      <Row label={t("factoryNote")} onEdit={() => onEdit(2)}>
+      </ReviewRow>
+      <ReviewRow label={t("factoryNote")} onEdit={() => onEdit(2)}>
         {values.factoryNote.trim() ? (
           <>
             <span className="text-sm whitespace-pre-line">{values.factoryNote}</span>
@@ -85,27 +84,44 @@ export function OrderReview({
         ) : (
           <Empty />
         )}
-      </Row>
-      <div className="grid grid-cols-1 gap-2 py-4.5 @xl:grid-cols-[8.75rem_minmax(0,1fr)] @xl:items-center @xl:gap-4">
-        <dt className="text-sm text-muted-foreground">{t("status")}</dt>
-        <dd>
-          {/* The same pill as the orders list's filter (All / Open / Unpaid). */}
-          <Tabs value={values.statusCode} onValueChange={onStatus}>
-            <TabsList aria-label={t("status")}>
-              {STATUSES.map((code) => (
-                <TabsTrigger key={code} value={code} className={HIT_TALLER}>
-                  {ts(code)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </dd>
-      </div>
+      </ReviewRow>
+      <StatusRow value={values.statusCode} onChange={onStatus} />
     </dl>
   );
 }
 
-function Row({
+/** The Order status, as a pill to switch. */
+export function StatusRow({
+  value,
+  onChange,
+}: {
+  /** None in the form's skeleton, before the order's status is known. */
+  value: string | undefined;
+  onChange: (code: string) => void;
+}) {
+  const t = useTranslations("orders");
+  const ts = useTranslations("status");
+  return (
+    <div className="grid grid-cols-1 gap-2 py-4.5 @xl:grid-cols-[8.75rem_minmax(0,1fr)] @xl:items-center @xl:gap-4">
+      <dt className="text-sm text-muted-foreground">{t("status")}</dt>
+      <dd>
+        {/* The same pill as the orders list's filter (All / Open / Unpaid). */}
+        <Tabs value={value ?? ""} onValueChange={onChange}>
+          <TabsList aria-label={t("status")}>
+            {STATUSES.map((code) => (
+              <TabsTrigger key={code} value={code} className={HIT_TALLER}>
+                {ts(code)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </dd>
+    </div>
+  );
+}
+
+/** One part of the order with "Edit", which opens its step. */
+export function ReviewRow({
   label,
   onEdit,
   children,

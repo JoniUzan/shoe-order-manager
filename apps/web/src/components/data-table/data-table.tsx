@@ -7,7 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
-import { Input } from "@repo/ui/components/input";
 import {
   Select,
   SelectContent,
@@ -23,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/ui/components/table";
-import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { cn } from "@repo/ui/lib/utils";
 import {
   columnVisibilityFeature,
@@ -40,8 +38,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Search,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -52,6 +48,14 @@ import {
   type TransitionStartFunction,
 } from "react";
 
+import {
+  ColumnsButton,
+  FilterTabs,
+  HIT_TALLER,
+  ListFooter,
+  ListToolbar,
+  SearchBox,
+} from "@/components/data-table/list-chrome";
 import { TableFrame } from "@/components/data-table/table-frame";
 import { LIST_PAGE_SIZES, type ListParams } from "@/lib/list-params";
 
@@ -88,14 +92,7 @@ const features = tableFeatures({
 /** A column of a DataTable. */
 export type DataTableColumn<TRow extends RowData> = ColumnDef<typeof features, TRow>;
 
-/**
- * Grows a control's pressable area vertically without redrawing it. The
- * toolbar and pager are sized for a mouse; PRODUCT.md's in-shop phone scene
- * needs a thumb to hit them. Vertical only — these controls sit in horizontal
- * rows, so widening would make neighbours overlap.
- */
-export const HIT_TALLER =
-  "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
+export { HIT_TALLER };
 
 export function DataTable<TRow extends RowData, F extends string, S extends string>({
   rows,
@@ -201,13 +198,14 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
     <div className="flex flex-col">
       {/* Toolbar */}
       {showToolbar && (
-        <div className="flex flex-wrap items-center gap-3">
+        <ListToolbar>
           {/* The filter is URL state, so a plain controlled value would leave the
             pill sitting still until the server answered — measured at 183ms of
             dead time before it even started to move. The optimistic value lets
             it leave on the click and reconcile when the rows arrive. */}
           {filterTabs && filterTabs.length > 0 && (
-            <Tabs
+            <FilterTabs
+              tabs={filterTabs}
               value={filterView}
               onValueChange={(v) =>
                 startTransition(() => {
@@ -215,19 +213,7 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
                   setParams({ filter: v as F });
                 })
               }
-            >
-              <TabsList>
-                {filterTabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className={HIT_TALLER}
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+            />
           )}
 
           {/* A list you cannot usefully search gets no box. The sales report is
@@ -235,36 +221,31 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
             for one — its query never read `q` at all, so the box that used to
             stand here was answering nothing. */}
           {hasSearch && (
-            <div className="relative min-w-0 flex-1 sm:max-w-72">
-              <Search className="pointer-events-none absolute inset-y-0 start-2.5 my-auto size-4 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={strings.searchPlaceholder}
-                aria-label={tc("search")}
-                className="h-9 ps-8 pe-8"
-              />
-              {search !== "" && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  aria-label={t("clearSearch")}
-                  className="absolute inset-y-0 end-2 my-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
+            <SearchBox
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={strings.searchPlaceholder}
+              aria-label={tc("search")}
+              clear={
+                search !== "" && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label={t("clearSearch")}
+                    className="absolute inset-y-0 end-2 my-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )
+              }
+            />
           )}
 
           {/* Every column pinned means the menu can only ever open on nothing. */}
           {hideableColumns.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="ms-auto">
-                  <SlidersHorizontal />
-                  <span className="hidden sm:inline">{t("columns")}</span>
-                </Button>
+                <ColumnsButton label={t("columns")} />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {hideableColumns.map((column) => (
@@ -281,7 +262,7 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </div>
+        </ListToolbar>
       )}
 
       {aboveTable}
@@ -389,8 +370,7 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
       </TableFrame>
 
       {/* Footer — a pager over an empty result is chrome that only says no */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">{strings.rowCount}</p>
+      <ListFooter count={strings.rowCount}>
         <div
           className={cn("flex items-center gap-4", pageCount <= 1 && "hidden")}
         >
@@ -460,7 +440,7 @@ export function DataTable<TRow extends RowData, F extends string, S extends stri
             </Button>
           </div>
         </div>
-      </div>
+      </ListFooter>
     </div>
   );
 }

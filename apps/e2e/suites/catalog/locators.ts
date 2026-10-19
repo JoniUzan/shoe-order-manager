@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import type { T } from "../../fixtures/index.ts";
+import { streamed, type T } from "../../fixtures/index.ts";
 
 const STEPS = ["Details", "Sizes", "Packs"] as const;
 type Step = (typeof STEPS)[number];
@@ -200,6 +200,7 @@ export class CatalogList {
 
   async goto(locale: string) {
     await this.page.goto(`/${locale}/catalog`);
+    await streamed(this.page);
   }
 
   row(name: string) {

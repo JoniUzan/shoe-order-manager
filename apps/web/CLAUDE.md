@@ -24,6 +24,12 @@ sort, page) lives in the URL; `lib/list-params.ts` whitelists every value before
 Prisma, and nullable sort columns pass `nulls: "last"`. Text search uses
 `contains` with `mode: "insensitive"`.
 
+Pages stream (ADR 0012). The page itself awaits only `requireUser`, the record a detail page is
+about (so `notFound()` still works) and whatever picks the layout; every section that needs data
+is an async component behind its own `<Suspense>`, with its skeleton from
+`components/skeletons/` as the fallback. Each route has a `loading.tsx` in the page's shape. Don't
+key a boundary by search params: a list keeps its old rows, dimmed, while the next page loads.
+
 ## Writes: Server Actions
 
 Every action follows the same shape:
