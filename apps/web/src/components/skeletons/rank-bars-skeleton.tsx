@@ -1,10 +1,13 @@
 import { Skeleton } from "@repo/ui/components/skeleton";
 
+import { TOP_SHOWN } from "@/lib/sales-trends-query";
+
 import { SkeletonSection, vary } from "./skeleton-section";
 
-const SHARE = [92, 74, 60, 44, 30];
+const SHARE = [92, 74, 60, 46, 34, 24];
 
-/** A RankBars card before its rows: the real title and description, five bars. */
+/** A RankBars card before its rows: the real title and description, and
+ * TOP_SHOWN bars. */
 export function RankBarsSkeleton({
   title,
   description,
@@ -19,7 +22,7 @@ export function RankBarsSkeleton({
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       <SkeletonSection className="flex flex-col">
-        {SHARE.map((share, i) => (
+        {SHARE.slice(0, TOP_SHOWN).map((share, i) => (
           <div
             key={i}
             className="grid h-8.5 grid-cols-[minmax(0,8rem)_minmax(0,1fr)_4.5rem] items-center gap-3"
