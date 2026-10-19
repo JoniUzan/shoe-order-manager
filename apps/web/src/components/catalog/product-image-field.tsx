@@ -150,6 +150,8 @@ export function ProductImageField({
             {t("productImageHint")}
           </span>
 
+          {/* As tall as the stored image's row (size-28), so the edit form's
+              skeleton, which can't know which one is coming, never jumps. */}
           <div className="flex gap-2.5 @xl:hidden">
             {[
               { label: t("productImageCamera"), Icon: Camera, ref: cameraRef },
@@ -164,7 +166,7 @@ export function ProductImageField({
                 className={cn(
                   roomy.button,
                   roomy.raised,
-                  "h-24 flex-1 flex-col gap-1.5 md:h-24",
+                  "h-28 flex-1 flex-col gap-1.5 md:h-28",
                 )}
               >
                 <Icon className="size-6" aria-hidden />
