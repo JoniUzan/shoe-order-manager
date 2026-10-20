@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@opentelemetry/api": "1.9.1",
     "@repo/db": "workspace:*",
     "@repo/domain": "workspace:*",
     "better-auth": "^1.7.10"
