@@ -35,5 +35,7 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   // Under /api so the locale proxy leaves it alone.
   tunnelRoute: "/api/monitoring",
   silent: !process.env.CI,
+  // That hook only feeds tracing, which is off (errors only).
+  suppressOnRouterTransitionStartWarning: true,
   telemetry: false,
 });
