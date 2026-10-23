@@ -22,11 +22,19 @@ import type { ComponentProps, ReactNode } from "react";
 export const HIT_TALLER =
   "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
 
-/** The row above the table: tabs, then search, then Columns at the end. */
+/**
+ * The row above the table: tabs, then search, then Columns at the end. On a
+ * phone, a list with tabs gives the search box a row of its own above them:
+ * sharing one, the tabs squeezed it down to a sliver.
+ */
 export function ListToolbar({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-wrap items-center gap-3", className)}
+      className={cn(
+        "flex flex-wrap items-center gap-3",
+        "max-sm:has-[[data-slot=tabs]]:[&>[data-slot=search-box]]:basis-full",
+        className,
+      )}
       {...props}
     />
   );
@@ -46,7 +54,13 @@ export function FilterTabs({
     <Tabs value={value} onValueChange={onValueChange}>
       <TabsList>
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value} className={HIT_TALLER}>
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            // Tighter on a phone, so Orders' four tabs and Columns share
+            // a row on a 360px screen.
+            className={cn(HIT_TALLER, "max-sm:px-1.5")}
+          >
             {tab.label}
           </TabsTrigger>
         ))}
@@ -55,10 +69,7 @@ export function FilterTabs({
   );
 }
 
-/**
- * The search box. It takes the room the tabs leave and, on a phone, shrinks
- * down to its icon rather than wrapping onto a row of its own.
- */
+/** The search box. It takes the room the tabs leave; first on a phone. */
 export function SearchBox({
   clear,
   ...props
@@ -67,7 +78,10 @@ export function SearchBox({
   clear?: ReactNode;
 }) {
   return (
-    <div className="relative min-w-0 flex-1 sm:max-w-72">
+    <div
+      data-slot="search-box"
+      className="relative min-w-0 flex-1 max-sm:order-first sm:max-w-72"
+    >
       <Search className="pointer-events-none absolute inset-y-0 start-2.5 my-auto size-4 text-muted-foreground" />
       <Input {...props} className="h-9 ps-8 pe-8" />
       {clear}
