@@ -19,10 +19,11 @@ import type { ComponentType } from "react";
 
 import { Link, usePathname } from "@/i18n/navigation";
 
-const ITEMS: {
+/** The five sections, shared by the sidebar and the phone's tab bar. */
+export const NAV_ITEMS: {
   href: string;
-  key: string;
-  icon: ComponentType<{ className?: string }>;
+  key: "dashboard" | "orders" | "customers" | "catalog" | "reports";
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
 }[] = [
   { href: "/", key: "dashboard", icon: LayoutDashboard },
   { href: "/orders", key: "orders", icon: Package },
@@ -30,6 +31,10 @@ const ITEMS: {
   { href: "/catalog", key: "catalog", icon: Footprints },
   { href: "/reports", key: "reports", icon: BarChart3 },
 ];
+
+export function isNavActive(href: string, pathname: string) {
+  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
 
 export function NavMain() {
   const t = useTranslations("nav");
@@ -39,9 +44,8 @@ export function NavMain() {
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {ITEMS.map(({ href, key, icon: Icon }) => {
-            const active =
-              href === "/" ? pathname === "/" : pathname.startsWith(href);
+          {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
+            const active = isNavActive(href, pathname);
             return (
               <SidebarMenuItem key={href}>
                 <SidebarMenuButton asChild isActive={active} tooltip={t(key)}>

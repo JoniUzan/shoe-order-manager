@@ -15,7 +15,7 @@ import { useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 
 /** A form's own page: the button would cover its bottom bar and add nothing. */
-const FORM_PAGE = /\/(new|edit)$/;
+export const FORM_PAGE = /\/(new|edit)$/;
 /** A Customer's page, whose new Order starts with that Customer. */
 const CUSTOMER_PAGE = /^\/customers\/(c[a-z0-9]{16,})$/;
 
