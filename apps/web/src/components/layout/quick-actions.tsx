@@ -22,7 +22,8 @@ const CUSTOMER_PAGE = /^\/customers\/(c[a-z0-9]{16,})$/;
 /**
  * The floating button for the three things you start from anywhere: a new
  * Order, Customer or Shoe model. On every page but the forms, at every size,
- * in the corner at the end of the reading line.
+ * in the corner at the end of the reading line; on a phone it stands just
+ * above the tab bar.
  */
 export function QuickActions() {
   const t = useTranslations("quickActions");
@@ -57,7 +58,7 @@ export function QuickActions() {
           <button
             type="button"
             aria-label={t("label")}
-            className="fixed end-4 bottom-6 z-40 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgb(0_0_0/0.22)] outline-none transition-[scale] duration-150 ease-(--ease-out-quint) focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-95 md:end-6"
+            className="fixed end-4 bottom-[6.375rem] z-40 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_24px_rgb(0_0_0/0.22)] outline-none transition-[scale] duration-150 ease-(--ease-out-quint) focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-95 md:end-6 md:bottom-6"
           >
             <Plus
               aria-hidden
