@@ -652,7 +652,9 @@ export function OrderForm({
 
       {isPhone && (
         <Drawer open={open !== null} onOpenChange={(o) => !o && closeBlock()}>
-          <DrawerContent className="max-h-[88dvh]">
+          {/* Full height from the start, like Settings: a model's fields
+              appear under the picker once it's chosen, with room already there. */}
+          <DrawerContent className="mt-0 h-[calc(100dvh-1.75rem)] max-h-none data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:max-h-none">
             {open !== null && openBlockValues && (
               <>
                 <DrawerHeader className="flex-row items-center gap-3 px-4 pt-3 pb-4 text-start">
@@ -681,7 +683,7 @@ export function OrderForm({
                     </Button>
                   </DrawerClose>
                 </DrawerHeader>
-                <div className="flex flex-col gap-5 overflow-y-auto px-4 pb-2">
+                <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-4 pb-2">
                   <StepForm.Field
                     label={
                       openBlockValues.mode === "catalog"
