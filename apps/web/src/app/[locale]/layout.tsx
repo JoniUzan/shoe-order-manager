@@ -63,6 +63,8 @@ export default async function LocaleLayout({
               {children}
               <Toaster
                 position={dir === "rtl" ? "bottom-left" : "bottom-right"}
+                // Over the phone's tab bar and quick-action button, not on them.
+                mobileOffset={{ bottom: "10.75rem" }}
               />
             </ThemeProvider>
           </DirectionProvider>

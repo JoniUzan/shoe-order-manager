@@ -33,7 +33,8 @@ import {
   Sun,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useTransition } from "react";
+import { cn } from "@repo/ui/lib/utils";
+import { useTransition, type ComponentProps } from "react";
 
 import { avatarSrc } from "@/components/ui/orb";
 import { LOCALE_LABELS, routing, type Locale } from "@/i18n/routing";
@@ -48,24 +49,21 @@ const THEMES = [
   { value: "system", Icon: Monitor },
 ] as const;
 
-export function NavUser({
+type MenuUser = { name: string; email: string; avatar: AvatarCode };
+
+/** The account menu: settings, language, theme and signing out. */
+function UserMenuContent({
   user,
-}: {
-  user: { name: string; email: string; avatar: AvatarCode };
-}) {
+  ...props
+}: { user: MenuUser } & ComponentProps<typeof DropdownMenuContent>) {
   const t = useTranslations("nav");
   const tTheme = useTranslations("theme");
   const locale = useLocale();
-  const { isMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const ThemeIcon = THEMES.find(({ value }) => value === theme)?.Icon ?? Sun;
   const [, startTransition] = useTransition();
-
-  const initials =
-    (user.name || user.email).trim().charAt(0).toUpperCase() || "?";
-  const orb = avatarSrc(user.avatar);
 
   // The quick switches also save to the account (fire-and-forget: the switch
   // itself already happened on this device), so they match the settings.
@@ -83,6 +81,95 @@ export function NavUser({
   }
 
   return (
+    <DropdownMenuContent {...props}>
+      <DropdownMenuLabel className="p-0 font-normal">
+        <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+          <UserAvatar user={user} />
+          <UserName user={user} />
+        </div>
+      </DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onSelect={() => openSettings()}>
+        <Settings className="size-4" />
+        {t("settings")}
+      </DropdownMenuItem>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <Languages className="size-4" />
+          {t("language")}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={locale} onValueChange={switchLocale}>
+              {routing.locales.map((l) => (
+                <DropdownMenuRadioItem key={l} value={l}>
+                  {LOCALE_LABELS[l]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <ThemeIcon className="size-4" />
+          {tTheme("label")}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={theme} onValueChange={switchTheme}>
+              {THEMES.map(({ value, Icon }) => (
+                <DropdownMenuRadioItem key={value} value={value}>
+                  <Icon className="size-4" />
+                  {tTheme(value)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
+      <DropdownMenuSeparator />
+      <form action={signOutAction}>
+        <input type="hidden" name="locale" value={locale} />
+        <DropdownMenuItem asChild>
+          <button type="submit" className="w-full">
+            <LogOut className="size-4" />
+            {t("signOut")}
+          </button>
+        </DropdownMenuItem>
+      </form>
+    </DropdownMenuContent>
+  );
+}
+
+function UserAvatar({ user }: { user: MenuUser }) {
+  const initials =
+    (user.name || user.email).trim().charAt(0).toUpperCase() || "?";
+  return (
+    <Avatar className="h-8 w-8 rounded-full">
+      <AvatarImage src={avatarSrc(user.avatar)} alt="" />
+      <AvatarFallback className="rounded-full">{initials}</AvatarFallback>
+    </Avatar>
+  );
+}
+
+function UserName({ user }: { user: MenuUser }) {
+  return (
+    <div className="grid min-w-0 flex-1 text-start text-sm leading-tight">
+      <span className="truncate font-medium">{user.name || user.email}</span>
+      <span className="truncate text-xs text-muted-foreground">
+        {user.email}
+      </span>
+    </div>
+  );
+}
+
+/** The account menu at the foot of the sidebar. */
+export function NavUser({ user }: { user: MenuUser }) {
+  const locale = useLocale();
+  const { isMobile } = useSidebar();
+
+  return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
@@ -91,108 +178,60 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-full">
-                <AvatarImage src={orb} alt="" />
-                <AvatarFallback className="rounded-full">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid min-w-0 flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user.name || user.email}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-              </div>
+              <UserAvatar user={user} />
+              <UserName user={user} />
               <ChevronsUpDown className="ms-auto size-4 shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
+          <UserMenuContent
+            user={user}
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             // The sidebar sits on the start edge, so the menu opens toward the
             // page: right in English, left in Hebrew.
             side={isMobile ? "bottom" : locale === "he" ? "left" : "right"}
             align="end"
             sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                <Avatar className="h-8 w-8 rounded-full">
-                  <AvatarImage src={orb} alt="" />
-                  <AvatarFallback className="rounded-full">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid min-w-0 flex-1 text-start text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {user.name || user.email}
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => openSettings()}>
-              <Settings className="size-4" />
-              {t("settings")}
-            </DropdownMenuItem>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Languages className="size-4" />
-                {t("language")}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuRadioGroup
-                    value={locale}
-                    onValueChange={switchLocale}
-                  >
-                    {routing.locales.map((l) => (
-                      <DropdownMenuRadioItem key={l} value={l}>
-                        {LOCALE_LABELS[l]}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <ThemeIcon className="size-4" />
-                {tTheme("label")}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuRadioGroup
-                    value={theme}
-                    onValueChange={switchTheme}
-                  >
-                    {THEMES.map(({ value, Icon }) => (
-                      <DropdownMenuRadioItem key={value} value={value}>
-                        <Icon className="size-4" />
-                        {tTheme(value)}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <form action={signOutAction}>
-              <input type="hidden" name="locale" value={locale} />
-              <DropdownMenuItem asChild>
-                <button type="submit" className="w-full">
-                  <LogOut className="size-4" />
-                  {t("signOut")}
-                </button>
-              </DropdownMenuItem>
-            </form>
-          </DropdownMenuContent>
+          />
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
+  );
+}
+
+/**
+ * The same menu from the header on a phone, where there is no sidebar: just
+ * the avatar, at the end of the title's line.
+ */
+export function AccountButton({
+  user,
+  className,
+}: {
+  user: MenuUser;
+  className?: string;
+}) {
+  const t = useTranslations("nav");
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={t("account")}
+          className={cn(
+            "grid size-9 place-items-center rounded-full outline-none transition-[scale] duration-150 ease-(--ease-out-quint) focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-95",
+            className,
+          )}
+        >
+          <UserAvatar user={user} />
+        </button>
+      </DropdownMenuTrigger>
+      <UserMenuContent
+        user={user}
+        className="min-w-60 rounded-lg"
+        side="bottom"
+        align="end"
+        sideOffset={6}
+      />
+    </DropdownMenu>
   );
 }

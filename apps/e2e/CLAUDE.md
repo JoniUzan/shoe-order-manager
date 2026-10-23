@@ -11,7 +11,7 @@ and the `shoe_test` database. `pnpm test:e2e` from the root builds `web` first. 
 fixtures/        shared by every suite
   index.ts       test, expect, t, account (created, logged out), user (logged in), page-error guard
   db.ts          factories: createAccount, createCustomer, createModel, createOrder, unique()
-  shell.ts       AppShell: sidebar and user menu (opens the sheet first on a phone)
+  shell.ts       AppShell: sections and user menu (the tab bar and header avatar on a phone)
   i18n.ts        t(): the UI string in the project's locale, ICU-formatted like next-intl
 suites/<area>/
   locators.ts    page objects
