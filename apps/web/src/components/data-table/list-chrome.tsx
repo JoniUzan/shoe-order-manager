@@ -22,11 +22,20 @@ import type { ComponentProps, ReactNode } from "react";
 export const HIT_TALLER =
   "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
 
-/** The row above the table: tabs, then search, then Columns at the end. */
+/**
+ * The row above the table: tabs, then search, then Columns at the end. On a
+ * phone, a list with a search box puts it first, beside Columns, and drops the
+ * tabs onto a row of their own below: sharing one row, the tabs squeezed the
+ * box down to a sliver.
+ */
 export function ListToolbar({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-wrap items-center gap-3", className)}
+      className={cn(
+        "flex flex-wrap items-center gap-3",
+        "max-sm:has-[[data-slot=search-box]]:[&>[data-slot=tabs]]:order-last max-sm:has-[[data-slot=search-box]]:[&>[data-slot=tabs]]:basis-full",
+        className,
+      )}
       {...props}
     />
   );
@@ -56,8 +65,8 @@ export function FilterTabs({
 }
 
 /**
- * The search box. It takes the room the tabs leave and, on a phone, shrinks
- * down to its icon rather than wrapping onto a row of its own.
+ * The search box. It takes the room the tabs leave; on a phone, the row it
+ * shares with Columns (see `ListToolbar`).
  */
 export function SearchBox({
   clear,
@@ -67,7 +76,10 @@ export function SearchBox({
   clear?: ReactNode;
 }) {
   return (
-    <div className="relative min-w-0 flex-1 sm:max-w-72">
+    <div
+      data-slot="search-box"
+      className="relative min-w-0 flex-1 sm:max-w-72"
+    >
       <Search className="pointer-events-none absolute inset-y-0 start-2.5 my-auto size-4 text-muted-foreground" />
       <Input {...props} className="h-9 ps-8 pe-8" />
       {clear}
