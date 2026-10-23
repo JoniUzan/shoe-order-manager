@@ -189,3 +189,20 @@ test("a model left empty is dropped, and a model can be removed", async ({ page,
   await form.continue();
   await expect(form.error("orders.errorNoItems")).toBeVisible();
 });
+
+test("a picked model shows its fields at once, in a sheet that's already full height", async ({ page, t, appLocale, user }) => {
+  const { customer, model } = await orderPrerequisites(user.id);
+  const form = new OrderForm(page, t);
+  await form.gotoNew(appLocale);
+  await form.pickCustomer(customer.name);
+  await form.continue();
+
+  await form.addEmptyModel();
+  await expect.poll(() => form.modelSheetFullHeight()).toBe(true);
+
+  await form.pickModel(model.name);
+  // On screen as they are, without scrolling to them or opening the model again.
+  await expect(form.pairs(0)).toBeInViewport();
+  await expect(form.unitPrice()).toBeInViewport();
+  expect(await form.modelSheetFullHeight()).toBe(true);
+});

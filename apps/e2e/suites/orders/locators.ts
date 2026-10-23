@@ -69,7 +69,12 @@ export class OrderForm {
 
   /** Add a model from the catalog and pick it. */
   async addModel(name: string) {
-    await this.page.getByRole("button", { name: this.t("orders.addModel") }).click();
+    await this.addEmptyModel();
+    await this.pickModel(name);
+  }
+
+  /** Pick the open model's catalog model. */
+  async pickModel(name: string) {
     await this.page
       .getByRole("combobox")
       .filter({ hasText: this.t("orders.selectModel") })
@@ -130,6 +135,21 @@ export class OrderForm {
       const paneScrolls = area.scrollHeight > area.clientHeight;
       return buttonsOnScreen && !windowScrolls && paneScrolls;
     }, onScreen);
+  }
+
+  /**
+   * Whether the open model has its whole height: on a phone its sheet rises
+   * almost to the top, as Settings does, even before a model is picked; on a
+   * computer it's inline, so always.
+   */
+  async modelSheetFullHeight() {
+    if (!this.isPhone()) return true;
+    // Not the model picker's list, also a dialog, still closing after a pick.
+    const sheet = this.page
+      .getByRole("dialog")
+      .filter({ has: this.page.getByRole("button", { name: this.t("orders.doneModel") }) });
+    const box = await sheet.boundingBox();
+    return box !== null && box.y < 40;
   }
 
   /** Done with the open model: closes its sheet on a phone; on a computer it stays open. */
