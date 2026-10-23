@@ -11,7 +11,9 @@
     "reports": "Reports",
     "signOut": "Sign out",
     "language": "Language",
-    "settings": "Settings"
+    "settings": "Settings",
+    "account": "Account",
+    "main": "Main navigation"
   },
   "theme": {
     "label": "Theme",
